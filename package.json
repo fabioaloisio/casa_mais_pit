@@ -1,0 +1,44 @@
+{
+  "name": "casa-mais-monorepo",
+  "version": "1.0.0",
+  "description": "Casa Mais - Sistema de gestão para organização de assistência social (monorepo)",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm -w @casa-mais/backend run dev",
+    "dev:frontend": "npm -w @casa-mais/frontend run dev",
+    "start:backend": "npm -w @casa-mais/backend run start",
+    "build": "npm -w @casa-mais/frontend run build",
+    "build:frontend": "npm -w @casa-mais/frontend run build",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:frontend": "npm -w @casa-mais/frontend run lint",
+    "test": "npm run test --workspaces --if-present",
+    "db:create": "npm -w @casa-mais/backend run db:create",
+    "db:populate": "npm -w @casa-mais/backend run db:populate",
+    "db:reset": "npm -w @casa-mais/backend run db:reset",
+    "db:setup": "npm -w @casa-mais/backend run db:setup",
+    "db:full-reset": "npm -w @casa-mais/backend run db:full-reset",
+    "clean": "rm -rf node_modules packages/*/node_modules",
+    "postinstall": "echo 'Monorepo setup complete!'"
+  },
+  "keywords": [
+    "monorepo",
+    "casa-mais",
+    "node",
+    "react",
+    "mysql",
+    "social-assistance"
+  ],
+  "author": "Casa Mais Team",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

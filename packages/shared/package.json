@@ -1,0 +1,17 @@
+{
+  "name": "@casa-mais/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities and types for Casa Mais",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": [
+    "shared",
+    "utilities",
+    "validation"
+  ],
+  "author": "Casa Mais Team",
+  "license": "ISC"
+}

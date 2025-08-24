@@ -1,0 +1,91 @@
+.step-indicator {
+  gap: 10px;
+}
+
+.step {
+  position: relative;
+  text-align: center;
+  display: flex;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  color: #6c757d;
+  font-weight: 500;
+  background: none !important;
+  border: none !important;
+  padding: 0;
+}
+
+.step .circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #d6d6d6;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  z-index: 1;
+  position: relative;
+}
+
+.step.active .circle {
+  background-color: #0d4c8b;
+}
+
+.step span {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.step.active span {
+  color: #0d4c8b;
+}
+
+.step.completed .circle {
+  background-color: #28a745;
+}
+
+.step.completed span {
+  color: #28a745;
+}
+
+.step::before,
+.step::after,
+.circle::before,
+.circle::after {
+  content: none !important;
+  display: none !important;
+}
+
+.step {
+  background-color: #ccc;
+  color: #000;
+  transform: scale(1);
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.step.active {
+  background-color: #0d47a1;
+  color: #fff;
+  transform: scale(1.1);
+}
+/* Animação de entrada no formulário em etapas */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.field {
+  display: none;
+  animation: fadeIn 0.5s ease-in-out;
+}

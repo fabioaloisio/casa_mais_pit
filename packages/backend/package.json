@@ -1,0 +1,34 @@
+{
+  "name": "@casa-mais/backend",
+  "version": "1.0.0",
+  "description": "Casa Mais Backend API - Node.js/Express server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "db:create": "node scripts/db-create.js",
+    "db:populate": "node scripts/db-populate.js",
+    "db:reset": "node scripts/db-reset.js",
+    "db:setup": "npm run db:create && npm run db:populate",
+    "db:full-reset": "npm run db:reset && npm run db:setup"
+  },
+  "keywords": [
+    "backend",
+    "node",
+    "express",
+    "api",
+    "casa-mais"
+  ],
+  "author": "Casa Mais Team",
+  "license": "ISC",
+  "dependencies": {
+    "@casa-mais/shared": "*",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

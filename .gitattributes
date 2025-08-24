@@ -1,0 +1,26 @@
+# Normalize line endings for all text files
+* text=auto
+
+# Ensure Markdown files use LF line endings on all platforms
+*.md text eol=lf
+
+# Ensure other text files use consistent line endings
+*.js text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.jsx text eol=lf
+*.sql text eol=lf
+*.sh text eol=lf
+
+# Force UTF-8 encoding for documentation
+*.md text charset=utf-8
+README.md text charset=utf-8
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

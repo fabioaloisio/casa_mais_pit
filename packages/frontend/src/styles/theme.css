@@ -1,0 +1,193 @@
+:root {
+  --primary-dark: #0f1c2f;
+  --primary-navy: #003366;
+  --primary-blue: #0c4b8c;
+  --primary-light-blue: #2b6cb0;
+  --primary-sky-blue: #3182ce;
+  
+  --secondary-orange: #ff9900;
+  --secondary-red: #e53e3e;
+  --secondary-green: #68d391;
+  --secondary-green-dark: #2f855a;
+  --secondary-orange-brown: #f6ad55;
+  
+  --bg-light: #f5f7fa;
+  --bg-white: #ffffff;
+  --bg-light-blue: #f0f4f8;
+  --bg-off-white: #f9fafb;
+  
+  --text-primary: #0f1c2f;
+  --text-dark: #333333;
+  --text-medium: #666666;
+  --text-heading: #1c1c1c;
+  
+  --neutral-light: #ccc;
+  --neutral-lighter: #eaeaea;
+  --neutral-gray: #6c757d;
+  
+  --status-green-bg: #c6f6d5;
+  --status-green-text: #2f855a;
+  --status-red-bg: #fed7d7;
+  --status-red-text: #c53030;
+  --status-blue-bg: #bee3f8;
+  --status-blue-text: #2b6cb0;
+  
+  --shadow-sm: rgba(0, 0, 0, 0.05);
+  --shadow-md: rgba(0, 0, 0, 0.1);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-heading);
+}
+
+/* Estilos base para todos os botões */
+.btn {
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.text-primary {
+  color: var(--primary-blue) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary-blue) !important;
+}
+
+.btn-primary {
+  background-color: #0c4b8c !important;
+  border-color: #0c4b8c !important;
+  color: white !important;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #09386a !important;
+  border-color: #09386a !important;
+  color: white !important;
+}
+
+.btn-danger {
+  background-color: var(--secondary-red);
+  border-color: var(--secondary-red);
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+  background-color: #c53030;
+  border-color: #c53030;
+}
+
+.btn-warning {
+  background-color: var(--secondary-orange);
+  border-color: var(--secondary-orange);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-warning:hover {
+  background-color: #e68900;
+  border-color: #e68900;
+}
+
+.btn-success {
+  background-color: var(--secondary-green-dark);
+  border-color: var(--secondary-green-dark);
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  background-color: #276749;
+  border-color: #276749;
+}
+
+/* Botão outline customizado */
+.btn-outline-primary {
+  color: white !important;
+  border: none !important;
+  background-color: #2475f0 !important;
+  transition: all 0.3s ease !important;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+.btn-outline-primary:hover {
+  background-color: #1a5ac8 !important;
+  color: white !important;
+}
+
+/* Botões pequenos */
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+}
+
+/* Botão outline danger */
+.btn-outline-danger {
+  color: var(--secondary-red) !important;
+  border: 1px solid var(--secondary-red) !important;
+  background-color: transparent !important;
+  transition: all 0.3s ease !important;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--secondary-red) !important;
+  color: white !important;
+  border-color: var(--secondary-red) !important;
+}
+
+.sidebar {
+  background-color: var(--primary-dark);
+  color: white;
+  min-height: 100vh;
+}
+
+.card {
+  background-color: var(--bg-white);
+  border: none;
+  box-shadow: 0 2px 4px var(--shadow-sm);
+}
+
+.table thead {
+  background-color: var(--bg-light-blue);
+}
+
+.form-control, .form-select {
+  background-color: var(--bg-off-white);
+  border-color: var(--neutral-light);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-light-blue);
+  box-shadow: 0 0 0 0.2rem rgba(43, 108, 176, 0.25);
+}

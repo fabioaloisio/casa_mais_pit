@@ -1,0 +1,341 @@
+/* Aldruin Bonfim de Lima Souza - RA 10482416915 */
+
+.page-container {
+    padding: 24px;
+    background-color: #f9fafb;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+}
+
+.titulo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    color: #1e293b;
+}
+
+.top-bar {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.btn-cadastrar {
+    background-color: #0c4b8c !important;
+    color: white !important;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-cadastrar:hover {
+    background-color: #09386a !important;
+}
+
+.filtros {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.select-unidade-medida,
+.input-filtro {
+    background-color: #ffffff;
+    color: #0f172a;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    min-width: 180px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-filtro {
+    width: 220px;
+}
+
+.select-unidade-medida:focus,
+.input-filtro:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.tabela-container {
+    overflow-x: auto;
+    border-radius: 7px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 1rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tabela {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    margin-bottom: 0;
+    min-width: 800px;
+}
+
+.tabela th {
+    background-color: #003366 !important;
+    color: #fff !important;
+    font-weight: 600;
+    border-bottom: none;
+    white-space: nowrap;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.tabela th:last-child {
+    text-align: center;
+}
+
+.tabela td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.tabela td:last-child {
+    text-align: center;
+}
+
+.tabela tr:last-child td {
+    border-bottom: none;
+}
+
+.tabela tr:hover {
+    background-color: #f1f5ff;
+    transition: background-color 0.2s;
+}
+
+.btn-editar,
+.btn-excluir {
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    margin-right: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s, transform 0.1s;
+    white-space: nowrap;
+}
+
+.btn-editar {
+    background-color: #0c4b8c !important;
+    color: white !important;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-editar:hover {
+    background-color: #09386a !important;
+}
+
+.btn-excluir {
+    background-color: #ffffff;
+    color: #c53030;
+    border: 1px solid #c53030;
+}
+
+.btn-excluir:hover {
+    border: 1px solid #c53030;
+    background-color: #c53030;
+    color: #ffffff;
+}
+
+.nenhum-registro {
+    text-align: center;
+    padding: 1rem;
+    color: #64748b;
+    font-style: italic;
+}
+
+/* Responsividade - Tablet */
+@media (max-width: 1024px) {
+    .page-container {
+        padding: 20px;
+    }
+
+    .titulo {
+        font-size: 1.6rem;
+    }
+
+    .top-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .filtros {
+        justify-content: center;
+    }
+
+    .select-unidade-medida,
+    .input-filtro {
+        min-width: 150px;
+    }
+
+    .input-filtro {
+        width: 200px;
+    }
+}
+
+/* Responsividade - Mobile */
+@media (max-width: 768px) {
+    .page-container {
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .titulo {
+        font-size: 1.4rem;
+        text-align: center;
+    }
+
+    .top-bar {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .btn-cadastrar {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+
+    .filtros {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .select-unidade-medida,
+    .input-filtro {
+        width: 100%;
+        min-width: unset;
+        padding: 0.75rem;
+        font-size: 16px;
+        /* Previne zoom no iOS */
+    }
+
+    /* Tabela com scroll */
+    .tabela-container {
+        margin: 0 -15px;
+        padding: 0 15px;
+        border-radius: 8px;
+    }
+
+    .tabela {
+        min-width: 600px;
+    }
+
+    .tabela th,
+    .tabela td {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.875rem;
+    }
+
+    /* Botões menores */
+    .btn-editar,
+    .btn-excluir {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+        margin-right: 4px;
+    }
+
+    .btn-editar {
+        padding: 8px 12px;
+    }
+
+    /* Estados de loading e erro */
+    .loading-state,
+    .error-state {
+        padding: 2rem 1rem;
+        text-align: center;
+    }
+
+    .error-state button {
+        margin-top: 1rem;
+        padding: 0.75rem 1.5rem;
+        width: 100%;
+    }
+}
+
+/* Mobile pequeno */
+@media (max-width: 576px) {
+    .page-container {
+        padding: 10px;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .titulo {
+        font-size: 1.3rem;
+    }
+
+    .tabela-container {
+        margin: 0 -10px;
+        padding: 0 10px;
+    }
+
+    .tabela {
+        min-width: 500px;
+    }
+
+    .tabela th,
+    .tabela td {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    /* Indicador de scroll */
+    .tabela-container::after {
+        content: '→ Deslize para ver mais';
+        display: block;
+        text-align: center;
+        padding: 10px;
+        color: #666;
+        font-size: 0.75rem;
+        background-color: #f8f9fa;
+    }
+
+    /* Scrollbar customizada */
+    .tabela-container::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .tabela-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .tabela-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+    .tabela-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    /* Botões ainda menores */
+    .btn-editar,
+    .btn-excluir {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.75rem;
+        border-radius: 6px;
+    }
+
+    .btn-editar {
+        padding: 6px 10px;
+    }
+}
