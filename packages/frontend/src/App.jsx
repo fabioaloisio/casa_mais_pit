@@ -3,6 +3,8 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ToastContainer } from 'react-toastify'
 import Layout from './components/Layout'
 import Login from './pages/Login'
+import ResetPassword from './pages/ResetPassword'
+import Profile from './pages/Profile'
 import Dashboard from './pages/Dashboard'
 import Usuarios from './pages/Usuarios'
 import CadastroUsuario from './pages/CadastroUsuario'
@@ -30,9 +32,11 @@ function App() {
         <TitleHandler />
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="perfil" element={<Profile />} />
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="usuarios/cadastro" element={<CadastroUsuario />} />
             <Route path="assistidas" element={<Assistidas />} />

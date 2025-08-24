@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Nav } from 'react-bootstrap';
-import { FaDonate, FaHome, FaIdCard, FaMoneyBillWave, FaPills, FaStethoscope, FaUsers, FaBars, FaTimes, FaUserTie, FaTags, FaSignOutAlt } from 'react-icons/fa';
+import { FaDonate, FaHome, FaIdCard, FaMoneyBillWave, FaPills, FaStethoscope, FaUsers, FaBars, FaTimes, FaUserTie, FaTags, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import './Sidebar.css';
 import Logo from './logo';
@@ -108,6 +108,10 @@ function Sidebar() {
                 <div className="user-email">{user.email}</div>
               </div>
             )}
+            <Nav.Link as={Link} to="/perfil" onClick={closeSidebar}
+              className={location.pathname === '/perfil' ? 'active profile-link' : 'profile-link'}>
+              <FaUserCircle /> Meu Perfil
+            </Nav.Link>
             <Nav.Link onClick={handleLogout} className="logout-button">
               <FaSignOutAlt /> Sair
             </Nav.Link>
