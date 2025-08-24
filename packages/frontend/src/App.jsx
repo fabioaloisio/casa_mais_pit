@@ -1,5 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import { ToastContainer } from 'react-toastify'
 import Layout from './components/Layout'
+import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Usuarios from './pages/Usuarios'
 import CadastroUsuario from './pages/CadastroUsuario'
@@ -18,33 +21,49 @@ import Unidadesmedida from './pages/GerenciarUnidadesMedida'
 import GerenciarTiposDespesas from './pages/GerenciarTiposDespesas'
 import TitleHandler from "./components/TitleHandler";
 import './App.css'
+import 'react-toastify/dist/ReactToastify.css'
 
 function App() {
   return (
-    <Router>
-      <TitleHandler />
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="usuarios" element={<Usuarios />} />
-          <Route path="usuarios/cadastro" element={<CadastroUsuario />} />
-          <Route path="assistidas" element={<Assistidas />} />
-          <Route path="assistidas/:id/detalhes" element={<DetalhesAssistida />} />
-          <Route path="consultas" element={<Consultas />} />
-          <Route path="consultas/agendar" element={<AgendarConsulta />} />
-          <Route path="medicamentos" element={<Medicamentos />} />
-          <Route path="unidades-medida" element={<Unidadesmedida />} />
-          <Route path="tipos-despesas" element={<GerenciarTiposDespesas />} />
-          <Route path="doadores" element={<Doadores />} />
-          <Route path="doacoes" element={<Doacoes />} />
-          <Route path="despesas" element={<Despesas />} />
-          <Route path="despesas/lancar" element={<LancarDespesa />} />
-          <Route path="estoque/entradas" element={<EstoqueEntradas />} />
-          <Route path="estoque/saidas" element={<EstoqueSaidas />} />
-        </Route>
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <TitleHandler />
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="usuarios" element={<Usuarios />} />
+            <Route path="usuarios/cadastro" element={<CadastroUsuario />} />
+            <Route path="assistidas" element={<Assistidas />} />
+            <Route path="assistidas/:id/detalhes" element={<DetalhesAssistida />} />
+            <Route path="consultas" element={<Consultas />} />
+            <Route path="consultas/agendar" element={<AgendarConsulta />} />
+            <Route path="medicamentos" element={<Medicamentos />} />
+            <Route path="unidades-medida" element={<Unidadesmedida />} />
+            <Route path="tipos-despesas" element={<GerenciarTiposDespesas />} />
+            <Route path="doadores" element={<Doadores />} />
+            <Route path="doacoes" element={<Doacoes />} />
+            <Route path="despesas" element={<Despesas />} />
+            <Route path="despesas/lancar" element={<LancarDespesa />} />
+            <Route path="estoque/entradas" element={<EstoqueEntradas />} />
+            <Route path="estoque/saidas" element={<EstoqueSaidas />} />
+          </Route>
+        </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+      </Router>
+    </AuthProvider>
   )
 }
 
