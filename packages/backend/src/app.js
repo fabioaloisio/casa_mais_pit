@@ -7,6 +7,7 @@ const doadorRoutes = require('./routes/doadorRoutes');
 const unidadeMedidaRoutes = require('./routes/unidadeMedidaRoutes');
 const tipoDespesaRoutes = require('./routes/tipoDespesaRoutes');
 const despesaRoutes = require('./routes/despesaRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 
 
 //routes
+app.use('/api/auth', authRoutes);
 app.use('/api/medicamentos', medicamentoRoutes);
 app.use('/api/doacoes', doacaoRoutes);
 app.use('/api/assistidas', assistidasRoutes);
