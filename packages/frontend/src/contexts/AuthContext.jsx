@@ -126,6 +126,42 @@ export const AuthProvider = ({ children }) => {
     return !!user && !!token;
   };
 
+  const isAdmin = () => {
+    return user && (user.tipo === 'Administrador' || user.tipo === 'administrador' || user.tipo === 'admin');
+  };
+
+  const isOperator = () => {
+    return user && (user.tipo === 'Operador' || user.tipo === 'operador');
+  };
+
+  const hasPermission = (permissao) => {
+    if (!user) return false;
+    
+    // Administradores têm todas as permissões
+    if (isAdmin()) return true;
+    
+    // Operadores têm permissões limitadas
+    if (isOperator()) {
+      const permissoesOperador = [
+        'view_dashboard',
+        'view_assistidas',
+        'create_assistida',
+        'edit_assistida',
+        'view_consultas',
+        'create_consulta',
+        'view_medicamentos',
+        'view_doacoes',
+        'create_doacao',
+        'view_despesas',
+        'view_estoque'
+      ];
+      
+      return permissoesOperador.includes(permissao);
+    }
+    
+    return false;
+  };
+
   const value = {
     user,
     token,
@@ -133,7 +169,10 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    isAuthenticated
+    isAuthenticated,
+    isAdmin,
+    isOperator,
+    hasPermission
   };
 
   return (
