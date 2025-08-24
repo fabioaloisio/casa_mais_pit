@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { FaSignInAlt, FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import ForgotPasswordModal from './ForgotPasswordModal';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ const LoginForm = () => {
     email: false,
     senha: false
   });
+  const [showForgotModal, setShowForgotModal] = useState(false);
   const { login, loading } = useAuth();
 
   const handleChange = (e) => {
@@ -113,10 +115,7 @@ const LoginForm = () => {
   };
 
   const handleForgotPassword = () => {
-    const savedEmail = localStorage.getItem('rememberedEmail');
-    if (savedEmail) {
-      setFormData({ ...formData, email: savedEmail });
-    }
+    setShowForgotModal(true);
   };
 
   return (
@@ -256,6 +255,11 @@ const LoginForm = () => {
           )}
         </button>
       </form>
+      
+      <ForgotPasswordModal 
+        show={showForgotModal} 
+        onHide={() => setShowForgotModal(false)} 
+      />
     </div>
   );
 };
