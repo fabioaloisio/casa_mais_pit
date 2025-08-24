@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS consultas;
 DROP TABLE IF EXISTS medicamentos;
 DROP TABLE IF EXISTS doacoes;
 DROP TABLE IF EXISTS despesas;
+DROP TABLE IF EXISTS password_reset_tokens;
 
 -- Drop tabelas base
 DROP TABLE IF EXISTS assistidas;
