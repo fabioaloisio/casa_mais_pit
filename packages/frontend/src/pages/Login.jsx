@@ -90,7 +90,7 @@ const Login = () => {
           </svg>
           <p className="texto_cad2">
             Junte-se a nós! <br />
-            Crie sua conta e ajude a fazer a diferença na Casa Mais.
+            Crie sua conta e nos ajude a fazer a diferença!
           </p>
           <button className="button_cad2" onClick={toggleForm}>
             Já tem conta? Faça login
