@@ -107,12 +107,15 @@ class AuthController {
       // Hash da senha
       const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
 
+      // Verificar se é o primeiro usuário no sistema (será administrador)
+      const primeiroUsuario = await usuarioRepository.isFirstUser();
+      
       // Criar usuário
       const novoUsuario = new Usuario({
         nome,
         email,
         senha: senhaHash,
-        tipo: 'usuario'
+        tipo: primeiroUsuario ? 'admin' : 'usuario'
       });
 
       const usuarioCriado = await usuarioRepository.create(novoUsuario);
@@ -142,43 +145,6 @@ class AuthController {
         success: false,
         message: 'Erro interno do servidor',
         errors: ['Erro interno do servidor']
-      });
-    }
-  }
-
-  async verifyToken(req, res, next) {
-    try {
-      const token = req.headers.authorization?.replace('Bearer ', '');
-
-      if (!token) {
-        return res.status(401).json({
-          success: false,
-          message: 'Token de acesso requerido',
-          errors: ['Token não fornecido']
-        });
-      }
-
-      const decoded = jwt.verify(token, JWT_SECRET);
-      
-      // Buscar usuário para verificar se ainda está ativo
-      const usuario = await usuarioRepository.findById(decoded.id);
-      
-      if (!usuario) {
-        return res.status(401).json({
-          success: false,
-          message: 'Token inválido',
-          errors: ['Usuário não encontrado']
-        });
-      }
-
-      req.user = usuario;
-      next();
-    } catch (error) {
-      console.error('Erro na verificação do token:', error);
-      res.status(401).json({
-        success: false,
-        message: 'Token inválido',
-        errors: ['Token inválido ou expirado']
       });
     }
   }

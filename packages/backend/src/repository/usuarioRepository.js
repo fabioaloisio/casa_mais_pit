@@ -78,6 +78,76 @@ class UsuarioRepository {
       throw error;
     }
   }
+
+  async update(id, dadosAtualizacao) {
+    try {
+      const campos = [];
+      const valores = [];
+
+      // Construir query dinamicamente baseado nos campos fornecidos
+      Object.keys(dadosAtualizacao).forEach(campo => {
+        campos.push(`${campo} = ?`);
+        valores.push(dadosAtualizacao[campo]);
+      });
+
+      // Adicionar data de atualização
+      campos.push('data_atualizacao = NOW()');
+      valores.push(id);
+
+      const query = `UPDATE usuarios SET ${campos.join(', ')} WHERE id = ?`;
+      
+      await db.execute(query, valores);
+      
+      return await this.findById(id);
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+      throw error;
+    }
+  }
+
+  async softDelete(id) {
+    try {
+      const query = 'UPDATE usuarios SET ativo = 0, data_atualizacao = NOW() WHERE id = ?';
+      await db.execute(query, [id]);
+    } catch (error) {
+      console.error('Erro ao desativar usuário:', error);
+      throw error;
+    }
+  }
+
+  async updateStatus(id, ativo) {
+    try {
+      const query = 'UPDATE usuarios SET ativo = ?, data_atualizacao = NOW() WHERE id = ?';
+      await db.execute(query, [ativo ? 1 : 0, id]);
+    } catch (error) {
+      console.error('Erro ao atualizar status do usuário:', error);
+      throw error;
+    }
+  }
+
+  async emailExistsExceptId(email, userId) {
+    try {
+      const query = 'SELECT COUNT(*) as count FROM usuarios WHERE email = ? AND id != ?';
+      const [rows] = await db.execute(query, [email, userId]);
+      
+      return rows[0].count > 0;
+    } catch (error) {
+      console.error('Erro ao verificar se email existe:', error);
+      throw error;
+    }
+  }
+
+  async isFirstUser() {
+    try {
+      const query = 'SELECT COUNT(*) as count FROM usuarios WHERE ativo = 1';
+      const [rows] = await db.execute(query);
+      
+      return rows[0].count === 0;
+    } catch (error) {
+      console.error('Erro ao verificar primeiro usuário:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = UsuarioRepository;
