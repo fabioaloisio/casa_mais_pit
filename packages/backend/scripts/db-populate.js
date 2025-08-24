@@ -1,10 +1,6 @@
-import db from '../src/config/database.js';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import SQLExecutor from './utils/sql-executor.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const db = require('../src/config/database');
+const path = require('path');
+const SQLExecutor = require('./utils/sql-executor');
 
 async function populateDatabase() {
   let connection;
@@ -59,7 +55,7 @@ async function populateDatabase() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   console.log('🚀 Iniciando população do banco...');
   populateDatabase()
     .then(() => {
@@ -72,4 +68,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     });
 }
 
-export default populateDatabase;
+module.exports = populateDatabase;

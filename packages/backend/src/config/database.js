@@ -1,7 +1,10 @@
 const mysql = require('mysql2/promise');
+const path = require('path');
 
-// Carregar variáveis de ambiente
-require('dotenv').config();
+// Carregar variáveis de ambiente do arquivo .env na raiz do projeto
+// Procurar .env na raiz do projeto monorepo
+const envPath = path.resolve(__dirname, '../../../../.env');
+require('dotenv').config({ path: envPath });
 
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',

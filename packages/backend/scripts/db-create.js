@@ -1,10 +1,6 @@
-import db from '../src/config/database.js';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import SQLExecutor from './utils/sql-executor.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const db = require('../src/config/database');
+const path = require('path');
+const SQLExecutor = require('./utils/sql-executor');
 
 async function createDatabase() {
   let connection;
@@ -12,8 +8,8 @@ async function createDatabase() {
   try {
     console.log('📡 Conectando ao MySQL...');
     // Conectar ao MySQL sem especificar database
-    const mysql = await import('mysql2/promise');
-    const tempConnection = await mysql.default.createConnection({
+    const mysql = require('mysql2/promise');
+    const tempConnection = await mysql.createConnection({
       host: process.env.DB_HOST || 'localhost',
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD,
@@ -60,7 +56,7 @@ async function createDatabase() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   console.log('🚀 Iniciando criação do banco de dados...');
   createDatabase()
     .then(() => {
@@ -73,4 +69,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     });
 }
 
-export default createDatabase;
+module.exports = createDatabase;

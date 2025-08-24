@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+const fs = require('fs');
+const path = require('path');
 
 class SQLExecutor {
   constructor(connection) {
@@ -133,4 +133,4 @@ class SQLExecutor {
   }
 }
 
-export default SQLExecutor;
+module.exports = SQLExecutor;
