@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
-import { validateDoacaoForm } from '../../utils/validations';
-import { maskCurrency, parseCurrency } from '../../utils/masks';
+import { validateDoacaoForm, parseCurrency } from '@casa-mais/shared';
+import { maskCurrency } from '../../utils/dom';
 import FormModal from '../common/FormModal';
 import useUnsavedChanges from '../common/useUnsavedChanges';
 import DoadorSelector from './DoadorSelector';

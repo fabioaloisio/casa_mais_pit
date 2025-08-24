@@ -95,3 +95,51 @@ export const validateCurrency = (value) => {
   const numericValue = parseFloat(value.toString().replace(/[^\d,]/g, '').replace(',', '.'));
   return !isNaN(numericValue) && numericValue > 0;
 };
+
+// Validar formulário de doação
+export const validateDoacaoForm = (formData) => {
+  const errors = {};
+
+  // Nome do doador
+  if (!validateRequired(formData.nomeDoador)) {
+    errors.nomeDoador = 'Nome do doador é obrigatório';
+  }
+
+  // Documento (CPF ou CNPJ)
+  if (!validateRequired(formData.documento)) {
+    errors.documento = 'CPF/CNPJ é obrigatório';
+  } else {
+    const doc = formData.documento.replace(/\D/g, '');
+    if (formData.tipoDoador === 'PF' && !validateCPF(doc)) {
+      errors.documento = 'CPF inválido';
+    } else if (formData.tipoDoador === 'PJ' && !validateCNPJ(doc)) {
+      errors.documento = 'CNPJ inválido';
+    }
+  }
+
+  // Email
+  if (formData.email && !validateEmail(formData.email)) {
+    errors.email = 'Email inválido';
+  }
+
+  // Telefone
+  if (!validateRequired(formData.telefone)) {
+    errors.telefone = 'Telefone é obrigatório';
+  } else if (!validatePhone(formData.telefone)) {
+    errors.telefone = 'Telefone inválido';
+  }
+
+  // Valor
+  if (!validateRequired(formData.valor)) {
+    errors.valor = 'Valor é obrigatório';
+  } else if (!validateCurrency(formData.valor)) {
+    errors.valor = 'Valor deve ser maior que zero';
+  }
+
+  // Data da doação
+  if (!validateRequired(formData.dataDoacao)) {
+    errors.dataDoacao = 'Data da doação é obrigatória';
+  }
+
+  return errors;
+};

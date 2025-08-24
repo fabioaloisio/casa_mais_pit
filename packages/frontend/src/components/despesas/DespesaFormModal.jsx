@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 import FormModal from '../common/FormModal';
 import despesasService from '../../services/despesasService';
-import { formatMoney } from '../../utils/masks';
+import { formatMoney } from '@casa-mais/shared';
 
 const DespesaFormModal = ({ show, onHide, onSave, despesa = null, tiposDespesas = [] }) => {
   const [formData, setFormData] = useState({

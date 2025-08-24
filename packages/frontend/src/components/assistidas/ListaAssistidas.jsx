@@ -1,7 +1,7 @@
 import { Button, Table } from "react-bootstrap";
 import { FaBold, FaEdit, FaTrash, FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { formatCPF } from "../../utils/masks";
+import { formatCPF } from "@casa-mais/shared";
 import PropTypes from 'prop-types';
 
 const ListaAssistidas = ({ assistidas, onDelete, onEdit }) => {

@@ -1,5 +1,5 @@
 import ConfirmModal from '../common/ConfirmModal';
-import { formatMoney } from '../../utils/masks';
+import { formatMoney } from '@casa-mais/shared';
 
 const ConfirmDeleteModal = ({ show, onHide, onConfirm, despesa, loading = false }) => {
   const details = despesa ? (

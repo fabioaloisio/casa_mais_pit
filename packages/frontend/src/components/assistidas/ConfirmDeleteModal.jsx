@@ -1,6 +1,6 @@
 import ConfirmModal from '../common/ConfirmModal';
 import PropTypes from 'prop-types';
-import { formatCPF } from '../../utils/masks';
+import { formatCPF } from '@casa-mais/shared';
 import './Assistidas.css'
 
 const ConfirmDeleteModal = ({ show, onHide, onConfirm, assistida, loading }) => {

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button, Col, Form, Modal, Row, Table, Nav } from "react-bootstrap";
 import { IMaskInput } from "react-imask";
 import PropTypes from 'prop-types';
-import { formatDataForInput, calcularIdadePorDataNascimento } from "../../utils/masks";
+import { formatDataForInput, calcularIdadePorDataNascimento } from "@casa-mais/shared";
 
 const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEditar, modoEdicao }) => {
     const [step, setStep] = useState(1);

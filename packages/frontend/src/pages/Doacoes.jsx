@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button, Table, Form, Card, Row, Col } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaPlus, FaSearch, FaDollarSign, FaUsers, FaBuilding, FaChartLine, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import doacoesService from '../services/doacoesService';
-import { formatCPF, formatCNPJ, formatCurrency } from '../utils/masks';
+import { formatCPF, formatCNPJ, formatCurrency } from '@casa-mais/shared';
 import DoacaoModal from '../components/doacoes/DoacaoModal';
 import ConfirmDeleteModal from '../components/doacoes/ConfirmDeleteModal';
 import Toast from '../components/common/Toast';

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button, Col, Form, Modal, Row, Table, Alert, ProgressBar } from "react-bootstrap";
 import { IMaskInput } from "react-imask";
 import PropTypes from 'prop-types';
-import { formatDataForInput, calcularIdadePorDataNascimento } from "../../utils/masks";
+import { formatDataForInput, calcularIdadePorDataNascimento } from "@casa-mais/shared";
 import { FaUser, FaHome, FaMedkit, FaHeartbeat, FaCheck, FaExclamationTriangle, FaTrash, FaBan } from 'react-icons/fa';
 
 import './Assistidas.css'

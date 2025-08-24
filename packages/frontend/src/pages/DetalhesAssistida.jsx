@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Spinner, Alert, Table } from 'react-bootstrap';
 import { FaArrowLeft, FaUser, FaMapMarkerAlt, FaPhone, FaCalendarAlt, FaFileAlt } from 'react-icons/fa';
 import { assistidasService } from '../services/assistidasService';
-import { formatCPF, formatRG, formatTelefone } from '../utils/masks';
+import { formatCPF, formatRG, formatTelefone } from '@casa-mais/shared';
 import { BsCapsule, BsDropletHalf, BsHospital } from 'react-icons/bs';
 import '../components/assistidas/Assistidas.css'
 

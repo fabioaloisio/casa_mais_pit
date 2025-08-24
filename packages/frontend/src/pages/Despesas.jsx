@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button, Table, Form, Card, Row, Col } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaPlus, FaSearch, FaDollarSign, FaFileInvoice, FaExclamationTriangle, FaCheckCircle, FaChartLine, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import despesasService from '../services/despesasService';
-import { formatMoney } from '../utils/masks';
+import { formatMoney } from '@casa-mais/shared';
 import DespesaFormModal from '../components/despesas/DespesaFormModal';
 import ConfirmDeleteModal from '../components/despesas/ConfirmDeleteModal';
 import Toast from '../components/common/Toast';

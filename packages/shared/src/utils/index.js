@@ -122,3 +122,24 @@ export const calcularIdadePorDataNascimento = (dataNascimento) => {
 
   return idade >= 0 ? idade : null;
 };
+
+// Máscaras para formatação de inputs
+export const masks = {
+  cpf: '999.999.999-99',
+  cnpj: '99.999.999/9999-99',
+  telefone: '(99) 99999-9999',
+  cep: '99999-999',
+  valor: (value) => {
+    // Remove tudo exceto números
+    const cleanValue = value.replace(/\D/g, '');
+
+    // Converte para número e divide por 100 para ter centavos
+    const numericValue = parseFloat(cleanValue) / 100;
+
+    // Formata como moeda brasileira
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(numericValue);
+  }
+};
