@@ -1,18 +1,25 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Nav } from 'react-bootstrap';
-import { FaDonate, FaHome, FaIdCard, FaMoneyBillWave, FaPills, FaStethoscope, FaUsers, FaBars, FaTimes, FaUserTie, FaTags } from 'react-icons/fa';
+import { FaDonate, FaHome, FaIdCard, FaMoneyBillWave, FaPills, FaStethoscope, FaUsers, FaBars, FaTimes, FaUserTie, FaTags, FaSignOutAlt } from 'react-icons/fa';
+import { useAuth } from '../contexts/AuthContext';
 import './Sidebar.css';
 import Logo from './logo';
 
 function Sidebar() {
   const location = useLocation();
+  const { logout, user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMedicamentosOpen, setIsMedicamentosOpen] = useState(false);
   const [isDespesasOpen, setIsDespesasOpen] = useState(false);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const closeSidebar = () => setIsOpen(false);
+
+  const handleLogout = () => {
+    logout();
+    closeSidebar();
+  };
 
   return (
     <>
@@ -92,6 +99,18 @@ function Sidebar() {
                 </Nav.Link>
               </div>
             )}
+          </div>
+          
+          <div className="sidebar-user-info">
+            {user && (
+              <div className="user-info-section">
+                <div className="user-name">Olá, {user.nome}</div>
+                <div className="user-email">{user.email}</div>
+              </div>
+            )}
+            <Nav.Link onClick={handleLogout} className="logout-button">
+              <FaSignOutAlt /> Sair
+            </Nav.Link>
           </div>
         </Nav>
       </aside>

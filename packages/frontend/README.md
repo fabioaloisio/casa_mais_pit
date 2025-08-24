@@ -31,7 +31,7 @@ npm run dev
 src/
 ├── components/           # Componentes por módulo
 ├── pages/               # Páginas principais
-├── services/            # Serviços HTTP 
+├── services/            # Serviços HTTP
 ├── utils/              # Utilitários (máscaras, validações)
 └── config/             # Configuração API
 ```
@@ -47,6 +47,7 @@ src/
 ## Config
 
 Configure `.env` com:
+
 ```
-VITE_API_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3003
 ```
