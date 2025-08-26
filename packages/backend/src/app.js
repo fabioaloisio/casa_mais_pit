@@ -9,6 +9,8 @@ const tipoDespesaRoutes = require('./routes/tipoDespesaRoutes');
 const despesaRoutes = require('./routes/despesaRoutes');
 const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
+const substanciasRoutes = require('./routes/substanciasRoutes');
+
 
 const app = express();
 
@@ -27,6 +29,7 @@ app.use('/api/doadores', doadorRoutes);
 app.use('/api/unidades_medida', unidadeMedidaRoutes);
 app.use('/api/tipos-despesas', tipoDespesaRoutes);
 app.use('/api/despesas', despesaRoutes);
+app.use('/api/substancias', substanciasRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'API Casa+ funcionando!' });

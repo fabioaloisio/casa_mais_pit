@@ -168,7 +168,7 @@ const DetalhesAssistida = () => {
                 </Col>
             </Row>
 
-            {assistida.data_atendimento && (
+            {  (
                 <Row className="mb-4">
                     <Col md={6}>
                         <Card>
@@ -198,6 +198,7 @@ const DetalhesAssistida = () => {
                             <Card.Header><BsHospital className="me-2" /> Internações</Card.Header>
                             <Card.Body>
                                 {assistida.internacoes && assistida.internacoes.length > 0 ? (
+
                                     <Table striped bordered size="sm">
                                         <thead>
                                             <tr>
@@ -222,11 +223,10 @@ const DetalhesAssistida = () => {
                             </Card.Body>
                         </Card>
                     </Col>
-
                 </Row>
             )}
 
-            {assistida.drogas && assistida.drogas.length > 0 && (
+            {assistida.drogas && (
                 <Row className='mb-4'>
                     <Col>
                         <Card>

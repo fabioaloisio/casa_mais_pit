@@ -24,6 +24,7 @@ import GerenciarTiposDespesas from './pages/GerenciarTiposDespesas'
 import TitleHandler from "./components/TitleHandler";
 import './App.css'
 import 'react-toastify/dist/ReactToastify.css'
+import Substancias from './pages/substancias-psicoativas'
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
             <Route path="assistidas" element={<Assistidas />} />
             <Route path="assistidas/:id/detalhes" element={<DetalhesAssistida />} />
             <Route path="consultas" element={<Consultas />} />
+            <Route path="substancias-psicoativas" element={<Substancias />} />
             <Route path="consultas/agendar" element={<AgendarConsulta />} />
             <Route path="medicamentos" element={<Medicamentos />} />
             <Route path="unidades-medida" element={<Unidadesmedida />} />

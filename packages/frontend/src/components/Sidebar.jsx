@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Nav } from 'react-bootstrap';
-import { FaDonate, FaHome, FaIdCard, FaMoneyBillWave, FaPills, FaStethoscope, FaUsers, FaBars, FaTimes, FaUserTie, FaTags, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
+import { FaDonate, FaHome, FaIdCard, FaMoneyBillWave, FaPills, FaStethoscope, FaUsers, FaBars, FaTimes, FaUserTie, FaTags, FaSignOutAlt, FaUserCircle, FaGripHorizontal, FaFlask } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import './Sidebar.css';
 import Logo from './logo';
@@ -62,6 +62,11 @@ function Sidebar() {
               <FaStethoscope /> Gestão de Consultas
             </Nav.Link>
 
+            <Nav.Link  as={Link} onClick={closeSidebar} to="/substancias-psicoativas"
+              className={location.pathname.includes('/substancias-psicoativas') ? 'active' : ''}>
+              <FaFlask /> Gerenciar Tipos de Substâncias Psicoativas
+            </Nav.Link>
+
             <Nav.Link onClick={() => setIsMedicamentosOpen(!isMedicamentosOpen)} className={isMedicamentosOpen ? 'active' : ''}>
               <FaPills /> Gestão de Medicamentos
             </Nav.Link>
@@ -84,7 +89,7 @@ function Sidebar() {
               className={location.pathname.includes('/doacoes') ? 'active' : ''}>
               <FaDonate /> Gestão de Doações
             </Nav.Link>
-            
+
             <Nav.Link onClick={() => setIsDespesasOpen(!isDespesasOpen)} className={isDespesasOpen ? 'active' : ''}>
               <FaMoneyBillWave /> Gestão de Despesas
             </Nav.Link>
@@ -100,7 +105,7 @@ function Sidebar() {
               </div>
             )}
           </div>
-          
+
           <div className="sidebar-user-info">
             {user && (
               <div className="user-info-section">
