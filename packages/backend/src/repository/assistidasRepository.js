@@ -35,9 +35,7 @@ class AssistidaRepository {
             nome, cpf, rg, idade, data_nascimento, nacionalidade,
             estado_civil, profissao, escolaridade, status,
             logradouro, bairro, numero, cep, estado, cidade,
-            telefone, telefone_contato, data_atendimento, hora,
-            historia_patologica, tempo_sem_uso,
-            motivacao_internacoes, fatos_marcantes, infancia, adolescencia
+            telefone, telefone_contato
         } = assistidaData;
 
         const conn = await db.getConnection(); // usar transação
@@ -49,28 +47,17 @@ class AssistidaRepository {
         nome, cpf, rg, idade, data_nascimento, nacionalidade,
         estado_civil, profissao, escolaridade, status,
         logradouro, bairro, numero, cep, estado, cidade,
-        telefone, telefone_contato, data_atendimento, hora,
-        historia_patologica, tempo_sem_uso, motivacao_internacoes,
-        fatos_marcantes, infancia, adolescencia
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        telefone, telefone_contato
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
                 nome, cpf, rg, idade, data_nascimento, nacionalidade,
                 estado_civil, profissao, escolaridade, status,
                 logradouro, bairro, numero, cep, estado, cidade,
-                telefone, telefone_contato, data_atendimento, hora,
-                historia_patologica, tempo_sem_uso, motivacao_internacoes,
-                fatos_marcantes, infancia, adolescencia
+                telefone, telefone_contato,
             ]);
 
             const assistidaId = result.insertId;
 
-            // Inserir drogas (desabilitado - tabela não existe)
-            // for (const droga of drogas) {
-            //     await conn.execute(
-            //         'INSERT INTO drogas_utilizadas (assistida_id, tipo, idade_inicio, tempo_uso, intensidade) VALUES (?, ?, ?, ?, ?)',
-            //         [assistidaId, droga.tipo, droga.idade_inicio, droga.tempo_uso, droga.intensidade]
-            //     );
-            // }
 
             // Inserir internações
             for (const internacao of internacoes) {
@@ -101,15 +88,10 @@ class AssistidaRepository {
 
     async update(id, assistidaData) {
         const {
-            drogas = [],
-            internacoes = [],
-            medicamentos = [],
             nome, cpf, rg, idade, data_nascimento, nacionalidade,
             estado_civil, profissao, escolaridade, status,
             logradouro, bairro, numero, cep, estado, cidade,
-            telefone, telefone_contato, data_atendimento, hora,
-            historia_patologica, tempo_sem_uso,
-            motivacao_internacoes, fatos_marcantes, infancia, adolescencia
+            telefone, telefone_contato,
         } = assistidaData;
 
         const conn = await db.getConnection();
@@ -122,48 +104,14 @@ class AssistidaRepository {
         nome = ?, cpf = ?, rg = ?, idade = ?, data_nascimento = ?, nacionalidade = ?,
         estado_civil = ?, profissao = ?, escolaridade = ?, status = ?,
         logradouro = ?, bairro = ?, numero = ?, cep = ?, estado = ?, cidade = ?,
-        telefone = ?, telefone_contato = ?, data_atendimento = ?, hora = ?,
-        historia_patologica = ?, tempo_sem_uso = ?, motivacao_internacoes = ?,
-        fatos_marcantes = ?, infancia = ?, adolescencia = ?
+        telefone = ?, telefone_contato = ?
       WHERE id = ?
     `, [
                 nome, cpf, rg, idade, data_nascimento, nacionalidade,
                 estado_civil, profissao, escolaridade, status,
                 logradouro, bairro, numero, cep, estado, cidade,
-                telefone, telefone_contato, data_atendimento, hora,
-                historia_patologica, tempo_sem_uso, motivacao_internacoes,
-                fatos_marcantes, infancia, adolescencia,
-                id
+                telefone, telefone_contato,id
             ]);
-
-            // 2. Limpa registros anteriores (substituição total)
-            // await conn.execute('DELETE FROM drogas_utilizadas WHERE assistida_id = ?', [id]);
-            await conn.execute('DELETE FROM internacoes WHERE assistida_id = ?', [id]);
-            await conn.execute('DELETE FROM medicamentos_utilizados WHERE assistida_id = ?', [id]);
-
-            // 3. Reinsere novas drogas (desabilitado - tabela não existe)
-            // for (const droga of drogas) {
-            //     await conn.execute(
-            //         'INSERT INTO drogas_utilizadas (assistida_id, tipo, idade_inicio, tempo_uso, intensidade) VALUES (?, ?, ?, ?, ?)',
-            //         [id, droga.tipo, droga.idade_inicio, droga.tempo_uso, droga.intensidade]
-            //     );
-            // }
-
-            // 4. Reinsere novas internações
-            for (const internacao of internacoes) {
-                await conn.execute(
-                    'INSERT INTO internacoes (assistida_id, local, duracao, data) VALUES (?, ?, ?, ?)',
-                    [id, internacao.local, internacao.duracao, internacao.data]
-                );
-            }
-
-            // 5. Reinsere novos medicamentos
-            for (const medicamento of medicamentos) {
-                await conn.execute(
-                    'INSERT INTO medicamentos_utilizados (assistida_id, nome, dosagem, frequencia) VALUES (?, ?, ?, ?)',
-                    [id, medicamento.nome, medicamento.dosagem, medicamento.frequencia]
-                );
-            }
 
             await conn.commit();
             return await this.findById(id);
@@ -251,16 +199,6 @@ class AssistidaRepository {
         } catch (error) {
             throw new Error(`Erro ao buscar com filtros: ${error.message}`);
         }
-    }
-
-    async findDrogasByAssistidaId(assistidaId) {
-        // Tabela drogas_utilizadas não existe - retornar array vazio
-        return [];
-        // const [rows] = await db.execute(
-        //     'SELECT tipo, idade_inicio, tempo_uso, intensidade FROM drogas_utilizadas WHERE assistida_id = ?',
-        //     [assistidaId]
-        // );
-        // return rows.map(row => new DrogaUtilizada(row));
     }
 
     async findInternacoesByAssistidaId(assistidaId) {

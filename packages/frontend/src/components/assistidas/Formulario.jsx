@@ -546,7 +546,6 @@ const Formulario = ({ showModal, setShowModal, onSubmit, assistidaParaEditar, mo
                                     try {
                                         if (validateAllSteps()) {
                                             await onSubmit(formData);
-                                            console.log(formData)
                                             handleClose();
                                         }
                                     } catch (error) {

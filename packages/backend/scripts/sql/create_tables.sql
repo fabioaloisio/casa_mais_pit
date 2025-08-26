@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS drogas_utilizadas (
   PRIMARY KEY (id),
   KEY idx_drogas_assistida (assistida_id),
   KEY idx_drogas_substancia (substancia_id),
-  CONSTRAINT fk_drogas_assistida FOREIGN KEY (assistida_id) REFERENCES assistidas (id) ON DELETE CASCADE,
+  CONSTRAINT fk_drogas_assistida EIGN KEY (assistida_id) REFERENCES assistidas (id) ON DELETE CASCADE,
   CONSTRAINT fk_drogas_substancia FOREIGN KEY (substancia_id) REFERENCES substancias (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

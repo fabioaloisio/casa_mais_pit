@@ -504,9 +504,14 @@ fieldset.field legend {
   background: rgba(0, 0, 0, 0.15);
 }
 
-
 .voltar {
   position: fixed;
   z-index: 10;
   right: 3.5rem;
+}
+
+.add_history {
+  padding: 3.5rem;
+  display: flex;
+  justify-content: center;
 }
