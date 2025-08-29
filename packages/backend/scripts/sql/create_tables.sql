@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS despesas (
   id int NOT NULL AUTO_INCREMENT,
   tipo_despesa_id int NOT NULL,
   descricao varchar(255) NOT NULL,
-  categoria varchar(100) NOT NULL,
+  categoria varchar(100) NOT NULL,  
   valor decimal(10,2) NOT NULL,
   data_despesa date NOT NULL,
   forma_pagamento varchar(50) NOT NULL,
@@ -128,14 +128,7 @@ CREATE TABLE IF NOT EXISTS assistidas (
   cidade varchar(100) COMMENT 'Cidade',
   telefone varchar(20) COMMENT 'Telefone principal',
   telefone_contato varchar(20) COMMENT 'Telefone de contato alternativo',
-  data_atendimento date COMMENT 'Data do primeiro atendimento',
-  hora time COMMENT 'Hora do primeiro atendimento',
-  historia_patologica text COMMENT 'História clínica da assistida',
-  tempo_sem_uso varchar(100) COMMENT 'Tempo desde o último uso de substâncias',
-  motivacao_internacoes text COMMENT 'Motivo(s) das internações anteriores',
-  fatos_marcantes text COMMENT 'Fatos marcantes na vida da assistida',
-  infancia text COMMENT 'Relato sobre a infância',
-  adolescencia text COMMENT 'Relato sobre a adolescência',
+
   createdAt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Data de criação do registro',
   updatedAt timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'Última atualização do registro',
   PRIMARY KEY (id),
@@ -145,6 +138,44 @@ CREATE TABLE IF NOT EXISTS assistidas (
   KEY cidade (cidade),
   KEY estado (estado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+  -- data_atendimento date COMMENT 'Data do primeiro atendimento',
+  -- hora time COMMENT 'Hora do primeiro atendimento',
+  -- historia_patologica text COMMENT 'História clínica da assistida',
+  -- tempo_sem_uso varchar(100) COMMENT 'Tempo desde o último uso de substâncias',
+  -- motivacao_internacoes text COMMENT 'Motivo(s) das internações anteriores',
+  -- fatos_marcantes text COMMENT 'Fatos marcantes na vida da assistida',
+  -- infancia text COMMENT 'Relato sobre a infância',
+  -- adolescencia text COMMENT 'Relato sobre a adolescência',
+
+CREATE TABLE IF NOT EXISTS substancias (
+  id INT NOT NULL AUTO_INCREMENT,
+  nome VARCHAR(100) NOT NULL COMMENT 'Nome da substância psicoativa',
+  categoria VARCHAR(100) COMMENT 'Categoria: depressor, estimulante, perturbador, etc.',
+  descricao TEXT COMMENT 'Observações adicionais sobre a substância',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_nome_substancia (nome)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS drogas_utilizadas (
+  id INT NOT NULL AUTO_INCREMENT,
+  assistida_id INT NOT NULL COMMENT 'Referência à assistida',
+  substancia_id INT NOT NULL COMMENT 'Referência à substância',
+  idade_inicio INT COMMENT 'Idade aproximada de início do uso',
+  frequencia VARCHAR(100) COMMENT 'Ex.: diária, semanal, esporádica',
+  tempo_uso VARCHAR(100) COMMENT 'Ex.: 2 anos, 6 meses',
+  observacoes TEXT COMMENT 'Observações adicionais sobre o uso',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
+  PRIMARY KEY (id),
+  KEY idx_drogas_assistida (assistida_id),
+  KEY idx_drogas_substancia (substancia_id),
+  CONSTRAINT fk_drogas_assistida FOREIGN KEY (assistida_id) REFERENCES assistidas (id) ON DELETE CASCADE,
+  CONSTRAINT fk_drogas_substancia FOREIGN KEY (substancia_id) REFERENCES substancias (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 -- 8. Tabela internacoes (com FK para assistidas)
 CREATE TABLE IF NOT EXISTS internacoes (

@@ -140,6 +140,21 @@ INSERT INTO assistidas (
 ('Eliane Costa', '55667788990', 'CE-77889900', 50, '1974-08-08', 'Brasileira', 'Viúva', 'Artesã', 'Fundamental Incompleto', 'Ativa',
  'Travessa das Palmeiras', 'Mucuripe', '55', '60165-000', 'CE', 'Fortaleza', '85991234567', '85993456789');
 
+INSERT INTO substancias (nome, categoria, descricao) VALUES
+('Álcool', 'Depressor', 'Bebida alcoólica que reduz a atividade do sistema nervoso central.'),
+('Maconha', 'Perturbador', 'Substância psicoativa da planta Cannabis sativa.'),
+('Cocaína', 'Estimulante', 'Droga estimulante derivada da planta de coca.'),
+('Cafeína', 'Estimulante', 'Presente em café, chá e energéticos, aumenta alerta e atenção.'),
+('LSD', 'Perturbador', 'Alucinógeno que altera percepção e cognição.'),
+('Morfina', 'Depressor', 'Analgesico opióide usado no controle de dor intensa.'),
+('Ecstasy', 'Estimulante', 'Droga sintética que provoca euforia e empatia.'),
+('Heroína', 'Depressor', 'Opióide altamente viciante, derivado da morfina.'),
+('Anfetamina', 'Estimulante', 'Estimulante do sistema nervoso central usado em alguns medicamentos.'),
+('Kratom', 'Depressor', 'Planta com efeito sedativo em doses altas, estimulante em doses baixas.'),
+('Psilocibina', 'Perturbador', 'Alucinógeno encontrado em cogumelos conhecidos como “cogumelos mágicos”.'),
+('Tabaco', 'Estimulante', 'Fonte de nicotina, provoca dependência e efeitos estimulantes.'),
+('Benzodiazepínicos', 'Depressor', 'Medicamentos ansiolíticos e sedativos.');
+
 -- 8. Verificar dados inseridos
 SELECT 'Dados inseridos com sucesso!' as status;
 SELECT 'Tipos de despesas:', COUNT(*) as total FROM tipos_despesas;

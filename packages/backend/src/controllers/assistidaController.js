@@ -1,4 +1,4 @@
-const { Assistida, DrogaUtilizada, Internacao } = require('../models/assistida');
+const { Assistida } = require('../models/assistida');
 const assistidasRepository = require('../repository/assistidasRepository');
 
 class AssistidaController {
