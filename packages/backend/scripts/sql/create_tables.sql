@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   nome varchar(255) NOT NULL,
   email varchar(255) NOT NULL,
   senha varchar(255) NOT NULL,
-  tipo enum('admin','usuario') NOT NULL DEFAULT 'usuario',
+  tipo enum('Administrador','Financeiro','Colaborador') NOT NULL DEFAULT 'Colaborador',
   ativo tinyint(1) NOT NULL DEFAULT 1,
   data_cadastro timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   data_atualizacao timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

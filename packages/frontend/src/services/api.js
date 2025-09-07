@@ -11,9 +11,14 @@ class ApiService {
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     
+    // Adicionar token de autenticação se existir
+    const token = localStorage.getItem('token');
+    const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
+    
     const config = {
       headers: {
         ...this.defaultHeaders,
+        ...authHeaders,
         ...options.headers,
       },
       ...options,

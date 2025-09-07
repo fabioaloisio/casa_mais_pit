@@ -115,7 +115,7 @@ class AuthController {
         nome,
         email,
         senha: senhaHash,
-        tipo: primeiroUsuario ? 'admin' : 'usuario'
+        tipo: primeiroUsuario ? 'Administrador' : 'Colaborador'
       });
 
       const usuarioCriado = await usuarioRepository.create(novoUsuario);

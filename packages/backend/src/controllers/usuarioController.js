@@ -44,16 +44,8 @@ class UsuarioController {
         errors.push('Email inválido');
       }
 
-      if (tipo && !['Administrador', 'Operador', 'administrador', 'operador'].includes(tipo)) {
-        errors.push('Tipo de usuário inválido');
-      }
-
-      // Mapear tipos longos para valores curtos que cabem no banco
-      let tipoMapeado = tipo;
-      if (tipo === 'Administrador' || tipo === 'administrador') {
-        tipoMapeado = 'admin';
-      } else if (tipo === 'Operador' || tipo === 'operador') {
-        tipoMapeado = 'operador';
+      if (tipo && !['Administrador', 'Financeiro', 'Colaborador'].includes(tipo)) {
+        errors.push('Tipo de usuário inválido. Use: Administrador, Financeiro ou Colaborador');
       }
 
       if (errors.length > 0) {
@@ -83,7 +75,7 @@ class UsuarioController {
         nome: nome.trim(),
         email: email.trim().toLowerCase(),
         senha: senhaHash,
-        tipo: tipoMapeado
+        tipo: tipo || 'Colaborador'
       });
 
       const usuarioCriado = await usuarioRepository.create(novoUsuario);
@@ -143,16 +135,8 @@ class UsuarioController {
         errors.push('Senha deve ter pelo menos 6 caracteres');
       }
 
-      if (tipo !== undefined && !['Administrador', 'Operador', 'administrador', 'operador'].includes(tipo)) {
-        errors.push('Tipo de usuário inválido');
-      }
-
-      // Mapear tipos longos para valores curtos que cabem no banco
-      let tipoMapeado = tipo;
-      if (tipo === 'Administrador' || tipo === 'administrador') {
-        tipoMapeado = 'admin';
-      } else if (tipo === 'Operador' || tipo === 'operador') {
-        tipoMapeado = 'operador';
+      if (tipo !== undefined && !['Administrador', 'Financeiro', 'Colaborador'].includes(tipo)) {
+        errors.push('Tipo de usuário inválido. Use: Administrador, Financeiro ou Colaborador');
       }
 
       // Verificar se está tentando alterar o próprio tipo
@@ -173,7 +157,7 @@ class UsuarioController {
       
       if (nome !== undefined) dadosAtualizacao.nome = nome.trim();
       if (email !== undefined) dadosAtualizacao.email = email.trim().toLowerCase();
-      if (tipo !== undefined) dadosAtualizacao.tipo = tipoMapeado;
+      if (tipo !== undefined) dadosAtualizacao.tipo = tipo;
       if (ativo !== undefined) dadosAtualizacao.ativo = ativo;
       
       if (senha !== undefined && senha?.length > 0) {

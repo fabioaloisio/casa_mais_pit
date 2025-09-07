@@ -204,7 +204,11 @@ function Usuarios() {
                   <td className="fw-medium">{usuario.nome}</td>
                   <td className="text-muted">{usuario.email}</td>
                   <td>
-                    <span className={`status ${mapUserType(usuario.tipo) === 'Administrador' ? 'ativa' : 'tratamento'}`}>
+                    <span className={`status ${
+                      mapUserType(usuario.tipo) === 'Administrador' ? 'ativa' : 
+                      mapUserType(usuario.tipo) === 'Financeiro' ? 'inativa' : 
+                      'tratamento'
+                    }`}>
                       {mapUserType(usuario.tipo)}
                     </span>
                   </td>
