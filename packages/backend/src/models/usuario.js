@@ -4,7 +4,7 @@ class Usuario {
     nome,
     email,
     senha,
-    tipo = 'usuario',
+    tipo = 'Colaborador',
     ativo = true,
     data_cadastro = null,
     data_atualizacao = null

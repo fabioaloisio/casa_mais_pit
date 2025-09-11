@@ -1,12 +1,15 @@
 // Mapeamento entre tipos do banco e tipos de exibição
 export const mapUserType = (dbType) => {
+  // Sistema usa os valores diretamente agora
   const typeMap = {
-    'admin': 'Administrador',
-    'operador': 'Operador',
-    'usuario': 'Usuario',
-    // Manter compatibilidade com tipos antigos
+    // Novos valores do banco
     'Administrador': 'Administrador',
-    'Operador': 'Operador'
+    'Financeiro': 'Financeiro',
+    'Colaborador': 'Colaborador',
+    // Compatibilidade com valores antigos (caso existam no banco)
+    'admin': 'Administrador',
+    'operador': 'Colaborador',
+    'usuario': 'Colaborador'
   };
   
   return typeMap[dbType] || dbType;
@@ -14,21 +17,21 @@ export const mapUserType = (dbType) => {
 
 // Função inversa - do frontend para o banco
 export const mapUserTypeToDb = (displayType) => {
-  const typeMap = {
-    'Administrador': 'admin',
-    'Operador': 'operador',
-    'Usuario': 'usuario'
-  };
-  
-  return typeMap[displayType] || displayType;
+  // Sistema agora usa os mesmos valores no banco e frontend
+  return displayType;
 };
 
 // Verificar se é administrador
 export const isAdminType = (type) => {
-  return type === 'admin' || type === 'Administrador' || type === 'administrador';
+  return type === 'Administrador' || type === 'admin';
 };
 
-// Verificar se é operador
-export const isOperatorType = (type) => {
-  return type === 'operador' || type === 'Operador';
+// Verificar se é financeiro
+export const isFinanceiroType = (type) => {
+  return type === 'Financeiro';
+};
+
+// Verificar se é colaborador
+export const isColaboradorType = (type) => {
+  return type === 'Colaborador' || type === 'operador' || type === 'usuario';
 };

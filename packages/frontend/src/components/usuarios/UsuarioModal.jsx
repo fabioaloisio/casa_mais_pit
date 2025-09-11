@@ -175,7 +175,8 @@ function UsuarioModal({ show, onHide, onSave, usuario }) {
             >
               <option value="">Selecione o tipo</option>
               <option value="Administrador">Administrador</option>
-              <option value="Operador">Operador</option>
+              <option value="Financeiro">Financeiro</option>
+              <option value="Colaborador">Colaborador</option>
             </Form.Select>
             <Form.Control.Feedback type="invalid">
               {errors.tipo}

@@ -72,3 +72,13 @@ PORT=3003
 - Controle de medicamentos e estoque
 - Doações (PF/PJ) e despesas
 - Relatórios financeiros
+
+## Níveis de Acesso
+
+Sistema com 3 níveis de permissão conforme especificação ERS:
+
+- **Administrador**: Acesso total ao sistema
+- **Financeiro**: Gerencia doações, despesas e relatórios financeiros
+- **Colaborador**: Gerencia assistidas, consultas e medicamentos
+
+Permissões implementadas em todas as rotas da API com validação por requisito funcional (RF_B1, RF_F3, etc.)
