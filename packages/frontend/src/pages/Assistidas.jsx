@@ -5,7 +5,7 @@ import ListaAssistidas from '../components/assistidas/ListaAssistidas';
 import { assistidasService } from '../services/assistidasService';
 import Toast from '../components/common/Toast';
 import ConfirmDeleteModal from '../components/assistidas/ConfirmDeleteModal';
-import '../components/assistidas/Assistidas.css';
+import '../components/assistidas/style/Assistidas.css';
 import '../pages/Doacoes.css';
 import { FaPlus } from 'react-icons/fa';
 

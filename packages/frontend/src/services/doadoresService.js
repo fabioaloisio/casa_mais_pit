@@ -123,8 +123,8 @@ class DoadoresService {
   // Buscar doador por documento
   async getByDocumento(documento) {
     try {
-      const response = await apiService.get('/doadores', { 
-        search: documento.replace(/\D/g, '') 
+      const response = await apiService.get('/doadores', {
+        search: documento.replace(/\D/g, '')
       });
       if (response.success && response.data.length > 0) {
         return response.data.find(d => d.documento === documento.replace(/\D/g, ''));
@@ -139,7 +139,7 @@ class DoadoresService {
   // Validar CPF
   validateCPF(cpf) {
     const cleanCPF = cpf.replace(/\D/g, '');
-    
+
     if (cleanCPF.length !== 11) return false;
     if (/^(\d)\1{10}$/.test(cleanCPF)) return false;
 
@@ -165,7 +165,7 @@ class DoadoresService {
   // Validar CNPJ
   validateCNPJ(cnpj) {
     const cleanCNPJ = cnpj.replace(/\D/g, '');
-    
+
     if (cleanCNPJ.length !== 14) return false;
     if (/^(\d)\1{13}$/.test(cleanCNPJ)) return false;
 

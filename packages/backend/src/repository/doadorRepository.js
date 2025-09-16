@@ -7,7 +7,7 @@ class DoadorRepository {
     try {
       const doadorData = doador.toCreateObject();
       const [result] = await connection.execute(
-        `INSERT INTO doadores (tipo_doador, nome, documento, email, telefone, endereco, cidade, estado, cep, ativo) 
+        `INSERT INTO doadores (tipo_doador, nome, documento, email, telefone, endereco, cidade, estado, cep, ativo)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           doadorData.tipo_doador,
@@ -90,7 +90,7 @@ class DoadorRepository {
     try {
       const updateData = doador.toUpdateObject();
       const fields = Object.keys(updateData);
-      
+
       if (fields.length === 0) {
         return 0;
       }
@@ -103,7 +103,7 @@ class DoadorRepository {
         `UPDATE doadores SET ${setClause} WHERE id = ?`,
         values
       );
-      
+
       return result.affectedRows;
     } finally {
       connection.release();
@@ -127,7 +127,7 @@ class DoadorRepository {
     const connection = await pool.getConnection();
     try {
       const [rows] = await connection.execute(
-        `SELECT d.*, 
+        `SELECT d.*,
                 doador.nome as nome_doador,
                 doador.documento,
                 doador.tipo_doador
@@ -147,7 +147,7 @@ class DoadorRepository {
     const connection = await pool.getConnection();
     try {
       const [rows] = await connection.execute(
-        `SELECT 
+        `SELECT
           COUNT(*) as total_doacoes,
           SUM(valor) as valor_total,
           MIN(data_doacao) as primeira_doacao,

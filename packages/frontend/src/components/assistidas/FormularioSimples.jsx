@@ -13,21 +13,21 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
     // Função para normalizar dados do formulário
     const normalizeFormData = (data) => {
         const formFields = [
-            'nome', 'cpf', 'rg', 'idade', 'data_nascimento', 'nacionalidade', 
+            'nome', 'cpf', 'rg', 'idade', 'data_nascimento', 'nacionalidade',
             'estado_civil', 'profissao', 'escolaridade', 'status',
-            'logradouro', 'bairro', 'numero', 'cep', 'estado', 'cidade', 
+            'logradouro', 'bairro', 'numero', 'cep', 'estado', 'cidade',
             'telefone', 'telefone_contato',
             'data_atendimento', 'hora', 'historia_patologica', 'usuaria_drogas',
             'quantidade_drogas', 'tempo_sem_uso', 'uso_medicamentos', 'quais_medicamentos',
             'internado', 'quantidade_internacoes', 'motivacao_internacoes',
             'fatos_marcantes', 'infancia', 'adolescencia'
         ];
-        
+
         const normalized = {};
         formFields.forEach(field => {
             normalized[field] = data[field] || '';
         });
-        
+
         // Adicionar campos dinâmicos de drogas
         if (data.quantidade_drogas) {
             const qtd = parseInt(data.quantidade_drogas) || 0;
@@ -38,10 +38,10 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
                 });
             }
         }
-        
+
         return normalized;
     };
-    
+
     const handleClose = () => {
         setShowModal(false);
     };
@@ -79,7 +79,7 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
         const { name, value } = e.target;
         setFormData((prev) => {
             const newData = { ...prev, [name]: value };
-            
+
             // Auto-calcular idade quando data de nascimento mudar
             if (name === 'data_nascimento' && value) {
                 const idade = calcularIdadePorDataNascimento(value);
@@ -87,7 +87,7 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
                     newData.idade = idade.toString();
                 }
             }
-            
+
             // Limpar erro do campo quando ele for preenchido
             if (formErrors[name]) {
                 setFormErrors(prev => {
@@ -96,7 +96,7 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
                     return newErrors;
                 });
             }
-            
+
             return newData;
         });
     };
@@ -190,8 +190,8 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
                 {/* Navegação em Tabs simplificada */}
                 <Nav variant="pills" className="mb-4 d-flex justify-content-center">
                     <Nav.Item>
-                        <Nav.Link 
-                            active={step === 1} 
+                        <Nav.Link
+                            active={step === 1}
                             onClick={() => setStep(1)}
                             style={{ cursor: 'pointer' }}
                         >
@@ -199,8 +199,8 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
                         </Nav.Link>
                     </Nav.Item>
                     <Nav.Item>
-                        <Nav.Link 
-                            active={step === 2} 
+                        <Nav.Link
+                            active={step === 2}
                             onClick={() => step > 1 && setStep(2)}
                             disabled={step < 2}
                             style={{ cursor: step >= 2 ? 'pointer' : 'not-allowed' }}
@@ -209,8 +209,8 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
                         </Nav.Link>
                     </Nav.Item>
                     <Nav.Item>
-                        <Nav.Link 
-                            active={step === 3} 
+                        <Nav.Link
+                            active={step === 3}
                             onClick={() => step > 2 && setStep(3)}
                             disabled={step < 3}
                             style={{ cursor: step >= 3 ? 'pointer' : 'not-allowed' }}
@@ -219,8 +219,8 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
                         </Nav.Link>
                     </Nav.Item>
                     <Nav.Item>
-                        <Nav.Link 
-                            active={step === 4} 
+                        <Nav.Link
+                            active={step === 4}
                             onClick={() => step > 3 && setStep(4)}
                             disabled={step < 4}
                             style={{ cursor: step >= 4 ? 'pointer' : 'not-allowed' }}
@@ -495,8 +495,8 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
                                             isInvalid={!!formErrors.estado}
                                         >
                                             <option value="">Selecione...</option>
-                                            {["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", 
-                                              "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", 
+                                            {["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+                                              "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
                                               "RS", "RO", "RR", "SC", "SP", "SE", "TO"].map(uf => (
                                                 <option key={uf} value={uf}>{uf}</option>
                                             ))}
