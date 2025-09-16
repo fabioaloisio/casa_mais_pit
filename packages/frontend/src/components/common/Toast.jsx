@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Toast as BootstrapToast } from 'react-bootstrap';
-import { FaCheckCircle, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaTimesCircle } from 'react-icons/fa';
 
 const Toast = ({ show, onClose, message, type = 'success', duration = 3000 }) => {
   const [visible, setVisible] = useState(show);
@@ -20,6 +20,9 @@ const Toast = ({ show, onClose, message, type = 'success', duration = 3000 }) =>
     switch (type) {
       case 'success':
         return <FaCheckCircle className="text-success" />;
+      case 'danger':
+      case 'error':
+        return <FaTimesCircle className="text-danger" />;
       case 'warning':
         return <FaExclamationTriangle className="text-warning" />;
       case 'info':
@@ -33,6 +36,9 @@ const Toast = ({ show, onClose, message, type = 'success', duration = 3000 }) =>
     switch (type) {
       case 'success':
         return 'light';
+      case 'danger':
+      case 'error':
+        return 'danger';
       case 'warning':
         return 'warning';
       case 'info':

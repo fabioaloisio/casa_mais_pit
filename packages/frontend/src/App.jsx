@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify'
 import Layout from './components/Layout'
 import Login from './pages/Login'
 import ResetPassword from './pages/ResetPassword'
+import ActivateAccount from './pages/ActivateAccount'
 import Profile from './pages/Profile'
 import Dashboard from './pages/Dashboard'
 import Usuarios from './pages/Usuarios'
@@ -21,6 +22,9 @@ import EstoqueEntradas from './pages/EstoqueEntradas'
 import EstoqueSaidas from './pages/EstoqueSaidas'
 import Unidadesmedida from './pages/GerenciarUnidadesMedida'
 import GerenciarTiposDespesas from './pages/GerenciarTiposDespesas'
+import Internacoes from './pages/Internacoes'
+import Caixa from './pages/Caixa'
+import Relatorios from './pages/Relatorios'
 import TitleHandler from "./components/TitleHandler";
 import './App.css'
 import 'react-toastify/dist/ReactToastify.css'
@@ -34,6 +38,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/activate/:token" element={<ActivateAccount />} />
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
@@ -52,6 +57,9 @@ function App() {
             <Route path="doacoes" element={<Doacoes />} />
             <Route path="despesas" element={<Despesas />} />
             <Route path="despesas/lancar" element={<LancarDespesa />} />
+            <Route path="internacoes" element={<Internacoes />} />
+            <Route path="caixa" element={<Caixa />} />
+            <Route path="relatorios" element={<Relatorios />} />
             <Route path="estoque/entradas" element={<EstoqueEntradas />} />
             <Route path="estoque/saidas" element={<EstoqueSaidas />} />
           </Route>

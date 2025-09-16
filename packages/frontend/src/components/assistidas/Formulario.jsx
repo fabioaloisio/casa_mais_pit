@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button, Col, Form, Modal, Row, Table, Alert, ProgressBar } from "react-bootstrap";
 import { IMaskInput } from "react-imask";
 import PropTypes from 'prop-types';
-import { formatDataForInput, calcularIdadePorDataNascimento } from "@casa-mais/shared";
+import { formatDataForInput, calcularIdadePorDataNascimento, validateCPF, ERROR_MESSAGES } from "@casa-mais/shared";
 import { FaUser, FaHome, FaMedkit, FaHeartbeat, FaCheck, FaExclamationTriangle, FaTrash, FaBan } from 'react-icons/fa';
 
 import './Assistidas.css'
@@ -137,18 +137,25 @@ const Formulario = ({ showModal, setShowModal, onSubmit, assistidaParaEditar, mo
         if (step === 1) {
             const camposObrigatorios = ["nome", "cpf", "rg", "data_nascimento", 'nacionalidade', "estado_civil", "profissao", "escolaridade"];
             camposObrigatorios.forEach((field) => {
-                if (!formData[field]) errors[field] = "Campo obrigatório";
+                if (!formData[field]) errors[field] = ERROR_MESSAGES.REQUIRED_FIELD;
             });
 
-            // Verificação de CPF já existente
+            // Validação de CPF válido
             const cpfNormalizado = formData.cpf?.replace(/\D/g, '');
-            const cpfJaExiste = listaAssistidas.some(assistida =>
-                assistida.cpf.replace(/\D/g, '') === cpfNormalizado &&
-                (!modoEdicao || assistida.id !== assistidaParaEditar?.id)
-            );
+            if (cpfNormalizado && !validateCPF(cpfNormalizado)) {
+                errors.cpf = ERROR_MESSAGES.INVALID_CPF;
+            }
 
-            if (cpfJaExiste) {
-                errors.cpf = "Este CPF já está cadastrado.";
+            // Verificação de CPF já existente (só verifica se o CPF for válido)
+            if (!errors.cpf && cpfNormalizado) {
+                const cpfJaExiste = listaAssistidas.some(assistida =>
+                    assistida.cpf.replace(/\D/g, '') === cpfNormalizado &&
+                    (!modoEdicao || assistida.id !== assistidaParaEditar?.id)
+                );
+
+                if (cpfJaExiste) {
+                    errors.cpf = ERROR_MESSAGES.CPF_ALREADY_EXISTS;
+                }
             }
 
             // Verificação da idade mínima (18 anos)
@@ -161,14 +168,14 @@ const Formulario = ({ showModal, setShowModal, onSubmit, assistidaParaEditar, mo
                     idade--;
                 }
                 if (idade < 18) {
-                    errors.data_nascimento = "A assistida deve ter no mínimo 18 anos.";
+                    errors.data_nascimento = ERROR_MESSAGES.MINIMUM_AGE_REQUIRED;
                 }
             }
         }
 
         if (step === 2) {
             ["logradouro", "bairro", "numero", "cep", "estado", "cidade", "telefone"].forEach((field) => {
-                if (!formData[field]) errors[field] = "Campo obrigatório";
+                if (!formData[field]) errors[field] = ERROR_MESSAGES.REQUIRED_FIELD;
             });
         }
 
@@ -268,9 +275,18 @@ const Formulario = ({ showModal, setShowModal, onSubmit, assistidaParaEditar, mo
         for (const [stepNumber, fields] of Object.entries(steps)) {
             for (const field of fields) {
                 if (!formData[field]) {
-                    errors[field] = "Campo obrigatório";
+                    errors[field] = ERROR_MESSAGES.REQUIRED_FIELD;
                     if (!firstErrorStep) firstErrorStep = parseInt(stepNumber);
                 }
+            }
+        }
+
+        // Validação de CPF
+        if (formData.cpf && !errors.cpf) {
+            const cpfNormalizado = formData.cpf.replace(/\D/g, '');
+            if (!validateCPF(cpfNormalizado)) {
+                errors.cpf = ERROR_MESSAGES.INVALID_CPF;
+                if (!firstErrorStep) firstErrorStep = 1;
             }
         }
 

@@ -62,15 +62,9 @@ class SQLExecutor {
 
       for (const statement of statements) {
         if (statement.trim()) {
-          // Usar query() para comandos que não suportam prepared statements
-          const usesPreparedStatements = !statement.toLowerCase().includes('use ');
-          
-          
-          if (usesPreparedStatements) {
-            await this.connection.execute(statement);
-          } else {
-            await this.connection.query(statement);
-          }
+          // Usar sempre query() para evitar problemas com prepared statements nos scripts
+          // Scripts SQL não precisam de prepared statements por motivos de segurança
+          await this.connection.query(statement);
           
           if (showOutput && statement.toLowerCase().includes('create table')) {
             const match = statement.match(/create table(?:\s+if not exists)?\s+(\w+)/i);

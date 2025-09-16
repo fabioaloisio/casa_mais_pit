@@ -1,9 +1,13 @@
 // Aldruin Bonfim de Lima Souza - RA 10482416915
 
 const db = require('../config/database');
+const BaseRepository = require('../../../shared/repository/BaseRepository');
 const Medicamento = require('../models/medicamento');
 
-class MedicamentoRepository {
+class MedicamentoRepository extends BaseRepository {
+  constructor() {
+    super('medicamentos', 'm');
+  }
   async findAll() {
     const [rows] = await db.execute(`
       SELECT m.*, u.nome AS unidade_nome, u.sigla AS unidade_sigla 

@@ -1,0 +1,110 @@
+.activate-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.activate-card {
+  width: 100%;
+  max-width: 450px;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+.activate-card .card-body {
+  padding: 40px;
+}
+
+.activate-card h2 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.activate-card .text-muted {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.activate-card .form-label {
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.activate-card .form-control {
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 10px 15px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.activate-card .form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.activate-card .input-group-text {
+  background-color: transparent;
+  border-left: none;
+  border-color: #e0e0e0;
+}
+
+.activate-card .input-group .form-control {
+  border-right: none;
+}
+
+.activate-card .input-group .form-control:focus + .input-group-text {
+  border-color: #667eea;
+}
+
+.activate-card .btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 500;
+  transition: transform 0.3s ease;
+}
+
+.activate-card .btn-primary:hover {
+  transform: translateY(-2px);
+}
+
+.activate-card .btn-outline-secondary {
+  border-color: #e0e0e0;
+  color: #666;
+}
+
+.activate-card .btn-outline-secondary:hover {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.activate-card .alert {
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.activate-card .spinner-border {
+  width: 1rem;
+  height: 1rem;
+}
+
+.activate-card a {
+  color: #667eea;
+  font-weight: 500;
+}
+
+.activate-card a:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}

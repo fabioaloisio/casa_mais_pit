@@ -1,7 +1,7 @@
 // Type definitions and interfaces shared between frontend and backend
 // This can be expanded for TypeScript support in the future
 
-export const EntityTypes = {
+const EntityTypes = {
   ASSISTIDA: 'assistida',
   DOADOR: 'doador',
   MEDICAMENTO: 'medicamento',
@@ -11,13 +11,20 @@ export const EntityTypes = {
   TIPO_DESPESA: 'tipoDespesa'
 };
 
-export const DoadorTypes = {
+const DoadorTypes = {
   PESSOA_FISICA: 'PF',
   PESSOA_JURIDICA: 'PJ'
 };
 
-export const ResponseStatus = {
+const ResponseStatus = {
   SUCCESS: 'success',
   ERROR: 'error',
   WARNING: 'warning'
+};
+
+// CommonJS exports
+module.exports = {
+  EntityTypes,
+  DoadorTypes,
+  ResponseStatus
 };

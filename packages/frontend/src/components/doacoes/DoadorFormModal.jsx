@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 import FormModal from '../common/FormModal';
 import doadoresService from '../../services/doadoresService';
+import { validateCPF, validateCNPJ, ERROR_MESSAGES } from '@casa-mais/shared';
 
 const DoadorFormModal = ({ show, onHide, onSave, doador = null, tipoDoador = 'PF' }) => {
   const [formData, setFormData] = useState({
@@ -179,16 +180,16 @@ const DoadorFormModal = ({ show, onHide, onSave, doador = null, tipoDoador = 'PF
       newErrors.documento = `${formData.tipo_doador === 'PF' ? 'CPF' : 'CNPJ'} é obrigatório`;
     } else {
       const documentoLimpo = formData.documento.replace(/\D/g, '');
-      // Validação básica apenas do tamanho
-      if (formData.tipo_doador === 'PF' && documentoLimpo.length !== 11) {
-        newErrors.documento = 'CPF deve ter 11 dígitos';
-      } else if (formData.tipo_doador === 'PJ' && documentoLimpo.length !== 14) {
-        newErrors.documento = 'CNPJ deve ter 14 dígitos';
+      // Validação rigorosa usando shared package
+      if (formData.tipo_doador === 'PF') {
+        if (!validateCPF(documentoLimpo)) {
+          newErrors.documento = ERROR_MESSAGES.INVALID_CPF;
+        }
+      } else if (formData.tipo_doador === 'PJ') {
+        if (!validateCNPJ(documentoLimpo)) {
+          newErrors.documento = ERROR_MESSAGES.INVALID_CNPJ;
+        }
       }
-      // Comentando validação rigorosa temporariamente para debug
-      // if (!doadoresService.validateDocumento(documentoLimpo, formData.tipo_doador)) {
-      //   newErrors.documento = `${formData.tipo_doador === 'PF' ? 'CPF' : 'CNPJ'} inválido`;
-      // }
     }
 
     if (!formData.telefone.trim()) {

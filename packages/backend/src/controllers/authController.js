@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const UsuarioRepository = require('../repository/usuarioRepository');
 const Usuario = require('../models/usuario');
+const emailService = require('../services/emailService');
 
 const usuarioRepository = new UsuarioRepository();
 const JWT_SECRET = process.env.JWT_SECRET || 'casa-mais-secret-key';
@@ -33,7 +34,7 @@ class AuthController {
 
       // Verificar senha
       const senhaValida = await bcrypt.compare(senha, usuario.senha);
-      
+
       if (!senhaValida) {
         return res.status(401).json({
           success: false,
@@ -41,6 +42,48 @@ class AuthController {
           errors: ['Email ou senha incorretos']
         });
       }
+
+      // CORREÇÃO CRÍTICA: Verificar status do usuário antes de permitir login
+      const statusPermitidos = ['ativo'];
+
+      if (!statusPermitidos.includes(usuario.status)) {
+        const mensagensStatus = {
+          'pendente': 'Sua conta está pendente de aprovação. Aguarde a aprovação de um administrador.',
+          'aprovado': 'Sua conta foi aprovada. Verifique seu email para ativar sua conta.',
+          'rejeitado': 'Sua conta foi rejeitada. Entre em contato com o administrador.',
+          'bloqueado': 'Sua conta foi bloqueada. Entre em contato com o administrador.',
+          'suspenso': 'Sua conta está suspensa. Entre em contato com o administrador.',
+          'inativo': 'Sua conta está inativa. Entre em contato com o administrador.'
+        };
+
+        return res.status(403).json({
+          success: false,
+          message: mensagensStatus[usuario.status] || 'Acesso negado.',
+          errors: [`Status da conta: ${usuario.status}`]
+        });
+      }
+
+      // Verificar suspensão expirada (reativação automática)
+      if (usuario.status === 'suspenso' && usuario.data_fim_suspensao) {
+        const agora = new Date();
+        const fimSuspensao = new Date(usuario.data_fim_suspensao);
+
+        if (agora >= fimSuspensao) {
+          // Reativar usuário automaticamente
+          await usuarioRepository.updateUserStatus(
+            usuario.id,
+            'ativo',
+            null, // sistema automático
+            'Suspensão expirada - reativação automática'
+          );
+
+          // Atualizar objeto usuario para refletir nova condição
+          usuario.status = 'ativo';
+        }
+      }
+
+      // Atualizar último acesso
+      await usuarioRepository.updateLastAccess(usuario.id);
 
       // Gerar token JWT
       const token = jwt.sign(
@@ -75,15 +118,22 @@ class AuthController {
     try {
       const { nome, email, senha, confirmSenha } = req.body;
 
+      // Verificar se é o primeiro usuário no sistema
+      const primeiroUsuario = await usuarioRepository.isFirstUser();
+
       // Validações básicas
       const errors = [];
       
       if (!nome) errors.push('Nome é obrigatório');
       if (!email) errors.push('Email é obrigatório');
-      if (!senha) errors.push('Senha é obrigatória');
-      if (!confirmSenha) errors.push('Confirmação de senha é obrigatória');
-      if (senha !== confirmSenha) errors.push('Senhas não conferem');
-      if (senha && senha.length < 6) errors.push('Senha deve ter pelo menos 6 caracteres');
+      
+      // Senha só é obrigatória para o primeiro usuário
+      if (primeiroUsuario) {
+        if (!senha) errors.push('Senha é obrigatória');
+        if (!confirmSenha) errors.push('Confirmação de senha é obrigatória');
+        if (senha !== confirmSenha) errors.push('Senhas não conferem');
+        if (senha && senha.length < 6) errors.push('Senha deve ter pelo menos 6 caracteres');
+      }
 
       if (errors.length > 0) {
         return res.status(400).json({
@@ -104,41 +154,80 @@ class AuthController {
         });
       }
 
-      // Hash da senha
-      const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
-
-      // Verificar se é o primeiro usuário no sistema (será administrador)
-      const primeiroUsuario = await usuarioRepository.isFirstUser();
+      let novoUsuario;
       
-      // Criar usuário
-      const novoUsuario = new Usuario({
-        nome,
-        email,
-        senha: senhaHash,
-        tipo: primeiroUsuario ? 'Administrador' : 'Colaborador'
-      });
+      if (primeiroUsuario) {
+        // Primeiro usuário: administrador com acesso imediato
+        const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
+        
+        novoUsuario = new Usuario({
+          nome,
+          email,
+          senha: senhaHash,
+          tipo: 'Administrador',
+          status: 'ativo'
+        });
 
-      const usuarioCriado = await usuarioRepository.create(novoUsuario);
+        const usuarioCriado = await usuarioRepository.create(novoUsuario);
 
-      // Gerar token JWT
-      const token = jwt.sign(
-        { 
-          id: usuarioCriado.id, 
-          email: usuarioCriado.email, 
-          tipo: usuarioCriado.tipo 
-        },
-        JWT_SECRET,
-        { expiresIn: '24h' }
-      );
+        // Gerar token JWT para primeiro usuário
+        const token = jwt.sign(
+          { 
+            id: usuarioCriado.id, 
+            email: usuarioCriado.email, 
+            tipo: usuarioCriado.tipo 
+          },
+          JWT_SECRET,
+          { expiresIn: '24h' }
+        );
 
-      res.status(201).json({
-        success: true,
-        message: 'Usuário cadastrado com sucesso',
-        data: {
-          usuario: usuarioCriado.toJSON(),
-          token
+        res.status(201).json({
+          success: true,
+          message: 'Administrador cadastrado com sucesso',
+          data: {
+            usuario: usuarioCriado.toJSON(),
+            token
+          }
+        });
+      } else {
+        // Novos usuários: pendente de aprovação
+        novoUsuario = new Usuario({
+          nome,
+          email,
+          senha: null, // Senha será definida após aprovação
+          tipo: 'Colaborador',
+          status: 'pendente'
+        });
+
+        const usuarioCriado = await usuarioRepository.create(novoUsuario);
+
+        // Notificar administradores sobre novo cadastro
+        try {
+          const admins = await usuarioRepository.getAllAdmins();
+          
+          for (const admin of admins) {
+            await emailService.sendNewUserNotification(
+              admin.email,
+              admin.nome,
+              usuarioCriado
+            );
+          }
+        } catch (emailError) {
+          console.error('Erro ao notificar administradores:', emailError);
         }
-      });
+
+        res.status(201).json({
+          success: true,
+          message: 'Cadastro realizado com sucesso. Aguarde aprovação do administrador.',
+          data: {
+            usuario: {
+              nome: usuarioCriado.nome,
+              email: usuarioCriado.email,
+              status: 'pendente'
+            }
+          }
+        });
+      }
     } catch (error) {
       console.error('Erro no cadastro:', error);
       res.status(500).json({

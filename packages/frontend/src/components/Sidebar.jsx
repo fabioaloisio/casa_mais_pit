@@ -1,14 +1,33 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Nav } from 'react-bootstrap';
-import { FaDonate, FaHome, FaIdCard, FaMoneyBillWave, FaPills, FaStethoscope, FaUsers, FaBars, FaTimes, FaUserTie, FaTags, FaSignOutAlt, FaUserCircle, FaGripHorizontal, FaFlask } from 'react-icons/fa';
+import { 
+  FaDonate, 
+  FaHome, 
+  FaIdCard, 
+  FaMoneyBillWave, 
+  FaPills, 
+  FaStethoscope, 
+  FaUsers, 
+  FaBars, 
+  FaTimes, 
+  FaUserTie, 
+  FaTags, 
+  FaSignOutAlt, 
+  FaUserCircle, 
+  FaGripHorizontal, 
+  FaFlask,
+  FaBed,
+  FaMoneyBillWave as FaCash,
+  FaFileAlt 
+} from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import './Sidebar.css';
 import Logo from './logo';
 
 function Sidebar() {
   const location = useLocation();
-  const { logout, user } = useAuth();
+  const { logout, user, hasPermission } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMedicamentosOpen, setIsMedicamentosOpen] = useState(false);
   const [isDespesasOpen, setIsDespesasOpen] = useState(false);
@@ -39,72 +58,124 @@ function Sidebar() {
             <FaHome /> Dashboard
           </Nav.Link>
 
-          <div className="menu-section">
-            <div className="menu-section-title">Gestão de Pessoas</div>
-            <Nav.Link as={Link} onClick={closeSidebar} to="/usuarios"
-              className={location.pathname.includes('/usuarios') ? 'active' : ''}>
-              <FaUsers /> Gestão de Usuários
-            </Nav.Link>
-            <Nav.Link as={Link} onClick={closeSidebar} to="/assistidas"
-              className={location.pathname.includes('/assistidas') ? 'active' : ''}>
-              <FaIdCard /> Gestão de Assistidas
-            </Nav.Link>
-            <Nav.Link as={Link} onClick={closeSidebar} to="/doadores"
-              className={location.pathname.includes('/doadores') ? 'active' : ''}>
-              <FaUserTie /> Gestão de Doadores
-            </Nav.Link>
-          </div>
-
-          <div className="menu-section">
-            <div className="menu-section-title">Atendimento e Saúde</div>
-            <Nav.Link as={Link} onClick={closeSidebar} to="/consultas"
-              className={location.pathname.includes('/consultas') ? 'active' : ''}>
-              <FaStethoscope /> Gestão de Consultas
-            </Nav.Link>
-
-            <Nav.Link  as={Link} onClick={closeSidebar} to="/substancias-psicoativas"
-              className={location.pathname.includes('/substancias-psicoativas') ? 'active' : ''}>
-              <FaFlask /> Gerenciar Tipos de Substâncias Psicoativas
-            </Nav.Link>
-
-            <Nav.Link onClick={() => setIsMedicamentosOpen(!isMedicamentosOpen)} className={isMedicamentosOpen ? 'active' : ''}>
-              <FaPills /> Gestão de Medicamentos
-            </Nav.Link>
-
-            {isMedicamentosOpen && (
-              <div className="submenu">
-                <Nav.Link as={Link} onClick={closeSidebar} to="/medicamentos">
-                  <FaPills /> Gerenciar Medicamentos
+          {(hasPermission('RF_B9') || hasPermission('RF_B1') || hasPermission('RF_B3')) && (
+            <div className="menu-section">
+              <div className="menu-section-title">Gestão de Pessoas</div>
+              {hasPermission('RF_B9') && (
+                <Nav.Link as={Link} onClick={closeSidebar} to="/usuarios"
+                  className={location.pathname.includes('/usuarios') ? 'active' : ''}>
+                  <FaUsers /> Gestão de Usuários
                 </Nav.Link>
-                <Nav.Link as={Link} onClick={closeSidebar} to="/unidades-medida">
-                  <FaPills /> Gerenciar Unidades de Medida
+              )}
+              {hasPermission('RF_B1') && (
+                <Nav.Link as={Link} onClick={closeSidebar} to="/assistidas"
+                  className={location.pathname.includes('/assistidas') ? 'active' : ''}>
+                  <FaIdCard /> Gestão de Assistidas
                 </Nav.Link>
-              </div>
-            )}
-          </div>
-
-          <div className="menu-section">
-            <div className="menu-section-title">Controle Financeiro</div>
-            <Nav.Link as={Link} onClick={closeSidebar} to="/doacoes"
-              className={location.pathname.includes('/doacoes') ? 'active' : ''}>
-              <FaDonate /> Gestão de Doações
-            </Nav.Link>
-
-            <Nav.Link onClick={() => setIsDespesasOpen(!isDespesasOpen)} className={isDespesasOpen ? 'active' : ''}>
-              <FaMoneyBillWave /> Gestão de Despesas
-            </Nav.Link>
-
-            {isDespesasOpen && (
-              <div className="submenu">
-                <Nav.Link as={Link} onClick={closeSidebar} to="/despesas">
-                  <FaMoneyBillWave /> Gerenciar Despesas
+              )}
+              {hasPermission('RF_B3') && (
+                <Nav.Link as={Link} onClick={closeSidebar} to="/doadores"
+                  className={location.pathname.includes('/doadores') ? 'active' : ''}>
+                  <FaUserTie /> Gestão de Doadores
                 </Nav.Link>
-                <Nav.Link as={Link} onClick={closeSidebar} to="/tipos-despesas">
-                  <FaTags /> Gerenciar Tipos de Despesas
+              )}
+            </div>
+          )}
+
+          {(hasPermission('RF_B10') || hasPermission('RF_B11') || hasPermission('RF_B2') || hasPermission('RF_B4') || hasPermission('RF_B5')) && (
+            <div className="menu-section">
+              <div className="menu-section-title">Atendimento e Saúde</div>
+              {hasPermission('RF_B10') && (
+                <Nav.Link as={Link} onClick={closeSidebar} to="/internacoes"
+                  className={location.pathname.includes('/internacoes') ? 'active' : ''}>
+                  <FaBed /> Gestão de Internações
                 </Nav.Link>
-              </div>
-            )}
-          </div>
+              )}
+              {hasPermission('RF_B11') && (
+                <Nav.Link as={Link} onClick={closeSidebar} to="/consultas"
+                  className={location.pathname.includes('/consultas') ? 'active' : ''}>
+                  <FaStethoscope /> Gestão de Consultas
+                </Nav.Link>
+              )}
+
+              {hasPermission('RF_B2') && (
+                <Nav.Link as={Link} onClick={closeSidebar} to="/substancias-psicoativas"
+                  className={location.pathname.includes('/substancias-psicoativas') ? 'active' : ''}>
+                  <FaFlask /> Gerenciar Tipos de Substâncias Psicoativas
+                </Nav.Link>
+              )}
+
+              {(hasPermission('RF_B4') || hasPermission('RF_B5')) && (
+                <Nav.Link onClick={() => setIsMedicamentosOpen(!isMedicamentosOpen)} className={isMedicamentosOpen ? 'active' : ''}>
+                  <FaPills /> Gestão de Medicamentos
+                </Nav.Link>
+              )}
+
+              {isMedicamentosOpen && (hasPermission('RF_B4') || hasPermission('RF_B5')) && (
+                <div className="submenu">
+                  {hasPermission('RF_B4') && (
+                    <Nav.Link as={Link} onClick={closeSidebar} to="/medicamentos">
+                      <FaPills /> Gerenciar Medicamentos
+                    </Nav.Link>
+                  )}
+                  {hasPermission('RF_B5') && (
+                    <Nav.Link as={Link} onClick={closeSidebar} to="/unidades-medida">
+                      <FaPills /> Gerenciar Unidades de Medida
+                    </Nav.Link>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {(hasPermission('RF_B12') || hasPermission('RF_B6') || hasPermission('RF_B8') || hasPermission('RF_B7')) && (
+            <div className="menu-section">
+              <div className="menu-section-title">Controle Financeiro</div>
+              {hasPermission('RF_B12') && (
+                <Nav.Link as={Link} onClick={closeSidebar} to="/caixa"
+                  className={location.pathname.includes('/caixa') ? 'active' : ''}>
+                  <FaCash /> Caixa Financeiro
+                </Nav.Link>
+              )}
+              {hasPermission('RF_B6') && (
+                <Nav.Link as={Link} onClick={closeSidebar} to="/doacoes"
+                  className={location.pathname.includes('/doacoes') ? 'active' : ''}>
+                  <FaDonate /> Gestão de Doações
+                </Nav.Link>
+              )}
+
+              {(hasPermission('RF_B8') || hasPermission('RF_B7')) && (
+                <Nav.Link onClick={() => setIsDespesasOpen(!isDespesasOpen)} className={isDespesasOpen ? 'active' : ''}>
+                  <FaMoneyBillWave /> Gestão de Despesas
+                </Nav.Link>
+              )}
+
+              {isDespesasOpen && (hasPermission('RF_B8') || hasPermission('RF_B7')) && (
+                <div className="submenu">
+                  {hasPermission('RF_B8') && (
+                    <Nav.Link as={Link} onClick={closeSidebar} to="/despesas">
+                      <FaMoneyBillWave /> Gerenciar Despesas
+                    </Nav.Link>
+                  )}
+                  {hasPermission('RF_B7') && (
+                    <Nav.Link as={Link} onClick={closeSidebar} to="/tipos-despesas">
+                      <FaTags /> Gerenciar Tipos de Despesas
+                    </Nav.Link>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {hasPermission('RF_I2') && (
+            <div className="menu-section">
+              <div className="menu-section-title">Relatórios e Análises</div>
+              <Nav.Link as={Link} onClick={closeSidebar} to="/relatorios"
+                className={location.pathname.includes('/relatorios') ? 'active' : ''}>
+                <FaFileAlt /> Relatórios
+              </Nav.Link>
+            </div>
+          )}
 
           <div className="sidebar-user-info">
             {user && (

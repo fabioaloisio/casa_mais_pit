@@ -16,12 +16,12 @@ class ApiService {
     const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
     
     const config = {
+      ...options,
       headers: {
         ...this.defaultHeaders,
         ...authHeaders,
-        ...options.headers,
+        ...(options.headers || {}),
       },
-      ...options,
     };
 
     try {
@@ -37,7 +37,25 @@ class ApiService {
         throw error;
       }
 
+      // Check content type to handle different response types
+      const contentType = response.headers.get('content-type');
+
+      console.log('[API] Response content-type:', contentType);
+
+      // Handle binary files (PDF, Excel)
+      if (contentType && (contentType.includes('application/pdf') ||
+          contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))) {
+        const blob = await response.blob();
+        console.log('[API] Binary file detected, blob created:', {
+          size: blob.size,
+          type: blob.type
+        });
+        return { blob, response };
+      }
+
+      // Handle JSON responses
       const data = await response.json();
+      console.log('[API] JSON response parsed');
       return data;
     } catch (error) {
       console.error(`Erro na requisição para ${endpoint}:`, error);

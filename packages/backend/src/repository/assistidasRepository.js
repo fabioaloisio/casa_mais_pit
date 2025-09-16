@@ -1,11 +1,15 @@
 const db = require('../config/database');
+const BaseRepository = require('../../../shared/repository/BaseRepository');
 const { Assistida, DrogaUtilizada, Internacao, MedicamentoUtilizado } = require('../models/assistida');
 
-class AssistidaRepository {
+class AssistidaRepository extends BaseRepository {
+    constructor() {
+        super('assistidas', 'a');
+    }
     async findAll() {
         try {
-            // Busca todas as assistidas
-            const [assistidasRaw] = await db.execute('SELECT * FROM assistidas');
+            // Usa método do BaseRepository
+            const assistidasRaw = await super.findAll();
 
             // Para cada assistida, buscar internações e medicamentos (removendo drogas)
             const assistidas = await Promise.all(
@@ -110,7 +114,7 @@ class AssistidaRepository {
                 nome, cpf, rg, idade, data_nascimento, nacionalidade,
                 estado_civil, profissao, escolaridade, status,
                 logradouro, bairro, numero, cep, estado, cidade,
-                telefone, telefone_contato,id
+                telefone, telefone_contato, id
             ]);
 
             await conn.commit();
@@ -203,10 +207,10 @@ class AssistidaRepository {
 
     async findInternacoesByAssistidaId(assistidaId) {
         const [rows] = await db.execute(
-            'SELECT local, duracao, data FROM internacoes WHERE assistida_id = ?',
+            'SELECT id, data_entrada, data_saida, motivo, observacoes, status FROM internacoes WHERE assistida_id = ?',
             [assistidaId]
         );
-        return rows.map(row => new Internacao(row));
+        return rows;
     }
 
     async findMedicamentosByAssistidaId(assistidaId) {

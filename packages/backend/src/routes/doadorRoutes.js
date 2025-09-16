@@ -16,4 +16,8 @@ router.delete('/:id', verifyToken, requirePermission('RF_B3'), doadorController.
 
 router.get('/:id/doacoes', verifyToken, requirePermission('RF_B3'), doadorController.findDoacoes);
 
+router.get('/:id/historico-unificado', verifyToken, requirePermission('RF_B3'), doadorController.findHistoricoUnificado);
+
+router.get('/:id/estatisticas-consolidadas', verifyToken, requirePermission('RF_B3'), doadorController.getEstatisticasConsolidadas);
+
 module.exports = router;

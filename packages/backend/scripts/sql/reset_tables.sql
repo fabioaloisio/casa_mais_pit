@@ -8,6 +8,8 @@ USE casamais_db;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Drop tabelas com FK primeiro
+DROP TABLE IF EXISTS caixa_fechamentos;
+DROP TABLE IF EXISTS caixa_movimentacoes;
 DROP TABLE IF EXISTS drogas_utilizadas;
 DROP TABLE IF EXISTS medicamentos_utilizados;
 DROP TABLE IF EXISTS internacoes;
@@ -16,6 +18,7 @@ DROP TABLE IF EXISTS medicamentos;
 DROP TABLE IF EXISTS doacoes;
 DROP TABLE IF EXISTS despesas;
 DROP TABLE IF EXISTS password_reset_tokens;
+DROP TABLE IF EXISTS usuarios_aprovacoes_log;
 
 -- Drop tabelas base
 DROP TABLE IF EXISTS substancias;

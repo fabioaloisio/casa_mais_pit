@@ -38,11 +38,13 @@ export const AuthProvider = ({ children }) => {
         const data = await response.json();
         setUser(data.data.usuario);
       } else {
-        logout();
+        // Token inválido ou expirado
+        console.log('Token inválido ou expirado, realizando logout...');
+        logout(false);
       }
     } catch (error) {
       console.error('Erro ao verificar token:', error);
-      logout();
+      logout(false);
     } finally {
       setLoading(false);
     }
@@ -114,12 +116,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = (showToast = true) => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    toast.info('Logout realizado com sucesso');
+    if (showToast) {
+      toast.info('Logout realizado com sucesso');
+    }
   };
 
   const isAuthenticated = () => {
