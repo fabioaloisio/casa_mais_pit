@@ -26,6 +26,7 @@ class HPRController {
     }
   }
 
+
   async create(req, res) {
     try {
       const hpr = new HPR(req.body);

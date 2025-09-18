@@ -982,9 +982,9 @@ const FormularioHRP = ({ showModal, setShowModal, onSubmit, HPRParaEditar, modoE
                             name={campo}
                             value={formData[campo] || ''}
                             onChange={handleChange}
-                            placeholder={campo === 'fatos_marcantes' ? 'Descreva eventos importantes e marcantes na vida da assistida...' :
-                              campo === 'infancia' ? 'Relate informações sobre a infância...' :
-                                campo === 'adolescencia' ? 'Descreva o período da adolescência...' : ''}
+                            placeholder={campo === 'fatos_marcantes' ? 'Descreva eventos importantes e marcantes na vida da assistida...(opcional)' :
+                              campo === 'infancia' ? 'Relate informações sobre a infância...(opcional)' :
+                                campo === 'adolescencia' ? 'Descreva o período da adolescência...(opcional)' : ''}
                             style={{ minHeight: '120px', resize: 'vertical' }}
                           />
                         </Form.Group>

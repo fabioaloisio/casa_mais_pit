@@ -31,7 +31,7 @@ const DetalhesAssistida = () => {
 
   useEffect(() => {
     carregarAssistida();
-    carregarHpr();
+    carregarHpr()
   }, [id]);
 
   const carregarAssistida = async () => {
@@ -52,7 +52,7 @@ const DetalhesAssistida = () => {
     try {
       setLoading(true);
       const hprData = await HprService.obterPorId(id);
-      if (hprData) setHpr(hprData);
+      setHpr(hprData)
     } catch (error) {
       console.error(error);
     } finally {
@@ -333,7 +333,7 @@ const DetalhesAssistida = () => {
                         {hpr.drogas.map((d, idx) => (
                           <tr key={idx}>
                             <td>{d.tipo}</td>
-                            <td>{d.idade_inicio}</td>
+                            <td>{d.idade_inicio} anos</td>
                             <td>{d.tempo_uso}</td>
                             <td>{hpr.tempo_sem_uso}</td>
                             <td>{d.intensidade}</td>

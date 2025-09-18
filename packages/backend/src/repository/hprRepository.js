@@ -2,7 +2,6 @@ const db = require('../config/database');
 const { HPR, DrogaUtilizada, Internacao, MedicamentoUtilizado } = require('../models/HPR');
 
 class HPRRepository {
-
   async findAll() {
     try {
       const [rows] = await db.execute('SELECT * FROM HPR');
@@ -45,8 +44,6 @@ class HPRRepository {
         [assistida_id, data_atendimento, hora, historia_patologica, tempo_sem_uso, motivacao_internacoes, fatos_marcantes, infancia, adolescencia]
       );
 
-      const hprId = result.insertId;
-
       // Inserir drogas
       for (const droga of drogas) {
         await conn.execute(`
@@ -85,7 +82,7 @@ class HPRRepository {
       }
 
       await conn.commit();
-      return await this.findById(hprId);
+      return await this.findById(assistida_id);
 
     } catch (error) {
       await conn.rollback();
@@ -97,7 +94,6 @@ class HPRRepository {
 
   async update(id, hprData) {
     const {
-
       assistida_id, data_atendimento, hora,
       historia_patologica, tempo_sem_uso,
       motivacao_internacoes, fatos_marcantes,
@@ -114,9 +110,9 @@ class HPRRepository {
         assistida_id=?, data_atendimento=?, hora=?, historia_patologica=?,
         tempo_sem_uso=?, motivacao_internacoes=?, fatos_marcantes=?,
         infancia=?, adolescencia=?
-        WHERE id=?`,
+        WHERE assistida_id=?`,
         [assistida_id, data_atendimento, hora, historia_patologica, tempo_sem_uso,
-          motivacao_internacoes, fatos_marcantes, infancia, adolescencia, id]
+          motivacao_internacoes, fatos_marcantes, infancia, adolescencia, assistida_id]
       );
 
       // Limpar registros antigos
@@ -182,13 +178,13 @@ class HPRRepository {
   }
 
   async findById(id) {
-    const [rows] = await db.execute('SELECT * FROM HPR WHERE id = ?', [id]);
+    const [rows] = await db.execute('SELECT * FROM HPR WHERE assistida_id = ?', [id]);
     if (rows.length === 0) return null;
 
     const hprRow = rows[0];
-    const drogas = await this.findDrogasByHPRId(hprRow.id) || [];
-    const internacoes = await this.findInternacoesByHPRId(hprRow.id) || [];
-    const medicamentos = await this.findMedicamentosByHPRId(hprRow.id) || [];
+    const drogas = await this.findDrogasByHPRId(id) || [];
+    const internacoes = await this.findInternacoesByHPRId(id) || [];
+    const medicamentos = await this.findMedicamentosByHPRId(id) || [];
 
     return new HPR({ ...hprRow, drogas, internacoes, medicamentos });
   }
