@@ -45,7 +45,7 @@ class UsuarioRepository {
         usuario.nome,
         usuario.email,
         usuario.senha,
-        usuario.tipo || 'Colaborador'
+        usuario.tipo || 'usuario'
       ]);
       
       return await this.findById(result.insertId);

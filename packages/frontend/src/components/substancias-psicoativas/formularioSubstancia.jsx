@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import PropTypes from "prop-types";
-import '../../components/assistidas/Assistidas.css';
+import '../../components/assistidas/style/Assistidas.css';
 
 const FormularioSubstancia = ({ showModal, setShowModal, onSubmit, substanciaParaEditar, modoEdicao }) => {
   const [formData, setFormData] = useState({});
@@ -130,7 +130,7 @@ const FormularioSubstancia = ({ showModal, setShowModal, onSubmit, substanciaPar
           variant="primary"
           disabled={isSubmitting}
           onClick={handleSubmit}
-          
+
         >
           {isSubmitting
             ? "Salvando..."

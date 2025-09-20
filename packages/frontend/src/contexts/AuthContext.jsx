@@ -126,110 +126,40 @@ export const AuthProvider = ({ children }) => {
     return !!user && !!token;
   };
 
-  // Níveis de acesso conforme especificação ERS
-  const ROLES = {
-    ADMINISTRADOR: 'Administrador',
-    FINANCEIRO: 'Financeiro',
-    COLABORADOR: 'Colaborador'
-  };
-
-  // Normaliza o tipo de usuário para o formato padrão
-  const normalizeUserType = (type) => {
-    if (!type) return null;
-    
-    const typeUpper = type.toUpperCase();
-    
-    if (typeUpper === 'ADMIN' || typeUpper === 'ADMINISTRADOR') {
-      return ROLES.ADMINISTRADOR;
-    }
-    if (typeUpper === 'FINANCEIRO') {
-      return ROLES.FINANCEIRO;
-    }
-    if (typeUpper === 'OPERADOR' || typeUpper === 'COLABORADOR') {
-      return ROLES.COLABORADOR;
-    }
-    
-    return null;
-  };
-
-  const getUserRole = () => {
-    return normalizeUserType(user?.tipo);
-  };
-
   const isAdmin = () => {
-    return getUserRole() === ROLES.ADMINISTRADOR;
+    return user && (user.tipo === 'Administrador' || user.tipo === 'administrador' || user.tipo === 'admin');
   };
 
-  const isFinanceiro = () => {
-    return getUserRole() === ROLES.FINANCEIRO;
-  };
-
-  const isColaborador = () => {
-    return getUserRole() === ROLES.COLABORADOR;
-  };
-
-  // Compatibilidade com código existente
   const isOperator = () => {
-    return isColaborador();
+    return user && (user.tipo === 'Operador' || user.tipo === 'operador');
   };
 
-  // Mapeamento de permissões por requisito funcional conforme ERS
-  const PERMISSIONS = {
-    // Requisitos Básicos
-    RF_B1: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Assistidas
-    RF_B2: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Tipos de Substâncias
-    RF_B3: [ROLES.ADMINISTRADOR],                     // Gerenciar Doadores
-    RF_B4: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Medicamentos
-    RF_B5: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Unidades de Medida
-    RF_B6: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Gerenciar Doações
-    RF_B7: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Gerenciar Tipos de Despesas
-    
-    // Requisitos Funcionais
-    RF_F1: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Efetuar Entrada na Instituição
-    RF_F2: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Efetuar Saída da Instituição
-    RF_F3: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Gerenciar Despesas
-    RF_F4: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Lançar Doação Monetária
-    RF_F5: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Atualizar Caixa
-    RF_F6: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Consultas
-    RF_F7: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Lançar Prescrição
-    RF_F8: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Lançar História Patológica
-    RF_F9: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Registrar Dados Pós-Consulta
-    
-    // Requisitos de Sistema (Relatórios)
-    RF_S1: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Relatório de Assistidas
-    RF_S2: [ROLES.ADMINISTRADOR],                     // Relatório de Despesas
-    RF_S3: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Relatório de Consultas
-    RF_S4: [ROLES.ADMINISTRADOR],                     // Relatório de Doações
-    RF_S5: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Relatório de Medicamentos
-    RF_S6: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Relatório de Internações
-    RF_S7: [ROLES.ADMINISTRADOR]                      // Relatório de Doadores
-  };
-
-  const hasPermission = (requirementCode) => {
+  const hasPermission = (permissao) => {
     if (!user) return false;
     
-    const userRole = getUserRole();
-    const allowedRoles = PERMISSIONS[requirementCode];
+    // Administradores têm todas as permissões
+    if (isAdmin()) return true;
     
-    if (!allowedRoles) {
-      console.warn(`Código de requisito não mapeado: ${requirementCode}`);
-      // Se não houver mapeamento, apenas administrador tem acesso
-      return userRole === ROLES.ADMINISTRADOR;
+    // Operadores têm permissões limitadas
+    if (isOperator()) {
+      const permissoesOperador = [
+        'view_dashboard',
+        'view_assistidas',
+        'create_assistida',
+        'edit_assistida',
+        'view_consultas',
+        'create_consulta',
+        'view_medicamentos',
+        'view_doacoes',
+        'create_doacao',
+        'view_despesas',
+        'view_estoque'
+      ];
+      
+      return permissoesOperador.includes(permissao);
     }
     
-    return allowedRoles.includes(userRole);
-  };
-
-  // Função auxiliar para verificar permissão por múltiplos requisitos
-  const hasAnyPermission = (...requirementCodes) => {
-    return requirementCodes.some(code => hasPermission(code));
-  };
-
-  // Função auxiliar para verificar se tem permissão por role
-  const hasRole = (allowedRoles) => {
-    if (!user) return false;
-    const userRole = getUserRole();
-    return allowedRoles.includes(userRole);
+    return false;
   };
 
   const value = {
@@ -241,15 +171,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     isAuthenticated,
     isAdmin,
-    isFinanceiro,
-    isColaborador,
-    isOperator, // Mantido para compatibilidade
-    hasPermission,
-    hasAnyPermission,
-    hasRole,
-    getUserRole,
-    ROLES,
-    PERMISSIONS
+    isOperator,
+    hasPermission
   };
 
   return (

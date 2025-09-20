@@ -1,6 +1,6 @@
 import ConfirmModal from '../common/ConfirmModal';
 import PropTypes from 'prop-types';
-import '../assistidas/assistidas.css';
+import '../assistidas/style/assistidas.css';
 
 const ConfirmDeleteModal = ({ show, onHide, onConfirm, substancia, loading }) => {
   if (!substancia) return null;

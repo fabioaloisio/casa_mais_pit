@@ -1,4 +1,3 @@
-
 // Classe principal
 class Assistida {
   constructor(data = {}) {
@@ -25,12 +24,11 @@ class Assistida {
     this.cidade = data.cidade || null;
     this.telefone = data.telefone || null;
     this.telefone_contato = data.telefone_contato || null;
+
   }
 
   validate() {
     const errors = [];
-
-    // Regras básicas
     if (!this.nome || this.nome.trim() === '') errors.push('Nome é obrigatório');
     if (!this.cpf || this.cpf.trim() === '') errors.push('CPF é obrigatório');
     if (!this.data_nascimento) errors.push('Data de nascimento é obrigatória');
@@ -42,7 +40,6 @@ class Assistida {
   toJSON() {
     return {
       id: this.id,
-
       nome: this.nome,
       cpf: this.cpf,
       rg: this.rg,
@@ -53,7 +50,6 @@ class Assistida {
       profissao: this.profissao,
       escolaridade: this.escolaridade,
       status: this.status,
-
       logradouro: this.logradouro,
       bairro: this.bairro,
       numero: this.numero,
@@ -62,6 +58,9 @@ class Assistida {
       cidade: this.cidade,
       telefone: this.telefone,
       telefone_contato: this.telefone_contato,
+      drogas: this.drogas,
+      internacoes: this.internacoes,
+      medicamentos: this.medicamentos,
     };
   }
 }

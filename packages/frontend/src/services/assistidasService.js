@@ -5,7 +5,7 @@ export const assistidasService = {
     try {
       const response = await apiService.get('/assistidas');
       return response.success ? response.data : [];
-    } catch (error) { 
+    } catch (error) {
       console.error('Erro ao buscar assistidas:', error.message);
       throw new Error('Erro ao carregar assistidas. Tente novamente.');
     }
