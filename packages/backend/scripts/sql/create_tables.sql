@@ -140,80 +140,6 @@ CREATE TABLE IF NOT EXISTS assistidas (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
-CREATE TABLE IF NOT EXISTS HPR (
-  id int NOT NULL AUTO_INCREMENT,
-  assistida_id int NOT NULL COMMENT 'Referência à assistida (foreign key)',
-  data_atendimento date COMMENT 'Data do primeiro atendimento',
-  hora time COMMENT 'Hora do primeiro atendimento',
-  historia_patologica text COMMENT 'História clínica da assistida',
-  tempo_sem_uso varchar(100) COMMENT 'Tempo desde o último uso de substâncias',
-  motivacao_internacoes text COMMENT 'Motivo(s) das internações anteriores',
-  fatos_marcantes text COMMENT 'Fatos marcantes na vida da assistida',
-  infancia text COMMENT 'Relato sobre a infância',
-  adolescencia text COMMENT 'Relato sobre a adolescência',
-  PRIMARY KEY (id),
-  FOREIGN KEY (assistida_id) REFERENCES assistidas(id) ON DELETE CASCADE
-);
-
-
-CREATE TABLE IF NOT EXISTS substancias (
-  id INT NOT NULL AUTO_INCREMENT,
-  nome VARCHAR(100) NOT NULL COMMENT 'Nome da substância psicoativa',
-  categoria VARCHAR(100) COMMENT 'Categoria: depressor, estimulante, perturbador, etc.',
-  descricao TEXT COMMENT 'Observações adicionais sobre a substância',
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
-  PRIMARY KEY (id),
-  UNIQUE KEY uq_nome_substancia (nome)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE IF NOT EXISTS drogas_utilizadas (
-  id INT NOT NULL AUTO_INCREMENT,
-  assistida_id INT NOT NULL COMMENT 'Referência à assistida',
-  tipo VARCHAR(100) COMMENT 'tipo de substancia',
-  idade_inicio INT COMMENT 'Idade aproximada de início do uso',
-  tempo_uso VARCHAR(100) COMMENT 'Ex.: 2 anos, 6 meses',
-  intensidade VARCHAR(100) COMMENT 'Ex.: diária, semanal, esporádica',
-  observacoes TEXT COMMENT 'Observações adicionais sobre o uso',
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
-  PRIMARY KEY (id),
-  KEY idx_drogas_assistida (assistida_id),
-  CONSTRAINT fk_drogas_assistida FOREIGN KEY (assistida_id) REFERENCES assistidas (id) ON DELETE CASCADE
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-
--- 8. Tabela internacoes (com FK para assistidas)
-CREATE TABLE IF NOT EXISTS internacoes (
-  id int NOT NULL AUTO_INCREMENT,
-  assistida_id int NOT NULL COMMENT 'Referência à assistida (foreign key)',
-  local varchar(255) COMMENT 'Local da internação',
-  duracao varchar(100) COMMENT 'Duração da internação',
-  data date COMMENT 'Data da internação',
-  createdAt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Data de criação',
-  updatedAt timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'Última atualização',
-  PRIMARY KEY (id),
-  KEY idx_internacoes_assistida_id (assistida_id),
-  KEY data (data),
-  CONSTRAINT fk_internacoes_assistida FOREIGN KEY (assistida_id) REFERENCES assistidas (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- 9. Tabela medicamentos_utilizados (com FK para assistidas)
-CREATE TABLE IF NOT EXISTS medicamentos_utilizados (
-  id int NOT NULL AUTO_INCREMENT,
-  assistida_id int NOT NULL COMMENT 'Referência à assistida (foreign key)',
-  nome varchar(100) COMMENT 'Nome do medicamento',
-  dosagem varchar(50) COMMENT 'Dosagem do medicamento',
-  frequencia varchar(100) COMMENT 'Frequência de uso',
-  createdAt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Data de criação',
-  updatedAt timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'Última atualização',
-  PRIMARY KEY (id),
-  KEY idx_medicamentos_utilizados_assistida_id (assistida_id),
-  KEY nome (nome),
-  CONSTRAINT fk_medicamentos_utilizados_assistida FOREIGN KEY (assistida_id) REFERENCES assistidas (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
 -- 10. Tabela usuarios
 CREATE TABLE IF NOT EXISTS usuarios (
   id int NOT NULL AUTO_INCREMENT,
@@ -229,6 +155,93 @@ CREATE TABLE IF NOT EXISTS usuarios (
   KEY tipo (tipo),
   KEY ativo (ativo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS hpr (
+  id INT NOT NULL AUTO_INCREMENT,
+  assistida_id INT NOT NULL COMMENT 'Referência à assistida (foreign key)',
+  data_atendimento DATE COMMENT 'Data do primeiro atendimento',
+  hora TIME COMMENT 'Hora do primeiro atendimento',
+  historia_patologica TEXT COMMENT 'História clínica da assistida',
+  tempo_sem_uso VARCHAR(100) COMMENT 'Tempo desde o último uso de substâncias',
+  motivacao_internacoes TEXT COMMENT 'Motivo(s) das internações anteriores',
+  fatos_marcantes TEXT COMMENT 'Fatos marcantes na vida da assistida',
+  infancia TEXT COMMENT 'Relato sobre a infância',
+  adolescencia TEXT COMMENT 'Relato sobre a adolescência',
+
+  -- Novas colunas de controle
+  created_by INT NULL COMMENT 'Usuário que criou o registro',
+  updated_by INT NULL COMMENT 'Usuário que atualizou o registro',
+  deleted_flag BOOLEAN DEFAULT FALSE COMMENT 'Indica se o registro foi marcado como deletado',
+  deleted_at DATETIME NULL COMMENT 'Data e hora da exclusão lógica',
+
+  -- Controle de criação/atualização
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de criação do registro',
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização',
+
+  PRIMARY KEY (id),
+  FOREIGN KEY (assistida_id) REFERENCES assistidas(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS substancias (
+  id INT NOT NULL AUTO_INCREMENT,
+  nome VARCHAR(100) NOT NULL COMMENT 'Nome da substância psicoativa',
+  categoria VARCHAR(100) COMMENT 'Categoria: depressor, estimulante, perturbador, etc.',
+  descricao TEXT COMMENT 'Observações adicionais sobre a substância',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_nome_substancia (nome)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE IF NOT EXISTS drogas_utilizadas (
+  id INT NOT NULL AUTO_INCREMENT,
+  hpr_id INT NOT NULL COMMENT 'Referência à HPR',
+  tipo VARCHAR(100) COMMENT 'Tipo de substância',
+  idade_inicio INT COMMENT 'Idade aproximada de início do uso',
+  tempo_uso VARCHAR(100) COMMENT 'Ex.: 2 anos, 6 meses',
+  intensidade VARCHAR(100) COMMENT 'Ex.: diária, semanal, esporádica',
+  observacoes TEXT COMMENT 'Observações adicionais sobre o uso',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
+  PRIMARY KEY (id),
+  KEY idx_drogas_hpr (hpr_id),
+  CONSTRAINT fk_drogas_hpr FOREIGN KEY (hpr_id) REFERENCES hpr (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 2. Tabela internacoes (agora ligada a HPR)
+CREATE TABLE IF NOT EXISTS internacoes (
+  id INT NOT NULL AUTO_INCREMENT,
+  hpr_id INT NOT NULL COMMENT 'Referência à HPR (foreign key)',
+  local VARCHAR(255) COMMENT 'Local da internação',
+  duracao VARCHAR(100) COMMENT 'Duração da internação',
+  data DATE COMMENT 'Data da internação',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Data de criação',
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'Última atualização',
+  PRIMARY KEY (id),
+  KEY idx_internacoes_hpr_id (hpr_id),
+  KEY data (data),
+  CONSTRAINT fk_internacoes_hpr FOREIGN KEY (hpr_id) REFERENCES hpr (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 3. Tabela medicamentos_utilizados (agora ligada a HPR)
+CREATE TABLE IF NOT EXISTS medicamentos_utilizados (
+  id INT NOT NULL AUTO_INCREMENT,
+  hpr_id INT NOT NULL COMMENT 'Referência à HPR (foreign key)',
+  nome VARCHAR(100) COMMENT 'Nome do medicamento',
+  dosagem VARCHAR(50) COMMENT 'Dosagem do medicamento',
+  frequencia VARCHAR(100) COMMENT 'Frequência de uso',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Data de criação',
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'Última atualização',
+  PRIMARY KEY (id),
+  KEY idx_medicamentos_hpr_id (hpr_id),
+  KEY nome (nome),
+  CONSTRAINT fk_medicamentos_hpr FOREIGN KEY (hpr_id) REFERENCES hpr (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 -- 11. Tabela consultas (com FK para assistidas)
 CREATE TABLE IF NOT EXISTS consultas (

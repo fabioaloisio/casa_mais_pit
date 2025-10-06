@@ -82,6 +82,7 @@ class MedicamentoUtilizado {
 // Classe principal: HPR
 class HPR {
   constructor(data = {}) {
+    this.id = data.id || null;
     this.assistida_id = data.assistida_id || null;
     this.data_atendimento = data.data_atendimento || null;
     this.hora = data.hora || null;

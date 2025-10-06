@@ -24,7 +24,7 @@ class HPRRepository {
     }
   }
 
-  async create(hprData) {
+  async create(hprData, userId) {
     const {
       assistida_id, data_atendimento, hora,
       historia_patologica, tempo_sem_uso,
@@ -36,48 +36,42 @@ class HPRRepository {
     try {
       await conn.beginTransaction();
 
-      // Inserir HPR
       const [result] = await conn.execute(`
-        INSERT INTO HPR
-        (assistida_id, data_atendimento, hora, historia_patologica, tempo_sem_uso, motivacao_internacoes, fatos_marcantes, infancia, adolescencia)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [assistida_id, data_atendimento, hora, historia_patologica, tempo_sem_uso, motivacao_internacoes, fatos_marcantes, infancia, adolescencia]
+      INSERT INTO HPR
+      (assistida_id, data_atendimento, hora, historia_patologica, tempo_sem_uso, motivacao_internacoes,
+       fatos_marcantes, infancia, adolescencia, created_by, updated_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [assistida_id, data_atendimento, hora, historia_patologica, tempo_sem_uso,
+          motivacao_internacoes, fatos_marcantes, infancia, adolescencia, userId, userId]
       );
 
-      // Inserir drogas
+      const hprId = result.insertId;
+
+      // Inserir filhos...
       for (const droga of drogas) {
         await conn.execute(`
-          INSERT INTO drogas_utilizadas
-          (assistida_id, tipo, idade_inicio, tempo_uso, intensidade, observacoes)
-          VALUES (?, ?, ?, ?, ?, ?)`,
-          [
-            droga.assistida_id,
-            droga.tipo,
-            droga.idade_inicio,
-            droga.tempo_uso,
-            droga.intensidade,
-            droga.observacoes || ''
-          ]
+        INSERT INTO drogas_utilizadas
+        (hpr_id, tipo, idade_inicio, tempo_uso, intensidade, observacoes)
+        VALUES (?, ?, ?, ?, ?, ?)`,
+          [hprId, droga.tipo, droga.idade_inicio, droga.tempo_uso, droga.intensidade, droga.observacoes || '']
         );
       }
 
-      // Inserir internações
       for (const internacao of internacoes) {
         await conn.execute(`
-          INSERT INTO internacoes
-          (assistida_id, local, duracao, data)
-          VALUES (?, ?, ?, ?)`,
-          [assistida_id, internacao.local, internacao.duracao, internacao.data]
+        INSERT INTO internacoes
+        (hpr_id, local, duracao, data)
+        VALUES (?, ?, ?, ?)`,
+          [hprId, internacao.local, internacao.duracao, internacao.data]
         );
       }
 
-      // Inserir medicamentos
       for (const med of medicamentos) {
         await conn.execute(`
-          INSERT INTO medicamentos_utilizados
-          (assistida_id, nome, dosagem, frequencia)
-          VALUES (?, ?, ?, ?)`,
-          [assistida_id, med.nome, med.dosagem, med.frequencia]
+        INSERT INTO medicamentos_utilizados
+        (hpr_id, nome, dosagem, frequencia)
+        VALUES (?, ?, ?, ?)`,
+          [hprId, med.nome, med.dosagem, med.frequencia]
         );
       }
 
@@ -92,7 +86,8 @@ class HPRRepository {
     }
   }
 
-  async update(id, hprData) {
+
+  async update(id, hprData, userId) {
     const {
       assistida_id, data_atendimento, hora,
       historia_patologica, tempo_sem_uso,
@@ -106,48 +101,48 @@ class HPRRepository {
 
       // Atualiza HPR
       await conn.execute(`
-        UPDATE HPR SET
-        assistida_id=?, data_atendimento=?, hora=?, historia_patologica=?,
-        tempo_sem_uso=?, motivacao_internacoes=?, fatos_marcantes=?,
-        infancia=?, adolescencia=?
-        WHERE assistida_id=?`,
+      UPDATE HPR SET
+      assistida_id=?, data_atendimento=?, hora=?, historia_patologica=?,
+      tempo_sem_uso=?, motivacao_internacoes=?, fatos_marcantes=?,
+      infancia=?, adolescencia=?, updated_by=?, updated_at=NOW()
+      WHERE id=?`,
         [assistida_id, data_atendimento, hora, historia_patologica, tempo_sem_uso,
-          motivacao_internacoes, fatos_marcantes, infancia, adolescencia, assistida_id]
+          motivacao_internacoes, fatos_marcantes, infancia, adolescencia, userId, id]
       );
 
       // Limpar registros antigos
-      await conn.execute('DELETE FROM drogas_utilizadas WHERE assistida_id = ?', [assistida_id]);
-      await conn.execute('DELETE FROM internacoes WHERE assistida_id = ?', [assistida_id]);
-      await conn.execute('DELETE FROM medicamentos_utilizados WHERE assistida_id = ?', [assistida_id]);
+      await conn.execute('DELETE FROM drogas_utilizadas WHERE hpr_id = ?', [id]);
+      await conn.execute('DELETE FROM internacoes WHERE hpr_id = ?', [id]);
+      await conn.execute('DELETE FROM medicamentos_utilizados WHERE hpr_id = ?', [id]);
 
       // Inserir novamente
       for (const droga of drogas) {
         await conn.execute(`
-          INSERT INTO drogas_utilizadas
-          (assistida_id, tipo, idade_inicio, tempo_uso, intensidade, observacoes)
-          VALUES (?, ?, ?, ?, ?, ?)`,
-          [assistida_id, droga.tipo, droga.idade_inicio, droga.tempo_uso, droga.intensidade, droga.observacoes || '']
+        INSERT INTO drogas_utilizadas
+        (hpr_id, tipo, idade_inicio, tempo_uso, intensidade, observacoes)
+        VALUES (?, ?, ?, ?, ?, ?)`,
+          [id, droga.tipo, droga.idade_inicio, droga.tempo_uso, droga.intensidade, droga.observacoes || '']
         );
       }
 
       for (const internacao of internacoes) {
         await conn.execute(`
-          INSERT INTO internacoes (assistida_id, local, duracao, data)
-          VALUES (?, ?, ?, ?)`,
-          [assistida_id, internacao.local, internacao.duracao, internacao.data]
+        INSERT INTO internacoes (hpr_id, local, duracao, data)
+        VALUES (?, ?, ?, ?)`,
+          [id, internacao.local, internacao.duracao, internacao.data]
         );
       }
 
       for (const med of medicamentos) {
         await conn.execute(`
-          INSERT INTO medicamentos_utilizados (assistida_id, nome, dosagem, frequencia)
-          VALUES (?, ?, ?, ?)`,
-          [assistida_id, med.nome, med.dosagem, med.frequencia]
+        INSERT INTO medicamentos_utilizados (hpr_id, nome, dosagem, frequencia)
+        VALUES (?, ?, ?, ?)`,
+          [id, med.nome, med.dosagem, med.frequencia]
         );
       }
 
       await conn.commit();
-      return await this.findById(id);
+      return await this.findById(assistida_id);
 
     } catch (error) {
       await conn.rollback();
@@ -157,7 +152,8 @@ class HPRRepository {
     }
   }
 
-  async delete(id) {
+
+  async delete(id, userId) {
     const conn = await db.getConnection();
     try {
       await conn.beginTransaction();
@@ -165,9 +161,15 @@ class HPRRepository {
       const [rows] = await conn.execute('SELECT * FROM HPR WHERE id = ?', [id]);
       if (rows.length === 0) throw new Error('HPR não encontrada');
 
-      await conn.execute('DELETE FROM HPR WHERE id = ?', [id]); // cascade deve cuidar das tabelas relacionadas
+      await conn.execute(`
+      UPDATE HPR
+      SET deleted_flag = TRUE, deleted_at = NOW(), updated_by = ?
+      WHERE id = ?`,
+        [userId, id]
+      );
+
       await conn.commit();
-      return { success: true, message: 'HPR excluída com sucesso' };
+      return { success: true, message: 'HPR marcada como excluída' };
 
     } catch (error) {
       await conn.rollback();
@@ -177,21 +179,34 @@ class HPRRepository {
     }
   }
 
-  async findById(id) {
-    const [rows] = await db.execute('SELECT * FROM HPR WHERE assistida_id = ?', [id]);
-    if (rows.length === 0) return null;
 
-    const hprRow = rows[0];
-    const drogas = await this.findDrogasByHPRId(id) || [];
-    const internacoes = await this.findInternacoesByHPRId(id) || [];
-    const medicamentos = await this.findMedicamentosByHPRId(id) || [];
 
-    return new HPR({ ...hprRow, drogas, internacoes, medicamentos });
+  async findById(assistidaId) {
+    const [rows] = await db.execute(
+      'SELECT * FROM HPR WHERE assistida_id = ?',
+      [assistidaId]
+    );
+
+    if (rows.length === 0) return [];
+
+    // Para cada HPR encontrado, buscar drogas, internações e medicamentos
+    const hprList = await Promise.all(
+      rows.map(async (hprRow) => {
+        const drogas = await this.findDrogasByHPRId(hprRow.id) || [];
+        const internacoes = await this.findInternacoesByHPRId(hprRow.id) || [];
+        const medicamentos = await this.findMedicamentosByHPRId(hprRow.id) || [];
+
+        return new HPR({ ...hprRow, drogas, internacoes, medicamentos });
+      })
+    );
+
+    return hprList; // retorna um array de HPRs
   }
+
 
   async findDrogasByHPRId(hprId) {
     const [rows] = await db.execute(
-      'SELECT assistida_id,tipo, idade_inicio, tempo_uso,intensidade, observacoes FROM drogas_utilizadas WHERE assistida_id = ?',
+      'SELECT tipo, idade_inicio, tempo_uso,intensidade, observacoes FROM drogas_utilizadas WHERE hpr_id = ?',
       [hprId]
     );
     return rows.map(row => new DrogaUtilizada(row));
@@ -199,7 +214,7 @@ class HPRRepository {
 
   async findInternacoesByHPRId(hprId) {
     const [rows] = await db.execute(
-      'SELECT local, duracao, data FROM internacoes WHERE assistida_id = ?',
+      'SELECT local, duracao, data FROM internacoes WHERE hpr_id = ?',
       [hprId]
     );
     return rows.map(row => new Internacao(row));
@@ -207,7 +222,7 @@ class HPRRepository {
 
   async findMedicamentosByHPRId(hprId) {
     const [rows] = await db.execute(
-      'SELECT nome, dosagem, frequencia FROM medicamentos_utilizados WHERE assistida_id = ?',
+      'SELECT nome, dosagem, frequencia FROM medicamentos_utilizados WHERE hpr_id = ?',
       [hprId]
     );
     return rows.map(row => new MedicamentoUtilizado(row));

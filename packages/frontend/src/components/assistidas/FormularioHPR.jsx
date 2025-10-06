@@ -85,7 +85,7 @@ const FormularioHRP = ({ showModal, setShowModal, onSubmit, HPRParaEditar, modoE
       if (modoEdicao && HPRParaEditar) {
         const dadosFormatados = {
           ...HPRParaEditar,
-          assistida_id: HPRParaEditar.assistida_id,
+          id: HPRParaEditar.id,
           data_atendimento: formatDataForInput(HPRParaEditar.data_atendimento),
         };
 
@@ -530,7 +530,7 @@ const FormularioHRP = ({ showModal, setShowModal, onSubmit, HPRParaEditar, modoE
 
         <Modal.Header closeButton>
           <Modal.Title>
-            {modoEdicao ? 'Edição de História Patológica Regressa' : 'Registro de História Patológica Regressa'}
+            {modoEdicao ? 'Edição de História Patológica Regressa' : 'Entrevista de entrada da assistida na instituição'}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -583,7 +583,12 @@ const FormularioHRP = ({ showModal, setShowModal, onSubmit, HPRParaEditar, modoE
                     <Col md={12} className="mb-3">
                       <Alert variant="info" className="d-flex align-items-center">
                         <FaExclamationTriangle className="me-2" />
-                        <small>Preencha com atenção os dados médicos e histórico de uso de substâncias.</small>
+                        <small>
+                          {modoEdicao
+                            ? 'Alterar a Data do Último Atentendimento registrará uma nova atualização na história patológica regressa, preservando os registros anteriores.'
+                            : 'Preencha com atenção os dados médicos e histórico de uso de substâncias.'}
+                        </small>
+
                       </Alert>
                     </Col>
                     {[{ name: "data_atendimento", label: "Data do Último Atendimento", type: "date" },

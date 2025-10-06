@@ -1,21 +1,59 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Spinner, Alert, Table } from 'react-bootstrap';
-import { FaArrowLeft, FaUser, FaMapMarkerAlt, FaPhone, FaCalendarAlt, FaFileAlt, FaEdit } from 'react-icons/fa';
-import { BsCapsule, BsDropletHalf, BsHospital, BsJournalMedical } from 'react-icons/bs';
+import { FaArrowLeft, FaUser, FaMapMarkerAlt, FaPhone, FaCalendarAlt, FaFileAlt, FaEdit, FaAcquisitionsIncorporated, FaDoorOpen } from 'react-icons/fa';
 import { assistidasService } from '../services/assistidasService';
 import { HprService } from '../services/hprService.js';
 import { formatCPF, formatTelefone } from '@casa-mais/shared';
 import FormularioHPR from '../components/assistidas/FormularioHPR.jsx';
 import Toast from '../components/common/Toast';
 import '../components/assistidas/style/Assistidas.css';
+import LinhaDoTempo from './linhaTempo.jsx';
+
+// const hprList = [
+//   {
+//     data_atendimento: "2025-09-25",
+//     hora: "09:30",
+//     internacoes: [],
+//     motivacao_internacoes: "",
+//     drogas: [],
+//     tempo_sem_uso: "",
+//     medicamentos: [],
+//     historia_patologica: "Paciente sem histórico relevante.",
+//     fatos_marcantes: "",
+//     infancia: "Leve asma.",
+//     adolescencia: "Participava de esportes escolares."
+//   },
+//   {
+//     data_atendimento: "2025-08-10",
+//     hora: "14:00",
+//     internacoes: [
+//       { local: "Hospital São João", duracao: "3 dias", data: "2023-05-10" },
+//       { local: "Hospital Santa Maria", duracao: "1 semana", data: "2024-02-18" },
+//     ],
+//     motivacao_internacoes: "Cirurgia e recuperação",
+//     drogas: [
+//       { tipo: "Álcool", idade_inicio: 18, tempo_uso: "5 anos", intensidade: "Moderada" },
+//       { tipo: "Cigarro", idade_inicio: 20, tempo_uso: "2 anos", intensidade: "Leve" },
+//     ],
+//     tempo_sem_uso: "6 meses",
+//     medicamentos: [
+//       { nome: "Paracetamol", dosagem: "500mg", frequencia: "3x/dia" },
+//       { nome: "Ibuprofeno", dosagem: "400mg", frequencia: "2x/dia" },
+//     ],
+//     historia_patologica: "Paciente apresenta histórico de hipertensão.",
+//     fatos_marcantes: "Queda de bicicleta aos 15 anos.",
+//     infancia: "Sem complicações significativas.",
+//     adolescencia: "Atividade física regular."
+//   },
+// ];
 
 const DetalhesAssistida = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [assistida, setAssistida] = useState(null);
-  const [hpr, setHpr] = useState({});
+  const [hprList, setHpr] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -60,7 +98,12 @@ const DetalhesAssistida = () => {
     }
   };
 
-  const formatarData = (data) => (!data ? '-' : new Date(data).toLocaleDateString('pt-BR'));
+  const formatarData = (data) => {
+    if (!data) return '-';
+    return data.split('T')[0]; // pega só '2025-09-30'
+  };
+
+
 
   const calcularIdade = (dataNascimento) => {
     if (!dataNascimento) return '-';
@@ -76,16 +119,17 @@ const DetalhesAssistida = () => {
   const adicionarHPR = async (HPR) => {
     try {
       let response;
-      if (modoEdicao && HPRParaEditar) {
-        response = await HprService.update(HPRParaEditar.assistida_id, HPR);
-        if (response.success) {
+      if (modoEdicao && HPRParaEditar && HPR.data_atendimento == formatarData(HPRParaEditar.data_atendimento)) {
+          response = await HprService.update(HPRParaEditar.id, HPR);
+        if (response && response.id) {
           await carregarHpr();
           fecharModal();
           showToast('História Patológica Regressa atualizada com sucesso!');
         } else showToast('Erro ao atualizar HPR: ' + response.message, 'error');
       } else {
+
         response = await HprService.create(HPR);
-        if (response.success) {
+        if (response && response.id) {
           await carregarHpr();
           fecharModal();
           showToast('História Patológica Regressa cadastrada com sucesso!');
@@ -163,12 +207,7 @@ const DetalhesAssistida = () => {
 
   return (
     <Container className="mt-4">
-      {/* Botão de Excluir HPR */}
-      {hpr?.id && (
-        <Button variant="danger" onClick={handleDeleteHPR} className="mb-3">
-          Excluir HPR
-        </Button>
-      )}
+
 
       {/* Dados da Assistida */}
       <Row className="mb-4">
@@ -241,161 +280,47 @@ const DetalhesAssistida = () => {
           </Card>
 
           {/* Botão de Registrar/Editar HPR */}
-          <div className='add_history mt-2'>
-            <Button
-              variant="primary"
-              onClick={() => {
-                if (hpr.data_atendimento) handleEdit(hpr);
-                else {
-                  setHPRParaEditar(null);
-                  setModoEdicao(false);
-                }
-                setShowModal(true);
-              }}
-            >
-              {hpr.data_atendimento ? <FaEdit /> : <BsJournalMedical />}{" "}
-              {hpr.data_atendimento ? "Editar História Patológica Regressa" : "Registrar História Patológica Regressa"}
-            </Button>
-          </div>
+
         </Col>
       </Row>
+      <div className="d-flex justify-content-between align-items-center" style={{ marginTop: '5rem' }}>
+        <div>
+          <h2 className="text-primary d-flex align-items-center gap-1">
+            <FaFileAlt />História Patológica Regressa
+          </h2>
+          <p className="text-muted mt-2">Evolução e progresso da assistida dentro da instituição</p>
+        </div>
+
+        <div className='add_history'>
+          <Button
+            variant="primary"
+            onClick={() => {
+              if (hprList.length > 0) handleEdit(hprList[hprList.length - 1]);
+              else {
+                setHPRParaEditar(null);
+                setModoEdicao(false);
+              }
+              setShowModal(true);
+            }}
+          >
+            {hprList.length > 0 ? <FaEdit /> : < FaDoorOpen />}{" "}
+            {hprList.length > 0 ? "Editar História Patológica Regressa" : "Registrar Entrada da Assistida"}
+          </Button>
+          {/* Botão de Excluir HPR */}
+          {/* {hpr.data_atendimento && (
+                <Button variant="danger" onClick={handleDeleteHPR} className="mb-3">
+                  Excluir HPR
+                </Button>
+              )} */}
+        </div>
+      </div>
 
       {/* Detalhes de HPR */}
-      {hpr.data_atendimento && (
-        <Container>
-          {/* Informações de Atendimento */}
-          <Row className="mb-4">
-            <Col md={6}>
-              <Card>
-                <Card.Header><FaCalendarAlt className="me-2" /> Informações de Atendimento</Card.Header>
-                <Card.Body>
-                  <p><strong>Data do Último Atendimento:</strong> {formatarData(hpr.data_atendimento)}</p>
-                  <p><strong>Hora:</strong> {hpr.hora || '-'}</p>
-                </Card.Body>
-              </Card>
-            </Col>
 
-            {/* Internações */}
-            <Col md={6}>
-              <Card>
-                <Card.Header><BsHospital className="me-2" /> Internações</Card.Header>
-                <Card.Body>
-                  {hpr.internacoes?.length > 0 ? (
-                    <Table striped bordered size="sm">
-                      <thead>
-                        <tr>
-                          <th>Local</th>
-                          <th>Duração</th>
-                          <th>Data</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {hpr.internacoes.map((i, idx) => (
-                          <tr key={idx}>
-                            <td>{i.local}</td>
-                            <td>{i.duracao}</td>
-                            <td>{formatarData(i.data)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                      <tfoot>
-                        <tr>
-                          <td colSpan="3"><strong>Motivação:</strong> {hpr.motivacao_internacoes}</td>
-                        </tr>
-                      </tfoot>
-                    </Table>
-                  ) : (
-                    <p className="text-muted mb-0">Sem internações registradas.</p>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* Drogas e Medicamentos */}
-          <Row className='mb-4'>
-            <Col>
-              <Card>
-                <Card.Header><BsDropletHalf className="me-2" /> Substâncias Utilizadas</Card.Header>
-                <Card.Body>
-                  {hpr.drogas?.length > 0 ? (
-                    <Table striped bordered size="sm">
-                      <thead>
-                        <tr>
-                          <th>Substância</th>
-                          <th>Idade de Início</th>
-                          <th>Tempo de Uso</th>
-                          <th>Tempo sem Uso</th>
-                          <th>Intensidade</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {hpr.drogas.map((d, idx) => (
-                          <tr key={idx}>
-                            <td>{d.tipo}</td>
-                            <td>{d.idade_inicio} anos</td>
-                            <td>{d.tempo_uso}</td>
-                            <td>{hpr.tempo_sem_uso}</td>
-                            <td>{d.intensidade}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  ) : (
-                    <p className="text-muted mb-0">Sem uso de substâncias declarado.</p>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-
-            <Col md={5}>
-              <Card>
-                <Card.Header><BsCapsule className="me-2" /> Medicamentos Utilizados</Card.Header>
-                <Card.Body>
-                  {hpr.medicamentos?.length > 0 ? (
-                    <Table striped bordered size="sm">
-                      <thead>
-                        <tr>
-                          <th>Nome</th>
-                          <th>Dosagem</th>
-                          <th>Frequência</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {hpr.medicamentos.map((med, idx) => (
-                          <tr key={idx}>
-                            <td>{med.nome}</td>
-                            <td>{med.dosagem || '-'}</td>
-                            <td>{med.frequencia || '-'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  ) : (
-                    <p className="text-muted mb-0">Sem medicamentos registrados.</p>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* História Patológica */}
-          <Row className="mb-4">
-            <Col>
-              <Card>
-                <Card.Header><FaFileAlt className="me-2" /> História Patológica e Observações</Card.Header>
-                <Card.Body>
-                  <p><strong>História Patológica Regressa:</strong></p>
-                  <p className="p-3 bg-light rounded">{hpr.historia_patologica || 'Não informado'}</p>
-
-                  {hpr.fatos_marcantes && <p><strong>Fatos Marcantes:</strong> {hpr.fatos_marcantes}</p>}
-                  {hpr.infancia && <p><strong>Infância:</strong> {hpr.infancia}</p>}
-                  {hpr.adolescencia && <p><strong>Adolescência:</strong> {hpr.adolescencia}</p>}
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </Container>
+      {hprList.length > 0 && (
+        <>
+          <LinhaDoTempo hprList={hprList} />
+        </>
       )}
 
       {/* Formulário HPR */}

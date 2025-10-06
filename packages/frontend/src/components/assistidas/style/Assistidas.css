@@ -515,3 +515,39 @@ fieldset.field legend {
   display: flex;
   justify-content: center;
 }
+
+.timeline-container {
+
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 50px;
+  margin-top: 3rem;
+  margin-left: 4rem;
+  background-color: #93adbc0c;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.timeline-line {
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background-color: #0c4b8c ;
+  border-radius: 2px;
+}
+
+.timeline-date {
+  position: absolute;
+  left: -7rem;
+  text-align: right;
+  font-size: 0.85rem;
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+}
