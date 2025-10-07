@@ -110,6 +110,66 @@ INSERT INTO caixa_fechamentos (data_fechamento, saldo_inicial, total_entradas, t
 ('2024-12-31', 3500.00, 3200.00, 1700.00, 5000.00, 2, 'Fechamento mensal de dezembro/2024');
 
 -- ========================================
+-- 8. POPULAR TABELA CAMPANHAS
+-- ========================================
+INSERT INTO campanhas (nome, descricao, meta_valor, data_inicio, data_fim, status, tipo, criado_por) VALUES
+-- Campanhas ativas
+('Campanha de Natal 2024', 'Arrecadação de fundos para cestas básicas e presentes de Natal para as assistidas e suas famílias. Vamos levar esperança e alegria neste Natal!', 15000.00, '2024-11-15', '2024-12-25', 'encerrada', 'sazonal', 2),
+('Reforma do Telhado', 'Campanha emergencial para reforma completa do telhado da casa de acolhimento. Situação crítica com infiltrações que prejudicam o bem-estar das assistidas.', 25000.00, '2024-10-01', '2025-02-28', 'ativa', 'emergencia', 3),
+('Projeto Horta Comunitária', 'Criação de uma horta orgânica para as assistidas cultivarem alimentos saudáveis, promovendo terapia ocupacional e sustentabilidade.', 8000.00, '2025-01-01', '2025-03-31', 'ativa', 'projeto', 2),
+('Fundo de Emergência Médica', 'Manutenção de um fundo permanente para cobrir despesas médicas emergenciais e medicamentos não disponíveis no SUS.', 20000.00, '2025-01-01', NULL, 'ativa', 'continua', 3),
+('Campanha de Páscoa 2025', 'Arrecadação para realizar uma celebração especial de Páscoa, com atividades, almoço festivo e distribuição de ovos de chocolate.', 5000.00, '2025-03-01', '2025-04-20', 'planejada', 'sazonal', 2),
+-- Campanhas passadas
+('Mutirão de Inverno 2024', 'Arrecadação de agasalhos, cobertores e roupas de frio para as assistidas enfrentarem o inverno com dignidade.', 10000.00, '2024-05-01', '2024-07-31', 'encerrada', 'sazonal', 3),
+('Dia das Mães Especial', 'Celebração do Dia das Mães com atividades terapêuticas e presentes personalizados para fortalecer a autoestima.', 3000.00, '2024-04-15', '2024-05-12', 'encerrada', 'sazonal', 2);
+
+-- ========================================
+-- 9. POPULAR TABELA DOADORES_CAMPANHAS (N:N)
+-- ========================================
+INSERT INTO doadores_campanhas (doador_id, campanha_id, valor_doado, data_contribuicao, forma_pagamento, recibo_numero, anonimo, mensagem, status, usuario_registro_id) VALUES
+-- Doações para Campanha de Natal 2024 (encerrada com sucesso)
+(1, 1, 2000.00, '2024-11-20 10:00:00', 'PIX', 'RC2024001', FALSE, 'Feliz em poder ajudar neste Natal!', 'confirmada', 2),
+(2, 1, 1500.00, '2024-11-25 14:30:00', 'Transferência', 'RC2024002', FALSE, NULL, 'confirmada', 2),
+(3, 1, 500.00, '2024-12-01 09:15:00', 'Dinheiro', 'RC2024003', FALSE, 'Que todas tenham um Natal abençoado', 'confirmada', 3),
+(4, 1, 3000.00, '2024-12-05 16:45:00', 'Cartão', 'RC2024004', FALSE, NULL, 'confirmada', 2),
+(5, 1, 1000.00, '2024-12-10 11:00:00', 'PIX', 'RC2024005', TRUE, NULL, 'confirmada', 3),
+(6, 1, 2500.00, '2024-12-15 13:20:00', 'Boleto', 'RC2024006', FALSE, 'Parabéns pelo trabalho maravilhoso!', 'confirmada', 2),
+(7, 1, 4000.00, '2024-12-20 10:30:00', 'PIX', 'RC2024007', FALSE, NULL, 'confirmada', 3),
+(8, 1, 1800.00, '2024-12-22 15:00:00', 'Transferência', 'RC2024008', FALSE, 'Espero que ajude!', 'confirmada', 2),
+
+-- Doações para Reforma do Telhado (em andamento)
+(1, 2, 3000.00, '2024-10-15 08:30:00', 'PIX', 'RC2024010', FALSE, 'Para a reforma urgente do telhado', 'confirmada', 3),
+(3, 2, 5000.00, '2024-10-20 14:00:00', 'Transferência', 'RC2024011', FALSE, NULL, 'confirmada', 3),
+(4, 2, 2000.00, '2024-11-10 10:45:00', 'Cartão', 'RC2024012', FALSE, 'Sucesso na reforma!', 'confirmada', 2),
+(5, 2, 1500.00, '2024-12-05 09:30:00', 'PIX', 'RC2024013', TRUE, NULL, 'confirmada', 3),
+(9, 2, 4000.00, '2025-01-10 11:15:00', 'Boleto', 'RC2025001', FALSE, 'Contribuindo para um ambiente seguro', 'confirmada', 2),
+(10, 2, 3500.00, '2025-01-15 16:00:00', 'PIX', 'RC2025002', FALSE, NULL, 'confirmada', 3),
+
+-- Doações para Projeto Horta Comunitária
+(2, 3, 1000.00, '2025-01-05 10:00:00', 'PIX', 'RC2025003', FALSE, 'Apoiando a sustentabilidade!', 'confirmada', 2),
+(6, 3, 800.00, '2025-01-08 14:30:00', 'Dinheiro', 'RC2025004', FALSE, NULL, 'confirmada', 3),
+(7, 3, 1500.00, '2025-01-12 09:45:00', 'Transferência', 'RC2025005', FALSE, 'Projeto incrível!', 'confirmada', 2),
+(11, 3, 600.00, '2025-01-18 11:00:00', 'PIX', 'RC2025006', FALSE, NULL, 'confirmada', 3),
+
+-- Doações para Fundo de Emergência Médica
+(1, 4, 1000.00, '2025-01-02 08:00:00', 'PIX', 'RC2025007', FALSE, 'Saúde em primeiro lugar', 'confirmada', 2),
+(3, 4, 2000.00, '2025-01-10 15:30:00', 'Cartão', 'RC2025008', FALSE, NULL, 'confirmada', 3),
+(8, 4, 1500.00, '2025-01-15 10:15:00', 'Transferência', 'RC2025009', FALSE, 'Para emergências médicas', 'confirmada', 2),
+(12, 4, 500.00, '2025-01-20 13:45:00', 'Dinheiro', 'RC2025010', TRUE, NULL, 'confirmada', 3),
+
+-- Doações para campanhas passadas (para histórico)
+(2, 6, 800.00, '2024-05-10 10:00:00', 'PIX', 'RC2024020', FALSE, 'Agasalhos para todas!', 'confirmada', 3),
+(4, 6, 1200.00, '2024-06-01 14:00:00', 'Boleto', 'RC2024021', FALSE, NULL, 'confirmada', 2),
+(5, 6, 600.00, '2024-06-15 09:30:00', 'Dinheiro', 'RC2024022', TRUE, NULL, 'confirmada', 3),
+(7, 7, 500.00, '2024-04-20 11:00:00', 'PIX', 'RC2024030', FALSE, 'Feliz Dia das Mães!', 'confirmada', 2),
+(9, 7, 750.00, '2024-05-01 15:00:00', 'Cartão', 'RC2024031', FALSE, NULL, 'confirmada', 3),
+
+-- Múltiplas doações do mesmo doador para diferentes campanhas (demonstrando N:N)
+(1, 3, 500.00, '2025-01-19 10:30:00', 'PIX', 'RC2025011', FALSE, 'Segunda contribuição para a horta', 'confirmada', 2),
+(3, 3, 400.00, '2025-01-20 14:15:00', 'Dinheiro', 'RC2025012', FALSE, NULL, 'confirmada', 3),
+(3, 4, 800.00, '2025-01-21 09:00:00', 'PIX', 'RC2025013', FALSE, 'Contribuindo também para o fundo médico', 'confirmada', 2);
+
+-- ========================================
 -- VERIFICAÇÃO DOS DADOS INSERIDOS
 -- ========================================
 SELECT 'DADOS ADICIONAIS INSERIDOS COM SUCESSO!' as status;
@@ -121,11 +181,15 @@ SELECT 'Drogas Utilizadas:', COUNT(*) as total FROM drogas_utilizadas;
 SELECT 'Medicamentos Utilizados:', COUNT(*) as total FROM medicamentos_utilizados;
 SELECT 'Movimentações de Caixa:', COUNT(*) as total FROM caixa_movimentacoes;
 SELECT 'Fechamentos de Caixa:', COUNT(*) as total FROM caixa_fechamentos;
+SELECT 'Campanhas:', COUNT(*) as total FROM campanhas;
+SELECT 'Doadores em Campanhas:', COUNT(*) as total FROM doadores_campanhas;
 
 -- Estatísticas úteis
 SELECT '=== ESTATÍSTICAS ===' as info;
 SELECT 'Internações Ativas:', COUNT(*) as total FROM internacoes WHERE status = 'ativa';
 SELECT 'Consultas Agendadas:', COUNT(*) as total FROM consultas WHERE status = 'agendada';
+SELECT 'Campanhas Ativas:', COUNT(*) as total FROM campanhas WHERE status = 'ativa';
+SELECT 'Total Arrecadado em Campanhas:', COALESCE(SUM(valor_doado), 0) as total FROM doadores_campanhas WHERE status = 'confirmada';
 SELECT 'Total em Caixa:',
   (SELECT COALESCE(SUM(CASE WHEN tipo = 'entrada' THEN valor WHEN tipo = 'saida' THEN -valor ELSE valor END), 0)
    FROM caixa_movimentacoes) as saldo_atual;

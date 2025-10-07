@@ -24,6 +24,7 @@ import Unidadesmedida from './pages/GerenciarUnidadesMedida'
 import GerenciarTiposDespesas from './pages/GerenciarTiposDespesas'
 import Internacoes from './pages/Internacoes'
 import Caixa from './pages/Caixa'
+import Campanhas from './pages/Campanhas'
 import Relatorios from './pages/Relatorios'
 import TitleHandler from "./components/TitleHandler";
 import './App.css'
@@ -59,6 +60,7 @@ function App() {
             <Route path="despesas/lancar" element={<LancarDespesa />} />
             <Route path="internacoes" element={<Internacoes />} />
             <Route path="caixa" element={<Caixa />} />
+            <Route path="campanhas" element={<Campanhas />} />
             <Route path="relatorios" element={<Relatorios />} />
             <Route path="estoque/entradas" element={<EstoqueEntradas />} />
             <Route path="estoque/saidas" element={<EstoqueSaidas />} />

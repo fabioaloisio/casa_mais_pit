@@ -29,15 +29,20 @@ async function createDatabase() {
     // Usar SQLExecutor para executar arquivo SQL
     const sqlExecutor = new SQLExecutor(connection);
     const sqlFilePath = path.join(__dirname, 'sql', 'create_tables.sql');
-    
+    const campanhasFilePath = path.join(__dirname, 'sql', 'create_campanhas_tables.sql');
+
     console.log('\n📋 Criando estrutura das tabelas...');
     await sqlExecutor.executeFile(sqlFilePath);
 
+    // Criar tabelas de campanhas (relacionamento N:N)
+    console.log('\n🎯 Criando estrutura das campanhas (N:N)...');
+    await sqlExecutor.executeFile(campanhasFilePath);
+
     // Mostrar estatísticas
     const tables = [
-      'tipos_despesas', 'doadores', 'unidades_medida', 'assistidas', 
+      'tipos_despesas', 'doadores', 'unidades_medida', 'assistidas',
       'usuarios', 'despesas', 'doacoes', 'medicamentos', 'consultas',
-      'internacoes', 'medicamentos_utilizados'
+      'internacoes', 'medicamentos_utilizados', 'campanhas', 'doadores_campanhas'
     ];
     
     await sqlExecutor.showTableStats(tables);

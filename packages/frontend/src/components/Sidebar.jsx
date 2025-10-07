@@ -1,25 +1,26 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Nav } from 'react-bootstrap';
-import { 
-  FaDonate, 
-  FaHome, 
-  FaIdCard, 
-  FaMoneyBillWave, 
-  FaPills, 
-  FaStethoscope, 
-  FaUsers, 
-  FaBars, 
-  FaTimes, 
-  FaUserTie, 
-  FaTags, 
-  FaSignOutAlt, 
-  FaUserCircle, 
-  FaGripHorizontal, 
+import {
+  FaDonate,
+  FaHome,
+  FaIdCard,
+  FaMoneyBillWave,
+  FaPills,
+  FaStethoscope,
+  FaUsers,
+  FaBars,
+  FaTimes,
+  FaUserTie,
+  FaTags,
+  FaSignOutAlt,
+  FaUserCircle,
+  FaGripHorizontal,
   FaFlask,
   FaBed,
   FaMoneyBillWave as FaCash,
-  FaFileAlt 
+  FaFileAlt,
+  FaBullseye
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import './Sidebar.css';
@@ -135,6 +136,12 @@ function Sidebar() {
                 <Nav.Link as={Link} onClick={closeSidebar} to="/caixa"
                   className={location.pathname.includes('/caixa') ? 'active' : ''}>
                   <FaCash /> Caixa Financeiro
+                </Nav.Link>
+              )}
+              {(hasPermission('RF_B12') || hasPermission('RF_B6')) && (
+                <Nav.Link as={Link} onClick={closeSidebar} to="/campanhas"
+                  className={location.pathname.includes('/campanhas') ? 'active' : ''}>
+                  <FaBullseye /> Campanhas de Arrecadação
                 </Nav.Link>
               )}
               {hasPermission('RF_B6') && (
