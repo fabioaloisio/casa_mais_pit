@@ -36,6 +36,7 @@ const Consultas = () => {
   const [showModalRealizar, setShowModalRealizar] = useState(false);
   const [showModalPrescricao, setShowModalPrescricao] = useState(false);
   const [showModalHistoria, setShowModalHistoria] = useState(false);
+  const [showModalDetalhes, setShowModalDetalhes] = useState(false);
   const [consultaSelecionada, setConsultaSelecionada] = useState(null);
   const [assistidaSelecionada, setAssistidaSelecionada] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -110,7 +111,8 @@ const Consultas = () => {
         totalCanceladas: 0,
         proximasConsultas: 0
       });
-      setAssistidas(assistidasData.data || []);
+      // assistidasService.getAll() já retorna os dados diretamente
+      setAssistidas(assistidasData || []);
       setMedicos(medicosData.data || []);
       setEspecialidades(especialidadesData.data || []);
     } catch (error) {
@@ -603,11 +605,12 @@ const Consultas = () => {
                             <FaPrescriptionBottleAlt /> Prescrição
                           </Button>
                         )}
-                        <Button 
+                        <Button
                           size="sm"
                           variant="outline-secondary"
                           onClick={() => {
-                            // Implementar visualização de detalhes
+                            setConsultaSelecionada(consulta);
+                            setShowModalDetalhes(true);
                           }}
                         >
                           <FaEye /> Detalhes
@@ -1112,6 +1115,74 @@ const Consultas = () => {
             </Button>
           </Modal.Footer>
         </Form>
+      </Modal>
+
+      {/* Modal Detalhes da Consulta */}
+      <Modal show={showModalDetalhes} onHide={() => setShowModalDetalhes(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Detalhes da Consulta</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {consultaSelecionada && (
+            <div>
+              <Row>
+                <Col md={6}>
+                  <h6><strong>Informações da Consulta</strong></h6>
+                  <p><strong>Data:</strong> {new Date(consultaSelecionada.dataConsulta).toLocaleDateString('pt-BR')}</p>
+                  <p><strong>Horário:</strong> {consultaSelecionada.horaConsulta}</p>
+                  <p><strong>Especialidade:</strong> {consultaSelecionada.especialidade}</p>
+                  <p><strong>Status:</strong> <Badge bg={getStatusColor(consultaSelecionada.status)}>{getStatusText(consultaSelecionada.status)}</Badge></p>
+                </Col>
+                <Col md={6}>
+                  <h6><strong>Paciente e Médico</strong></h6>
+                  <p><strong>Assistida:</strong> {consultaSelecionada.assistida?.nome}</p>
+                  <p><strong>CPF:</strong> {consultaSelecionada.assistida?.cpf}</p>
+                  <p><strong>Médico:</strong> {consultaSelecionada.medico?.nome}</p>
+                </Col>
+              </Row>
+              <hr />
+              {consultaSelecionada.motivo && (
+                <>
+                  <h6><strong>Motivo da Consulta</strong></h6>
+                  <p>{consultaSelecionada.motivo}</p>
+                </>
+              )}
+              {consultaSelecionada.observacoes && (
+                <>
+                  <h6><strong>Observações</strong></h6>
+                  <p>{consultaSelecionada.observacoes}</p>
+                </>
+              )}
+              {consultaSelecionada.status === 'realizada' && (
+                <>
+                  <hr />
+                  <h6><strong>Informações da Realização</strong></h6>
+                  {consultaSelecionada.sintomas && (
+                    <p><strong>Sintomas:</strong> {consultaSelecionada.sintomas}</p>
+                  )}
+                  {consultaSelecionada.diagnostico && (
+                    <p><strong>Diagnóstico:</strong> {consultaSelecionada.diagnostico}</p>
+                  )}
+                  {consultaSelecionada.tratamento && (
+                    <p><strong>Tratamento:</strong> {consultaSelecionada.tratamento}</p>
+                  )}
+                </>
+              )}
+              {consultaSelecionada.status === 'cancelada' && consultaSelecionada.motivoCancelamento && (
+                <>
+                  <hr />
+                  <h6><strong>Motivo do Cancelamento</strong></h6>
+                  <p>{consultaSelecionada.motivoCancelamento}</p>
+                </>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModalDetalhes(false)}>
+            Fechar
+          </Button>
+        </Modal.Footer>
       </Modal>
 
       <Toast

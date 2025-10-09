@@ -21,8 +21,11 @@ class InternacoesService {
     return apiService.post('/internacoes/entrada', data);
   }
 
-  async efetuarSaida(id, data) {
-    return apiService.put(`/internacoes/${id}/saida`, data);
+  async efetuarSaida(assistidaId, data) {
+    return apiService.post('/internacoes/saida', {
+      assistida_id: assistidaId,
+      observacoes_saida: data.observacoesSaida || data.observacoes_saida
+    });
   }
 
   async getHistorico(filtros = {}) {

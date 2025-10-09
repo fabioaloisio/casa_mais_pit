@@ -69,7 +69,7 @@ const Internacoes = () => {
         assistidasService.getAll(),
         internacoesService.getAtivas()
       ]);
-      
+
       setInternacoes(internacoesData.data || []);
       setStats(statsData.data || {
         totalAtivas: 0,
@@ -77,7 +77,9 @@ const Internacoes = () => {
         mediaPermanencia: 0,
         totalMesAtual: 0
       });
-      setAssistidas(assistidasData.data || []);
+      // FIX: assistidasService.getAll() já retorna os dados diretamente (response.data)
+      // então não precisamos acessar .data novamente
+      setAssistidas(assistidasData || []);
       setInternacoesAtivas(ativasData.data || []);
     } catch (error) {
       setToast({
@@ -134,7 +136,8 @@ const Internacoes = () => {
   const handleEfetuarSaida = async (e) => {
     e.preventDefault();
     try {
-      const result = await internacoesService.efetuarSaida(internacaoSelecionada.id, formSaida);
+      // O backend espera assistida_id que está diretamente na internação
+      const result = await internacoesService.efetuarSaida(internacaoSelecionada.assistida_id, formSaida);
       setToast({
         show: true,
         message: result.message || 'Saída registrada com sucesso!',
