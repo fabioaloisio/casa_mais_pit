@@ -1,25 +1,25 @@
 // Shared utility functions - extracted from frontend utils
 
 // Formatar CPF
-export const formatCPF = (cpf) => {
+const formatCPF = (cpf) => {
   const cleaned = cpf.replace(/\D/g, '');
   return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 };
 
 // Formatar CNPJ
-export const formatCNPJ = (cnpj) => {
+const formatCNPJ = (cnpj) => {
   const cleaned = cnpj.replace(/\D/g, '');
   return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
 };
 
 // Formatar RG
-export const formatRG = (rg) => {
+const formatRG = (rg) => {
   const cleaned = rg.replace(/\D/g, '');
   return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3-$4');
 };
 
 // Formatar telefone
-export const formatTelefone = (telefone) => {
+const formatTelefone = (telefone) => {
   const cleaned = telefone.replace(/\D/g, '');
   if (cleaned.length === 11) {
     return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
@@ -30,13 +30,13 @@ export const formatTelefone = (telefone) => {
 };
 
 // Formatar CEP
-export const formatCEP = (cep) => {
+const formatCEP = (cep) => {
   const cleaned = cep.replace(/\D/g, '');
   return cleaned.replace(/(\d{5})(\d{3})/, '$1-$2');
 };
 
 // Formatar valor monetário
-export const formatCurrency = (value) => {
+const formatCurrency = (value) => {
   if (!value) return 'R$ 0,00';
 
   const numericValue = typeof value === 'string'
@@ -50,16 +50,16 @@ export const formatCurrency = (value) => {
 };
 
 // Alias para formatCurrency (compatibilidade)
-export const formatMoney = formatCurrency;
+const formatMoney = formatCurrency;
 
 // Remover formatação de valor monetário
-export const parseCurrency = (value) => {
+const parseCurrency = (value) => {
   if (!value) return 0;
   return parseFloat(value.replace(/[^\d,]/g, '').replace(',', '.'));
 };
 
 // Formatações de data
-export const formatData = (dataString) => {
+const formatData = (dataString) => {
   if (!dataString) return '';
 
   // Se já está no formato DD/MM/YYYY, retorna como está
@@ -84,7 +84,7 @@ export const formatData = (dataString) => {
   return dataString;
 };
 
-export const formatDataForInput = (dataString) => {
+const formatDataForInput = (dataString) => {
   if (!dataString) return '';
 
   // Se está no formato DD/MM/YYYY, converte para YYYY-MM-DD
@@ -106,7 +106,7 @@ export const formatDataForInput = (dataString) => {
   return '';
 };
 
-export const calcularIdadePorDataNascimento = (dataNascimento) => {
+const calcularIdadePorDataNascimento = (dataNascimento) => {
   if (!dataNascimento) return null;
 
   const hoje = new Date();
@@ -124,7 +124,7 @@ export const calcularIdadePorDataNascimento = (dataNascimento) => {
 };
 
 // Máscaras para formatação de inputs
-export const masks = {
+const masks = {
   cpf: '999.999.999-99',
   cnpj: '99.999.999/9999-99',
   telefone: '(99) 99999-9999',
@@ -142,4 +142,31 @@ export const masks = {
       currency: 'BRL'
     }).format(numericValue);
   }
+};
+
+// Aplicar máscara de valor monetário em input (migrado de frontend/utils/dom.js)
+const maskCurrency = (event) => {
+  let value = event.target.value;
+  value = value.replace(/\D/g, '');
+  value = (parseInt(value) / 100).toFixed(2) + '';
+  value = value.replace('.', ',');
+  value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+  event.target.value = 'R$ ' + value;
+};
+
+// CommonJS exports
+module.exports = {
+  formatCPF,
+  formatCNPJ,
+  formatRG,
+  formatTelefone,
+  formatCEP,
+  formatCurrency,
+  formatMoney,
+  parseCurrency,
+  formatData,
+  formatDataForInput,
+  calcularIdadePorDataNascimento,
+  masks,
+  maskCurrency
 };

@@ -1,7 +1,12 @@
 const pool = require('../config/database');
+const BaseRepository = require('../../../shared/repository/BaseRepository');
 const Doacao = require('../models/doacao');
 
-class DoacaoRepository {
+class DoacaoRepository extends BaseRepository {
+  constructor() {
+    super('doacoes', 'd');
+    this.pool = pool;
+  }
   // Criar nova doação
   async criar(doacaoData) {
     const doacao = new Doacao(doacaoData);

@@ -7,7 +7,14 @@ import Toast from '../components/common/Toast';
 import ConfirmDeleteModal from '../components/assistidas/ConfirmDeleteModal';
 import '../components/assistidas/Assistidas.css';
 import '../pages/Doacoes.css';
-import { FaPlus } from 'react-icons/fa';
+import {
+  FaPlus,
+  FaUsers,
+  FaUserCheck,
+  FaHospital,
+  FaUserTimes,
+  FaChartLine
+} from 'react-icons/fa';
 
 const Assistidas = () => {
   const [assistidas, setAssistidas] = useState([]);
@@ -184,54 +191,82 @@ const Assistidas = () => {
       {stats && (
         <Row className="mb-4">
           <Col md={3}>
-            <Card className="stats-card">
-              <Card.Body>
-                <h6>Total{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}</h6>
-                <h3>
-                  {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
-                    ? assistidasFiltradas.length
-                    : stats.total
-                  }
-                </h3>
+            <Card className="stats-card h-100">
+              <Card.Body className="d-flex align-items-center">
+                <div className="me-3">
+                  <FaUsers size={30} className="text-primary" />
+                </div>
+                <div>
+                  <h6 className="mb-0 text-muted">
+                    Total{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}
+                  </h6>
+                  <h4 className="mb-0">
+                    {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
+                      ? assistidasFiltradas.length
+                      : stats.total
+                    }
+                  </h4>
+                </div>
               </Card.Body>
             </Card>
           </Col>
           <Col md={3}>
-            <Card className="stats-card">
-              <Card.Body>
-                <h6>Ativas{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}</h6>
-                <h3>
-                  {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
-                    ? assistidasFiltradas.filter(a => a.status === 'Ativa').length
-                    : stats.ativas
-                  }
-                </h3>
+            <Card className="stats-card h-100">
+              <Card.Body className="d-flex align-items-center">
+                <div className="me-3">
+                  <FaUserCheck size={30} className="text-success" />
+                </div>
+                <div>
+                  <h6 className="mb-0 text-muted">
+                    Ativas{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}
+                  </h6>
+                  <h4 className="mb-0">
+                    {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
+                      ? assistidasFiltradas.filter(a => a.status === 'Ativa').length
+                      : stats.ativas
+                    }
+                  </h4>
+                </div>
               </Card.Body>
             </Card>
           </Col>
           <Col md={3}>
-            <Card className="stats-card">
-              <Card.Body>
-                <h6>Em Tratamento{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}</h6>
-                <h3>
-                  {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
-                    ? assistidasFiltradas.filter(a => a.status === 'Em Tratamento').length
-                    : stats.emTratamento
-                  }
-                </h3>
+            <Card className="stats-card h-100">
+              <Card.Body className="d-flex align-items-center">
+                <div className="me-3">
+                  <FaHospital size={30} className="text-info" />
+                </div>
+                <div>
+                  <h6 className="mb-0 text-muted">
+                    Em Tratamento{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}
+                  </h6>
+                  <h4 className="mb-0">
+                    {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
+                      ? assistidasFiltradas.filter(a => a.status === 'Em Tratamento').length
+                      : stats.emTratamento
+                    }
+                  </h4>
+                </div>
               </Card.Body>
             </Card>
           </Col>
           <Col md={3}>
-            <Card className="stats-card">
-              <Card.Body>
-                <h6>Inativas{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}</h6>
-                <h3>
-                  {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
-                    ? assistidasFiltradas.filter(a => a.status === 'Inativa').length
-                    : stats.inativas
-                  }
-                </h3>
+            <Card className="stats-card h-100">
+              <Card.Body className="d-flex align-items-center">
+                <div className="me-3">
+                  <FaUserTimes size={30} className="text-warning" />
+                </div>
+                <div>
+                  <h6 className="mb-0 text-muted">
+                    Inativas{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}
+                  </h6>
+                  <h4 className="mb-0">
+                    {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
+                      ? assistidasFiltradas.filter(a => a.status === 'Inativa').length
+                      : stats.inativas
+                    }
+                  </h4>
+                </div>
               </Card.Body>
             </Card>
           </Col>

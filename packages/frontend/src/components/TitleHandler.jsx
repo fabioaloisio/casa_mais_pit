@@ -10,6 +10,9 @@ function TitleHandler() {
       case '/medicamentos':
         document.title = 'Casa+ Gerenciar Medicamentos';
         break;
+      case '/internacoes':
+        document.title = 'Casa+ Gestão de Internações';
+        break;
       default:
         document.title = 'Casa+ - Instituto Casa de Lazaro de Betânia';
     }

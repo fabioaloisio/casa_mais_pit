@@ -65,9 +65,24 @@ mysql -u root -p casamais_db < scripts/sql/reset_tables.sql
 
 - **`utils/sql-executor.js`** - Classe para executar arquivos SQL
 
+### Scripts de Usuários
+
+- **`verify-users.js`** - Verifica e lista todos os usuários do sistema com seus status
+- **`create-admin-user.js`** - Cria um usuário administrador
+- **`create-test-user.js`** - Cria usuário de teste para desenvolvimento
+- **`create-users-direct.js`** - Cria múltiplos usuários diretamente no banco
+- **`add-blocked-user.js`** - Adiciona um usuário bloqueado (para testes de status)
+- **`generate-hash.js`** - Gera hash bcrypt para senhas
+
+### Scripts Auxiliares (na raiz do backend)
+
+- **`../check-users.js`** - Verifica usuários e cria admin se necessário
+- **`../reset-admin-password.js`** - Reseta senha do administrador para 123456
+- **`../check-maria-history.js`** - Verifica histórico de status de usuário específico
+
 ## 📋 Estrutura Criada
 
-### Sistema de 11 Tabelas:
+### Sistema de 12 Tabelas:
 
 #### **Tabelas Base (sem FK)**
 
@@ -85,6 +100,7 @@ mysql -u root -p casamais_db < scripts/sql/reset_tables.sql
 - `consultas` → `assistidas`
 - `internacoes` → `assistidas`
 - `medicamentos_utilizados` → `assistidas`, `medicamentos`
+- `usuarios_status_historico` → `usuarios` (histórico de mudanças de status)
 
 ## 📊 Dados Incluídos
 
@@ -98,6 +114,13 @@ mysql -u root -p casamais_db < scripts/sql/reset_tables.sql
 - **6 unidades de medida** para medicamentos
 - **20 medicamentos** comuns na área de saúde
 - **7 assistidas** com perfis variados e diferentes status
+- **6 usuários** com diferentes tipos e status:
+  - 1 Administrador ativo (Fábio Aloisio)
+  - 1 Financeiro ativo
+  - 1 Colaborador pendente
+  - 1 Aprovado aguardando ativação
+  - 1 Rejeitado
+  - 1 Bloqueado
 
 ## ⚡ Características Técnicas
 
@@ -121,6 +144,14 @@ npm run db:populate          # Popula dados de exemplo
 npm run db:setup             # Setup completo (criar + popular)
 npm run db:reset             # Remove todas as tabelas
 npm run db:full-reset        # Reset + setup completo
+
+# Gestão de Usuários
+node scripts/verify-users.js          # Lista todos os usuários
+node scripts/create-admin-user.js     # Cria administrador
+node scripts/create-test-user.js      # Cria usuário teste
+node scripts/generate-hash.js [senha] # Gera hash de senha
+node check-users.js                   # Verifica/cria admin
+node reset-admin-password.js          # Reseta senha admin
 
 ```
 

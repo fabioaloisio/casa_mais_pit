@@ -1,9 +1,12 @@
 import { Card, Row, Col } from 'react-bootstrap'
 import { FaUsers, FaUserFriends, FaCalendarCheck, FaPills, FaHandHoldingHeart, FaChartLine } from 'react-icons/fa'
+import { useAuth } from '../contexts/AuthContext'
+import PendingApprovals from '../components/approval/PendingApprovals'
 import './Dashboard.css'
 import './Doacoes.css'
 
 function Dashboard() {
+  const { isAdmin } = useAuth()
   return (
     <div className="conteudo">
       <div className="topo">
@@ -98,6 +101,15 @@ function Dashboard() {
           </Card>
         </Col>
       </Row>
+      
+      {/* Seção de aprovações pendentes - apenas para administradores */}
+      {isAdmin() && (
+        <Row className="mt-4">
+          <Col>
+            <PendingApprovals />
+          </Col>
+        </Row>
+      )}
     </div>
   )
 }

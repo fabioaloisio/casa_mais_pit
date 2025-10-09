@@ -1,7 +1,13 @@
 // Configuração da API
 const API_CONFIG = {
   // URL base da API (ajuste conforme seu ambiente)
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3003/api',
+  BASE_URL: (() => {
+    const envUrl = import.meta.env.VITE_API_URL;
+    console.log('VITE_API_URL:', envUrl);
+    const baseUrl = envUrl || 'http://localhost:3003/api';
+    console.log('Final BASE_URL:', baseUrl);
+    return baseUrl;
+  })(),
   
   // Timeout para requisições (em ms)
   TIMEOUT: 30000,

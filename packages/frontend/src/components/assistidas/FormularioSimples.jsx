@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button, Col, Form, Modal, Row, Table, Nav } from "react-bootstrap";
 import { IMaskInput } from "react-imask";
 import PropTypes from 'prop-types';
-import { formatDataForInput, calcularIdadePorDataNascimento } from "@casa-mais/shared";
+import { formatDataForInput, calcularIdadePorDataNascimento, validateCPF, ERROR_MESSAGES } from "@casa-mais/shared";
 
 const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEditar, modoEdicao }) => {
     const [step, setStep] = useState(1);
@@ -110,20 +110,26 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
 
         if (step === 1) {
             ["nome", "cpf", "rg", "idade", "data_nascimento", "nacionalidade", "estado_civil", "profissao", "escolaridade"].forEach((field) => {
-                if (!formData[field]) errors[field] = "Campo obrigatório";
+                if (!formData[field]) errors[field] = ERROR_MESSAGES.REQUIRED_FIELD;
             });
+
+            // Validação específica do CPF
+            const cpfNormalizado = formData.cpf?.replace(/\D/g, '');
+            if (cpfNormalizado && !validateCPF(cpfNormalizado)) {
+                errors.cpf = ERROR_MESSAGES.INVALID_CPF;
+            }
         }
 
         if (step === 2) {
             ["logradouro", "bairro", "numero", "cep", "estado", "cidade", "telefone"].forEach((field) => {
-                if (!formData[field]) errors[field] = "Campo obrigatório";
+                if (!formData[field]) errors[field] = ERROR_MESSAGES.REQUIRED_FIELD;
             });
         }
 
         if (step === 3) {
             const camposObrigatorios = ["data_atendimento", "hora", "historia_patologica"];
             camposObrigatorios.forEach((field) => {
-                if (!formData[field]) errors[field] = "Campo obrigatório";
+                if (!formData[field]) errors[field] = ERROR_MESSAGES.REQUIRED_FIELD;
             });
         }
 
@@ -158,6 +164,13 @@ const FormularioSimples = ({ showModal, setShowModal, onSubmit, assistidaParaEdi
                     if (!firstErrorStep) firstErrorStep = parseInt(stepNumber);
                 }
             }
+        }
+
+        // Validação específica do CPF (step 1)
+        const cpfNormalizado = formData.cpf?.replace(/\D/g, '');
+        if (cpfNormalizado && !validateCPF(cpfNormalizado)) {
+            errors.cpf = "CPF inválido. Por favor, verifique o número digitado.";
+            if (!firstErrorStep) firstErrorStep = 1;
         }
 
         setFormErrors(errors);

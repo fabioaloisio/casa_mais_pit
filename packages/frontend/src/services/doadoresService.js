@@ -1,25 +1,36 @@
 import apiService from './api';
+import { validateCPF, validateCNPJ, validateDocumento } from '@casa-mais/shared';
 
 class DoadoresService {
   // Obter todos os doadores
   async getAll(filtros = {}) {
+    console.log('%c[DOADORES-SERVICE] LISTAGEM', 'color: purple; font-weight: bold');
+    console.log('Filtros:', filtros);
+
     try {
       const response = await apiService.get('/doadores', filtros);
+      console.log('Resposta da API:', response);
+      console.log(`Total de doadores retornados: ${response.data?.length || 0}`);
       return response.success ? response.data : [];
     } catch (error) {
-      console.error('Erro ao buscar doadores:', error);
+      console.error('ERRO ao buscar doadores:', error);
       throw new Error('Erro ao carregar doadores');
     }
   }
 
   // Obter doador por ID
   async getById(id) {
+    console.log('%c[DOADORES-SERVICE] CONSULTA POR ID', 'color: purple; font-weight: bold');
+    console.log('ID solicitado:', id);
+
     try {
       const response = await apiService.get(`/doadores/${id}`);
+      console.log('Doador encontrado:', response.data);
       return response.success ? response.data : null;
     } catch (error) {
-      console.error('Erro ao buscar doador:', error);
+      console.error('ERRO ao buscar doador:', error);
       if (error.message.includes('404')) {
+        console.log('Doador não encontrado (404)');
         return null;
       }
       throw new Error('Erro ao carregar doador');
@@ -28,31 +39,45 @@ class DoadoresService {
 
   // Buscar doadores com filtros
   async search(filtros = {}) {
+    console.log('%c[DOADORES-SERVICE] BUSCA', 'color: purple; font-weight: bold');
+    console.log('Filtros de busca:', filtros);
+
     try {
       const response = await apiService.get('/doadores', filtros);
+      console.log(`Encontrados ${response.data?.length || 0} doadores`);
       return response.success ? response.data : [];
     } catch (error) {
-      console.error('Erro ao buscar doadores:', error);
+      console.error('ERRO ao buscar doadores:', error);
       throw new Error('Erro ao buscar doadores');
     }
   }
 
   // Criar novo doador
   async create(doador) {
+    console.log('%c[DOADORES-SERVICE] CADASTRO', 'color: green; font-weight: bold');
+    console.log('Dados enviados:', doador);
+    console.log('Tipo:', doador.tipo_doador);
+    console.log('Nome:', doador.nome);
+    console.log('Documento:', doador.documento);
+
     try {
-      console.log('DoadoresService.create - dados recebidos:', doador);
       const response = await apiService.post('/doadores', doador);
-      console.log('DoadoresService.create - resposta da API:', response);
+      console.log('Resposta da API:', response);
+
       if (response.success) {
+        console.log('%cDOADOR CRIADO COM SUCESSO!', 'color: green; font-weight: bold');
+        console.log('ID gerado:', response.data?.id);
         return response.data;
       }
       throw new Error(response.message || 'Erro ao criar doador');
     } catch (error) {
-      console.error('Erro ao criar doador:', error);
+      console.error('ERRO ao criar doador:', error);
       if (error.message.includes('Dados inválidos')) {
+        console.log('Erro de validação detectado');
         throw error;
       }
       if (error.message.includes('já cadastrado')) {
+        console.log('Documento já cadastrado!');
         throw new Error('Documento já cadastrado');
       }
       throw new Error('Erro ao salvar doador. Verifique os dados e tente novamente.');
@@ -61,21 +86,31 @@ class DoadoresService {
 
   // Atualizar doador
   async update(id, doadorData) {
+    console.log('%c[DOADORES-SERVICE] ATUALIZAÇÃO', 'color: orange; font-weight: bold');
+    console.log('ID:', id);
+    console.log('Novos dados:', doadorData);
+
     try {
       const response = await apiService.put(`/doadores/${id}`, doadorData);
+      console.log('Resposta da API:', response);
+
       if (response.success) {
+        console.log('%cDOADOR ATUALIZADO COM SUCESSO!', 'color: orange; font-weight: bold');
         return response.data;
       }
       throw new Error(response.message || 'Erro ao atualizar doador');
     } catch (error) {
-      console.error('Erro ao atualizar doador:', error);
+      console.error('ERRO ao atualizar doador:', error);
       if (error.message.includes('404')) {
+        console.log('Doador não encontrado (404)');
         throw new Error('Doador não encontrado');
       }
       if (error.message.includes('Dados inválidos')) {
+        console.log('Erro de validação detectado');
         throw error;
       }
       if (error.message.includes('já cadastrado')) {
+        console.log('Documento já cadastrado!');
         throw new Error('Documento já cadastrado');
       }
       throw new Error('Erro ao atualizar doador');
@@ -84,29 +119,40 @@ class DoadoresService {
 
   // Excluir doador
   async delete(id) {
+    console.log('%c[DOADORES-SERVICE] EXCLUSÃO', 'color: red; font-weight: bold');
+    console.log('ID:', id);
+
     try {
       const response = await apiService.delete(`/doadores/${id}`);
+      console.log('Resposta:', response);
+
       if (response.success) {
+        console.log('%cDOADOR EXCLUÍDO COM SUCESSO!', 'color: red; font-weight: bold');
         return true;
       }
       // Se chegou aqui, significa que houve erro mas não gerou exception
       throw new Error(response.message || 'Erro ao excluir doador');
     } catch (error) {
-      console.error('Erro ao excluir doador:', error);
+      console.error('ERRO ao excluir doador:', error);
       if (error.message.includes('404')) {
+        console.log('Doador não encontrado (404)');
         throw new Error('Doador não encontrado');
       }
       if (error.message.includes('possui doações registradas')) {
+        console.log('%cEXCLUSÃO BLOQUEADA!', 'color: red; font-weight: bold');
+        console.log('Motivo: Doador possui doações registradas');
         throw new Error('Não é possível excluir este doador pois ele possui doações registradas no sistema');
       }
       if (error.message.includes('não pode ser removido')) {
+        console.log('%cEXCLUSÃO BLOQUEADA!', 'color: red; font-weight: bold');
+        console.log('Motivo: Doações vinculadas');
         throw new Error('Não é possível excluir doador com doações vinculadas');
       }
       throw new Error(error.message || 'Erro ao excluir doador');
     }
   }
 
-  // Obter histórico de doações do doador
+  // Obter histórico de doações do doador (apenas itens)
   async getDoacoes(id) {
     try {
       const response = await apiService.get(`/doadores/${id}/doacoes`);
@@ -117,6 +163,34 @@ class DoadoresService {
         return [];
       }
       throw new Error('Erro ao carregar histórico de doações');
+    }
+  }
+
+  // Obter histórico unificado (itens + monetárias)
+  async getHistoricoUnificado(id) {
+    try {
+      const response = await apiService.get(`/doadores/${id}/historico-unificado`);
+      return response.success ? response.data : [];
+    } catch (error) {
+      console.error('Erro ao buscar histórico unificado do doador:', error);
+      if (error.message.includes('404')) {
+        return [];
+      }
+      throw new Error('Erro ao carregar histórico unificado de doações');
+    }
+  }
+
+  // Obter estatísticas consolidadas do doador (itens + monetárias)
+  async getEstatisticasConsolidadas(id) {
+    try {
+      const response = await apiService.get(`/doadores/${id}/estatisticas-consolidadas`);
+      return response.success ? response.data : null;
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas consolidadas do doador:', error);
+      if (error.message.includes('404')) {
+        return null;
+      }
+      throw new Error('Erro ao carregar estatísticas consolidadas');
     }
   }
 
@@ -136,69 +210,17 @@ class DoadoresService {
     }
   }
 
-  // Validar CPF
+  // Métodos de validação agora vêm do shared/validators
   validateCPF(cpf) {
-    const cleanCPF = cpf.replace(/\D/g, '');
-    
-    if (cleanCPF.length !== 11) return false;
-    if (/^(\d)\1{10}$/.test(cleanCPF)) return false;
-
-    let sum = 0;
-    for (let i = 0; i < 9; i++) {
-      sum += parseInt(cleanCPF.charAt(i)) * (10 - i);
-    }
-    let remainder = 11 - (sum % 11);
-    if (remainder === 10 || remainder === 11) remainder = 0;
-    if (remainder !== parseInt(cleanCPF.charAt(9))) return false;
-
-    sum = 0;
-    for (let i = 0; i < 10; i++) {
-      sum += parseInt(cleanCPF.charAt(i)) * (11 - i);
-    }
-    remainder = 11 - (sum % 11);
-    if (remainder === 10 || remainder === 11) remainder = 0;
-    if (remainder !== parseInt(cleanCPF.charAt(10))) return false;
-
-    return true;
+    return validateCPF(cpf);
   }
 
-  // Validar CNPJ
   validateCNPJ(cnpj) {
-    const cleanCNPJ = cnpj.replace(/\D/g, '');
-    
-    if (cleanCNPJ.length !== 14) return false;
-    if (/^(\d)\1{13}$/.test(cleanCNPJ)) return false;
-
-    const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-    const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-
-    let sum = 0;
-    for (let i = 0; i < 12; i++) {
-      sum += parseInt(cleanCNPJ.charAt(i)) * weights1[i];
-    }
-    let remainder = sum % 11;
-    const firstDigit = remainder < 2 ? 0 : 11 - remainder;
-    if (firstDigit !== parseInt(cleanCNPJ.charAt(12))) return false;
-
-    sum = 0;
-    for (let i = 0; i < 13; i++) {
-      sum += parseInt(cleanCNPJ.charAt(i)) * weights2[i];
-    }
-    remainder = sum % 11;
-    const secondDigit = remainder < 2 ? 0 : 11 - remainder;
-    if (secondDigit !== parseInt(cleanCNPJ.charAt(13))) return false;
-
-    return true;
+    return validateCNPJ(cnpj);
   }
 
-  // Validar documento (CPF ou CNPJ)
   validateDocumento(documento, tipo) {
-    if (tipo === 'PF') {
-      return this.validateCPF(documento);
-    } else if (tipo === 'PJ') {
-      return this.validateCNPJ(documento);
-    }
-    return false;
+    return validateDocumento(documento, tipo);
   }
 }
 

@@ -10,6 +10,6 @@ router.get('/estatisticas', verifyToken, requirePermission('RF_B1'), assistidaCo
 router.get('/:id', verifyToken, requirePermission('RF_B1'), assistidaController.getById)
 router.post('/', verifyToken, requirePermission('RF_B1'), assistidaController.create);
 router.put('/:id', verifyToken, requirePermission('RF_B1'), assistidaController.update);
-router.delete('/:id', verifyToken, requirePermission('RF_B1'), assistidaController.detete);
+router.delete('/:id', verifyToken, requirePermission('RF_B1'), assistidaController.delete);
 
 module.exports = router

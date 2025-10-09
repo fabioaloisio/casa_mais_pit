@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Form, Card, Row, Col } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaPlus, FaSearch, FaDollarSign, FaUsers, FaBuilding, FaChartLine, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaSearch, FaDollarSign, FaUsers, FaBuilding, FaChartLine, FaSort, FaSortUp, FaSortDown, FaHistory } from 'react-icons/fa';
 import doacoesService from '../services/doacoesService';
 import { formatCPF, formatCNPJ, formatCurrency } from '@casa-mais/shared';
 import DoacaoModal from '../components/doacoes/DoacaoModal';
 import ConfirmDeleteModal from '../components/doacoes/ConfirmDeleteModal';
+import HistoricoUnificado from '../components/doacoes/HistoricoUnificado';
 import Toast from '../components/common/Toast';
+import DoacoesNavegacao from '../components/common/DoacoesNavegacao';
 import './Doacoes.css';
 
 const Doacoes = () => {
@@ -19,6 +21,8 @@ const Doacoes = () => {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [ordenacao, setOrdenacao] = useState({ campo: 'dataDoacao', direcao: 'desc' });
+  const [showHistoricoUnificado, setShowHistoricoUnificado] = useState(false);
+  const [doadorSelecionado, setDoadorSelecionado] = useState(null);
   
   const [stats, setStats] = useState({
     totalDoacoes: 0,
@@ -127,6 +131,19 @@ const Doacoes = () => {
     }
   };
 
+  const handleShowHistoricoUnificado = (doacao) => {
+    setDoadorSelecionado({
+      id: doacao.doador?.id,
+      nome: doacao.doador?.nome
+    });
+    setShowHistoricoUnificado(true);
+  };
+
+  const handleCloseHistoricoUnificado = () => {
+    setShowHistoricoUnificado(false);
+    setDoadorSelecionado(null);
+  };
+
   const formatDocumento = (documento, tipo) => {
     if (!documento) return '';
     return tipo === 'PF' ? formatCPF(documento) : formatCNPJ(documento);
@@ -208,6 +225,9 @@ const Doacoes = () => {
           registrar doações monetárias e acompanhar o histórico de contribuições.
         </p>
       </div>
+
+      {/* Navegação entre tipos de doações */}
+      <DoacoesNavegacao />
 
       {/* Cards de Estatísticas */}
       <Row className="mb-4">
@@ -386,12 +406,20 @@ const Doacoes = () => {
                     </span>
                   </td>
                   <td>
-                    <div className="d-flex gap-1">
+                    <div className="d-flex gap-1 flex-wrap">
                       <Button 
                         className="d-flex align-items-center gap-1 btn-outline-custom btn-sm fs-7"
                         onClick={() => handleShowModal(doacao)}
                       >
                         <FaEdit /> Editar
+                      </Button>
+                      <Button 
+                        className="d-flex align-items-center gap-1 btn-sm fs-7"
+                        variant="outline-info"
+                        onClick={() => handleShowHistoricoUnificado(doacao)}
+                        title="Ver histórico completo do doador (itens + monetário)"
+                      >
+                        <FaHistory /> Histórico
                       </Button>
                       <Button 
                         className="d-flex align-items-center gap-1 btn-sm fs-7"
@@ -423,6 +451,14 @@ const Doacoes = () => {
         onHide={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
         doacao={doacaoToDelete}
+      />
+
+      {/* Modal de histórico unificado */}
+      <HistoricoUnificado
+        show={showHistoricoUnificado}
+        onHide={handleCloseHistoricoUnificado}
+        doadorId={doadorSelecionado?.id}
+        doadorNome={doadorSelecionado?.nome}
       />
 
       {/* Toast de notificação */}
