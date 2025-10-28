@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Container, Card, Form, Button, Alert, Spinner } from 'react-bootstrap'
 import { FaLock, FaEye, FaEyeSlash, FaCheck } from 'react-icons/fa'
+import API_CONFIG from '../config/api'
 import './ActivateAccount.css'
 import '../styles/auth.css'
 
@@ -30,20 +31,26 @@ function ActivateAccount() {
   
   const validateToken = async () => {
     try {
-      // CORREÇÃO: Usar nova API de ativação
-      const response = await fetch(`/api/activation/validate/${token}`)
+      const apiUrl = API_CONFIG.BASE_URL.replace('/api', '') // Remove /api do final se existir
+      console.log('🔗 [FRONTEND] Validando token em:', `${apiUrl}/api/activation/validate/${token}`)
+
+      const response = await fetch(`${apiUrl}/api/activation/validate/${token}`)
+
+      console.log('📡 [FRONTEND] Response status:', response.status)
 
       if (response.ok) {
         const data = await response.json()
+        console.log('✅ [FRONTEND] Token válido, dados:', data)
         setValidToken(true)
-        setUserData(data.data)
+        setUserData(data.data.usuario)
       } else {
         const error = await response.json()
+        console.log('❌ [FRONTEND] Token inválido, erro:', error)
         setSubmitError(error.message || 'Token inválido ou expirado')
         setValidToken(false)
       }
     } catch (error) {
-      console.error('Erro ao validar token:', error)
+      console.error('💥 [FRONTEND] Erro ao validar token:', error)
       setSubmitError('Erro ao validar token de ativação')
       setValidToken(false)
     } finally {
@@ -88,15 +95,17 @@ function ActivateAccount() {
   
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!validateForm()) return
-    
+
     setSubmitting(true)
     setSubmitError('')
-    
+
     try {
-      // CORREÇÃO: Usar nova API de ativação
-      const response = await fetch(`/api/activation/activate/${token}`, {
+      const apiUrl = API_CONFIG.BASE_URL.replace('/api', '')
+      console.log('🔗 [FRONTEND] Ativando conta em:', `${apiUrl}/api/activation/activate/${token}`)
+
+      const response = await fetch(`${apiUrl}/api/activation/activate/${token}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -106,19 +115,22 @@ function ActivateAccount() {
           confirmSenha: formData.confirmSenha
         })
       })
-      
+
       const data = await response.json()
-      
+      console.log('📡 [FRONTEND] Response da ativação:', data)
+
       if (response.ok) {
+        console.log('✅ [FRONTEND] Conta ativada com sucesso!')
         setSubmitSuccess(true)
         setTimeout(() => {
           navigate('/login')
         }, 3000)
       } else {
+        console.log('❌ [FRONTEND] Erro ao ativar:', data)
         setSubmitError(data.message || 'Erro ao ativar conta')
       }
     } catch (error) {
-      console.error('Erro ao ativar conta:', error)
+      console.error('💥 [FRONTEND] Erro ao ativar conta:', error)
       setSubmitError('Erro ao conectar com o servidor')
     } finally {
       setSubmitting(false)

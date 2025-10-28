@@ -541,11 +541,11 @@ class EmailService {
           </div>
           <div class="content">
             <p>Olá <strong>${userName}</strong>,</p>
-            
+
             <p>Sua senha foi alterada com sucesso em <strong>${new Date().toLocaleString('pt-BR')}</strong>.</p>
-            
+
             <p>Se você não fez esta alteração, entre em contato conosco imediatamente.</p>
-            
+
             <p>Atenciosamente,<br>
             <strong>Equipe Casa Mais</strong></p>
           </div>
@@ -572,6 +572,129 @@ class EmailService {
     } catch (error) {
       console.error('❌ Erro ao enviar notificação de alteração:', error);
       // Não falhar se não conseguir enviar notificação
+    }
+  }
+
+  async sendAccountCreatedEmail(userEmail, userName, userType) {
+    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5174'}/login`;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Conta Criada - Casa Mais</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .info-box { background: #e3f2fd; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 4px; }
+          .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+          .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 Sua Conta Foi Criada!</h1>
+            <h2>Bem-vindo ao Casa Mais</h2>
+          </div>
+          <div class="content">
+            <p>Olá <strong>${userName}</strong>,</p>
+
+            <p>Sua conta foi criada com sucesso por um administrador no sistema Casa Mais!</p>
+
+            <div class="info-box">
+              <h3>📋 Informações da Sua Conta:</h3>
+              <p><strong>Email:</strong> ${userEmail}</p>
+              <p><strong>Tipo de Usuário:</strong> ${userType}</p>
+              <p><strong>Status:</strong> Ativo ✅</p>
+            </div>
+
+            <div class="warning">
+              <strong>🔐 Sobre Sua Senha:</strong>
+              <p>O administrador que criou sua conta definiu uma senha inicial. Entre em contato com o administrador para obter suas credenciais de acesso.</p>
+            </div>
+
+            <p>Após receber sua senha, você pode fazer login no sistema:</p>
+
+            <p style="text-align: center;">
+              <a href="${loginUrl}" class="button">Acessar o Sistema</a>
+            </p>
+
+            <p><strong>💡 Dica:</strong> Após o primeiro login, recomendamos que você altere sua senha nas configurações da sua conta.</p>
+
+            <p>Se tiver alguma dúvida, não hesite em entrar em contato com a administração.</p>
+
+            <p>Seja bem-vindo(a) à equipe!</p>
+
+            <p>Atenciosamente,<br>
+            <strong>Equipe Casa Mais</strong></p>
+          </div>
+          <div class="footer">
+            <p>Este é um email automático, não responda.</p>
+            <p>Casa de Lázaro de Betânia - Casa Mais</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || 'Casa Mais <noreply@casamais.org>',
+      to: userEmail,
+      subject: '🎉 Sua Conta Foi Criada - Casa Mais',
+      html: htmlContent,
+      text: `
+        Olá ${userName},
+
+        Sua conta foi criada com sucesso no sistema Casa Mais!
+
+        Informações da Sua Conta:
+        - Email: ${userEmail}
+        - Tipo: ${userType}
+        - Status: Ativo
+
+        O administrador definiu uma senha inicial para você.
+        Entre em contato com o administrador para obter suas credenciais.
+
+        Após receber sua senha, acesse o sistema em:
+        ${loginUrl}
+
+        Recomendamos que você altere sua senha após o primeiro login.
+
+        Atenciosamente,
+        Equipe Casa Mais
+      `
+    };
+
+    try {
+      if (!this.transporter) {
+        throw new Error('Transporter de email não inicializado');
+      }
+
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log(`📧 Email de conta criada enviado para: ${userEmail}`);
+
+      return {
+        success: true,
+        messageId: info.messageId
+      };
+    } catch (error) {
+      console.error('❌ Erro ao enviar email de conta criada:', error);
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('📝 Conta criada para:', userEmail, '- Tipo:', userType);
+        return {
+          success: true,
+          messageId: 'dev-mode'
+        };
+      }
+
+      throw error;
     }
   }
 }

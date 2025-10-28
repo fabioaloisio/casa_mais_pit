@@ -10,7 +10,12 @@ class ActivationController {
     try {
       const { token } = req.params;
 
+      console.log('🔐 [VALIDATE] Endpoint /validate/:token chamado');
+      console.log('🔐 [VALIDATE] Token recebido:', token);
+      console.log('🔐 [VALIDATE] req.params:', req.params);
+
       if (!token) {
+        console.log('❌ [VALIDATE] Token não fornecido');
         return res.status(400).json({
           success: false,
           message: 'Token de ativação é obrigatório',
@@ -18,9 +23,13 @@ class ActivationController {
         });
       }
 
+      console.log('🔐 [VALIDATE] Chamando statusService.validateActivationToken...');
       const resultado = await statusService.validateActivationToken(token);
 
+      console.log('🔐 [VALIDATE] Resultado:', resultado);
+
       if (!resultado.valid) {
+        console.log('❌ [VALIDATE] Token inválido:', resultado.message);
         return res.status(400).json({
           success: false,
           message: resultado.message,
@@ -28,6 +37,7 @@ class ActivationController {
         });
       }
 
+      console.log('✅ [VALIDATE] Token válido! Usuário:', resultado.usuario.id);
       res.json({
         success: true,
         message: 'Token válido',
@@ -36,7 +46,7 @@ class ActivationController {
         }
       });
     } catch (error) {
-      console.error('Erro ao validar token:', error);
+      console.error('💥 [VALIDATE] Erro ao validar token:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor',

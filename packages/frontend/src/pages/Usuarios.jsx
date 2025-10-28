@@ -82,13 +82,18 @@ function Usuarios() {
         response = await usuarioService.criarUsuario(formData)
         toast.success('Usuário cadastrado com sucesso!')
       }
-      
+
       if (response.success) {
         await carregarUsuarios()
       }
     } catch (error) {
       console.error('Erro ao salvar usuário:', error)
-      
+
+      // Erro 409 será tratado pelo UsuarioModal (usuário inativo)
+      if (error.response?.status === 409) {
+        throw error // Propagar para o modal tratar
+      }
+
       // Verificar se o erro tem uma mensagem específica
       if (error.message) {
         toast.error(error.message)
@@ -99,6 +104,20 @@ function Usuarios() {
       } else {
         toast.error('Erro ao salvar usuário - tente novamente')
       }
+    }
+  }
+
+  const handleReactivate = async (userId, userData) => {
+    try {
+      const response = await usuarioService.reactivateAndUpdate(userId, userData)
+      toast.success('Usuário reativado com sucesso! Email de ativação enviado.')
+      if (response.success) {
+        await carregarUsuarios()
+      }
+    } catch (error) {
+      console.error('Erro ao reativar usuário:', error)
+      toast.error('Erro ao reativar usuário - tente novamente')
+      throw error
     }
   }
 
@@ -350,6 +369,7 @@ function Usuarios() {
         show={showModal}
         onHide={handleClose}
         onSave={handleSave}
+        onReactivate={handleReactivate}
         usuario={usuarioSelecionado}
       />
 

@@ -372,7 +372,7 @@ class StatusService {
       // Registrar no histórico
       await connection.execute(
         `INSERT INTO usuarios_status_historico
-         (usuario_id, status_anterior, status_novo, alterado_por, observacoes)
+         (usuario_id, status_anterior, status_novo, alterado_por, motivo)
          VALUES (?, 'aprovado', 'ativo', ?, 'Conta ativada pelo usuário')`,
         [usuario.id, usuario.id]
       );
@@ -393,9 +393,14 @@ class StatusService {
 
   // Validar token de ativação
   async validateActivationToken(token) {
+    console.log('🔍 [DEBUG] Validando token:', token);
+
     const usuario = await this.usuarioRepository.findByActivationToken(token);
 
+    console.log('🔍 [DEBUG] Usuário encontrado:', usuario ? `ID ${usuario.id}, Status: ${usuario.status}` : 'null');
+
     if (!usuario) {
+      console.log('❌ [DEBUG] Token inválido ou não encontrado');
       return {
         valid: false,
         message: 'Token de ativação inválido ou expirado'
@@ -403,12 +408,14 @@ class StatusService {
     }
 
     if (usuario.status !== 'aprovado') {
+      console.log(`❌ [DEBUG] Status incorreto: ${usuario.status} (esperado: aprovado)`);
       return {
         valid: false,
         message: 'Usuário não está aguardando ativação'
       };
     }
 
+    console.log('✅ [DEBUG] Token válido!');
     return {
       valid: true,
       usuario: usuario.toJSON()
