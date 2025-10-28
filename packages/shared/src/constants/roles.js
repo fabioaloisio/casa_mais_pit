@@ -17,12 +17,12 @@ const PERMISSIONS = {
   // Requisitos Básicos
   RF_B1: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Assistidas
   RF_B2: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Tipos de Substâncias
-  RF_B3: [ROLES.ADMINISTRADOR],                     // Gerenciar Doadores
+  RF_B3: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Gerenciar Doadores
   RF_B4: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Medicamentos
   RF_B5: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Unidades de Medida
   RF_B6: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Gerenciar Doações
   RF_B7: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Gerenciar Tipos de Despesas
-  RF_B8: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Gerenciar Despesas
+  RF_B8: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Médicos
   RF_B9: [ROLES.ADMINISTRADOR],                     // Gerenciar Usuários
   RF_B10: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Internações
   RF_B11: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Gerenciar Consultas
@@ -63,15 +63,17 @@ const PERMISSIONS = {
   RF_F7: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Lançar Prescrição
   RF_F8: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Lançar História Patológica
   RF_F9: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Registrar Dados Pós-Consulta
+  RF_F10: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO], // Gerenciar Campanha de Arrecadação
 
   // Requisitos de Sistema (Relatórios)
   RF_S1: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Relatório de Assistidas
-  RF_S2: [ROLES.ADMINISTRADOR],                     // Relatório de Despesas
+  RF_S2: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Relatório de Despesas
   RF_S3: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Relatório de Consultas
-  RF_S4: [ROLES.ADMINISTRADOR],                     // Relatório de Doações
+  RF_S4: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Relatório de Doações
   RF_S5: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Relatório de Medicamentos
   RF_S6: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR], // Relatório de Internações
-  RF_S7: [ROLES.ADMINISTRADOR]                      // Relatório de Doadores
+  RF_S7: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO],  // Relatório de Doadores
+  RF_S8: [ROLES.ADMINISTRADOR, ROLES.FINANCEIRO]   // Relatório de Campanhas de Arrecadação
 };
 
 // Funções helper para verificação de roles

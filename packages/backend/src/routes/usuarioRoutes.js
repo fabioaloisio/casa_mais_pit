@@ -22,6 +22,7 @@ router.post('/:id/block', requireAdmin, usuarioController.blockUser);
 router.post('/:id/unblock', requireAdmin, usuarioController.unblockUser);
 router.post('/:id/suspend', requireAdmin, usuarioController.suspendUser);
 router.post('/:id/reactivate', requireAdmin, usuarioController.reactivateUser);
+router.post('/:id/reactivate-and-update', requireAdmin, usuarioController.reactivateAndUpdate);
 router.get('/:id/status-history', requireAdmin, usuarioController.getUserStatusHistory);
 router.get('/status/statistics', requireAdmin, usuarioController.getStatusStatistics);
 

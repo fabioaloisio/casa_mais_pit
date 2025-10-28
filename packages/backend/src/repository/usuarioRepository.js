@@ -43,18 +43,35 @@ class UsuarioRepository extends BaseRepository {
   async create(usuario) {
     try {
       const query = `
-        INSERT INTO usuarios (nome, email, senha, tipo, status)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO usuarios (nome, email, senha, tipo, status, token_ativacao, aprovado_por, data_aprovacao)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `;
-      
-      const [result] = await db.execute(query, [
+
+      const values = [
         usuario.nome,
         usuario.email,
         usuario.senha,
         usuario.tipo || 'Colaborador',
-        usuario.status || 'pendente'
-      ]);
-      
+        usuario.status || 'pendente',
+        usuario.token_ativacao || null,
+        usuario.aprovado_por || null,
+        usuario.data_aprovacao || null
+      ];
+
+      console.log('💾 [DEBUG] Criando usuário com valores:', {
+        nome: values[0],
+        email: values[1],
+        tipo: values[3],
+        status: values[4],
+        token_ativacao: values[5],
+        aprovado_por: values[6],
+        data_aprovacao: values[7]
+      });
+
+      const [result] = await db.execute(query, values);
+
+      console.log('✅ [DEBUG] Usuário inserido com ID:', result.insertId);
+
       return await this.findById(result.insertId);
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
@@ -66,10 +83,44 @@ class UsuarioRepository extends BaseRepository {
     try {
       const query = 'SELECT COUNT(*) as count FROM usuarios WHERE email = ?';
       const [rows] = await db.execute(query, [email]);
-      
+
       return rows[0].count > 0;
     } catch (error) {
       console.error('Erro ao verificar se email existe:', error);
+      throw error;
+    }
+  }
+
+  async emailExistsActive(email) {
+    try {
+      const query = `
+        SELECT COUNT(*) as count
+        FROM usuarios
+        WHERE email = ?
+        AND status != 'inativo'
+      `;
+      const [rows] = await db.execute(query, [email]);
+
+      return rows[0].count > 0;
+    } catch (error) {
+      console.error('Erro ao verificar se email existe (ativo):', error);
+      throw error;
+    }
+  }
+
+  async findInactiveUserByEmail(email) {
+    try {
+      const query = `
+        SELECT *
+        FROM usuarios
+        WHERE email = ?
+        AND status = 'inativo'
+      `;
+      const [rows] = await db.execute(query, [email]);
+
+      return rows.length > 0 ? new Usuario(rows[0]) : null;
+    } catch (error) {
+      console.error('Erro ao buscar usuário inativo por email:', error);
       throw error;
     }
   }
@@ -113,13 +164,53 @@ class UsuarioRepository extends BaseRepository {
     }
   }
 
-  async softDelete(id) {
+  async softDelete(id, excluídoPor = null) {
+    const connection = await db.getConnection();
+
     try {
-      const query = 'UPDATE usuarios SET ativo = 0, data_atualizacao = NOW() WHERE id = ?';
-      await db.execute(query, [id]);
+      await connection.beginTransaction();
+
+      // Buscar status anterior para o histórico
+      const [usuario] = await connection.execute(
+        'SELECT status FROM usuarios WHERE id = ?',
+        [id]
+      );
+
+      if (usuario.length === 0) {
+        throw new Error('Usuário não encontrado');
+      }
+
+      const statusAnterior = usuario[0].status;
+
+      // Atualizar usuário para inativo
+      const updateQuery = `
+        UPDATE usuarios
+        SET status = 'inativo',
+            ativo = 0,
+            data_atualizacao = NOW()
+        WHERE id = ?
+      `;
+
+      const [result] = await connection.execute(updateQuery, [id]);
+
+      // Registrar no histórico
+      const historicoQuery = `
+        INSERT INTO usuarios_status_historico
+        (usuario_id, status_anterior, status_novo, alterado_por, motivo)
+        VALUES (?, ?, 'inativo', ?, 'Usuário excluído (soft delete)')
+      `;
+
+      await connection.execute(historicoQuery, [id, statusAnterior, excluídoPor]);
+
+      await connection.commit();
+
+      return result.affectedRows;
     } catch (error) {
+      await connection.rollback();
       console.error('Erro ao desativar usuário:', error);
       throw error;
+    } finally {
+      connection.release();
     }
   }
 
@@ -171,11 +262,19 @@ class UsuarioRepository extends BaseRepository {
 
   async findByActivationToken(token) {
     try {
+      console.log('🔍 [DEBUG] Buscando usuário por token:', token);
+
       // CORREÇÃO: Buscar por token sem filtro de ativo, verificar status = 'aprovado'
       const query = 'SELECT * FROM usuarios WHERE token_ativacao = ? AND status = "aprovado"';
       const [rows] = await db.execute(query, [token]);
 
+      console.log('🔍 [DEBUG] Resultados encontrados:', rows.length);
+      if (rows.length > 0) {
+        console.log('🔍 [DEBUG] Primeiro resultado - ID:', rows[0].id, 'Status:', rows[0].status, 'Token:', rows[0].token_ativacao);
+      }
+
       if (rows.length === 0) {
+        console.log('❌ [DEBUG] Nenhum usuário encontrado com token:', token);
         return null;
       }
 
@@ -571,6 +670,7 @@ class UsuarioRepository extends BaseRepository {
         LEFT JOIN usuarios aprovador ON u.aprovado_por = aprovador.id
         LEFT JOIN usuarios bloqueador ON u.bloqueado_por = bloqueador.id
         LEFT JOIN usuarios suspensor ON u.suspenso_por = suspensor.id
+        WHERE u.status != 'inativo'
         ORDER BY u.data_cadastro DESC
       `;
 

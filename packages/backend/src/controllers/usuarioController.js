@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const UsuarioRepository = require('../repository/usuarioRepository');
 const StatusService = require('../services/statusService');
 const Usuario = require('../models/usuario');
+const emailService = require('../services/emailService');
 
 const usuarioRepository = new UsuarioRepository();
 const statusService = new StatusService();
@@ -86,13 +87,13 @@ class UsuarioController {
 
       // Validações básicas
       const errors = [];
-      
+
       if (!nome?.trim()) errors.push('Nome é obrigatório');
       if (!email?.trim()) errors.push('Email é obrigatório');
-      if (!senha?.trim()) errors.push('Senha é obrigatória');
       if (!tipo?.trim()) errors.push('Tipo é obrigatório');
-      
-      if (senha && senha.length < 6) {
+
+      // Senha é opcional - se fornecida, validar
+      if (senha && senha.trim() && senha.length < 6) {
         errors.push('Senha deve ter pelo menos 6 caracteres');
       }
 
@@ -112,10 +113,10 @@ class UsuarioController {
         });
       }
 
-      // Verificar se email já existe
-      const emailExiste = await usuarioRepository.emailExists(email);
-      
-      if (emailExiste) {
+      // Verificar se email já existe para usuários ativos
+      const emailExisteAtivo = await usuarioRepository.emailExistsActive(email);
+
+      if (emailExisteAtivo) {
         return res.status(400).json({
           success: false,
           message: 'Email já está em uso',
@@ -123,24 +124,121 @@ class UsuarioController {
         });
       }
 
-      // Hash da senha
-      const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
+      // Verificar se email pertence a usuário inativo
+      const usuarioInativo = await usuarioRepository.findInactiveUserByEmail(email);
 
-      // Criar usuário
+      if (usuarioInativo) {
+        return res.status(409).json({
+          success: false,
+          message: 'Email pertence a um usuário inativo',
+          errors: ['Este email está associado a um usuário inativo'],
+          data: {
+            canReactivate: true,
+            inactiveUserId: usuarioInativo.id,
+            inactiveUserName: usuarioInativo.nome,
+            inactiveUserEmail: usuarioInativo.email,
+            inactiveUserType: usuarioInativo.tipo
+          }
+        });
+      }
+
+      // FLUXO A: Admin forneceu senha - criar usuário ativo
+      if (senha && senha.trim()) {
+        const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
+
+        const novoUsuario = new Usuario({
+          nome: nome.trim(),
+          email: email.trim().toLowerCase(),
+          senha: senhaHash,
+          tipo: tipo || 'Colaborador',
+          status: 'ativo' // Admin criou com senha = ativo imediatamente
+        });
+
+        const usuarioCriado = await usuarioRepository.create(novoUsuario);
+
+        // Enviar email informativo ao usuário
+        try {
+          await emailService.sendAccountCreatedEmail(
+            usuarioCriado.email,
+            usuarioCriado.nome,
+            usuarioCriado.tipo
+          );
+        } catch (emailError) {
+          console.error('Erro ao enviar email informativo:', emailError);
+          // Não falhar se email não for enviado
+        }
+
+        return res.status(201).json({
+          success: true,
+          message: 'Usuário cadastrado com sucesso. Você deve comunicar a senha ao usuário.',
+          data: usuarioCriado.toJSON()
+        });
+      }
+
+      // FLUXO B: Admin NÃO forneceu senha - usuário define sua senha
+      const crypto = require('crypto');
+      const tokenAtivacao = crypto.randomUUID();
+
+      console.log('🔑 [DEBUG] Token gerado:', tokenAtivacao);
+      console.log('👤 [DEBUG] Admin que está criando:', req.user.id, req.user.nome);
+
       const novoUsuario = new Usuario({
         nome: nome.trim(),
         email: email.trim().toLowerCase(),
-        senha: senhaHash,
-        tipo: tipo || 'Colaborador'
+        senha: null, // Usuário definirá sua senha
+        tipo: tipo || 'Colaborador',
+        status: 'aprovado', // Aprovado pelo admin, aguardando ativação
+        token_ativacao: tokenAtivacao,
+        aprovado_por: req.user.id, // ID do admin que está criando
+        data_aprovacao: new Date()
+      });
+
+      console.log('📝 [DEBUG] Dados do novo usuário:', {
+        nome: novoUsuario.nome,
+        email: novoUsuario.email,
+        status: novoUsuario.status,
+        token_ativacao: novoUsuario.token_ativacao,
+        aprovado_por: novoUsuario.aprovado_por
       });
 
       const usuarioCriado = await usuarioRepository.create(novoUsuario);
 
-      res.status(201).json({
-        success: true,
-        message: 'Usuário cadastrado com sucesso',
-        data: usuarioCriado.toJSON()
-      });
+      console.log('✅ [DEBUG] Usuário criado com ID:', usuarioCriado.id);
+      console.log('🔍 [DEBUG] Token no usuário criado:', usuarioCriado.token_ativacao);
+
+      // Enviar email com link de ativação
+      try {
+        await emailService.sendApprovalEmail(
+          usuarioCriado.email,
+          usuarioCriado.nome,
+          tokenAtivacao
+        );
+
+        return res.status(201).json({
+          success: true,
+          message: 'Usuário cadastrado com sucesso. Um email foi enviado para que ele defina sua senha.',
+          data: usuarioCriado.toJSON()
+        });
+      } catch (emailError) {
+        console.error('Erro ao enviar email de ativação:', emailError);
+
+        // Em desenvolvimento, retornar link
+        if (process.env.NODE_ENV !== 'production') {
+          return res.status(201).json({
+            success: true,
+            message: 'Usuário cadastrado. Email não enviado (modo dev).',
+            data: usuarioCriado.toJSON(),
+            dev_activation_url: `${process.env.FRONTEND_URL || 'http://localhost:5174'}/activate/${tokenAtivacao}`
+          });
+        }
+
+        // Em produção, falhar se não conseguir enviar email
+        return res.status(500).json({
+          success: false,
+          message: 'Usuário criado, mas falha ao enviar email de ativação',
+          errors: ['Erro ao enviar email de ativação']
+        });
+      }
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
       res.status(500).json({
@@ -260,8 +358,16 @@ class UsuarioController {
         });
       }
 
-      // Soft delete - apenas desativa o usuário
-      await usuarioRepository.softDelete(id);
+      // Soft delete - define status como 'inativo'
+      const linhasAfetadas = await usuarioRepository.softDelete(id, req.user.id);
+
+      if (linhasAfetadas === 0) {
+        return res.status(500).json({
+          success: false,
+          message: 'Erro ao remover usuário',
+          errors: ['Falha ao desativar usuário no banco de dados']
+        });
+      }
 
       res.json({
         success: true,
@@ -596,6 +702,84 @@ class UsuarioController {
       });
     } catch (error) {
       console.error('Erro ao reativar usuário:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Erro interno do servidor',
+        errors: [error.message || 'Erro ao reativar usuário']
+      });
+    }
+  }
+
+  async reactivateAndUpdate(req, res) {
+    try {
+      const { id } = req.params;
+      const { nome, tipo } = req.body;
+
+      // Verificar permissão
+      if (!statusService.canPerformAction(req.user, 'reativar')) {
+        return res.status(403).json({
+          success: false,
+          message: 'Acesso negado',
+          errors: ['Você não tem permissão para reativar usuários']
+        });
+      }
+
+      // Verificar se usuário existe e está inativo
+      const usuario = await usuarioRepository.findById(id);
+      if (!usuario) {
+        return res.status(404).json({
+          success: false,
+          message: 'Usuário não encontrado',
+          errors: ['Usuário não existe']
+        });
+      }
+
+      if (usuario.status !== 'inativo') {
+        return res.status(400).json({
+          success: false,
+          message: 'Usuário não está inativo',
+          errors: ['Apenas usuários inativos podem ser reativados com atualização']
+        });
+      }
+
+      // Reativar usuário
+      await statusService.reactivateInactiveUser(id, req.user.id);
+
+      // Atualizar dados do usuário se fornecidos
+      const updateData = {};
+      if (nome && nome.trim()) updateData.nome = nome.trim();
+      if (tipo && tipo.trim()) updateData.tipo = tipo.trim();
+
+      if (Object.keys(updateData).length > 0) {
+        await usuarioRepository.update(id, updateData);
+      }
+
+      // Gerar token de ativação e definir status como aprovado
+      const crypto = require('crypto');
+      const tokenAtivacao = crypto.randomUUID();
+
+      await usuarioRepository.updateApprovalStatus(
+        id,
+        'aprovado',
+        tokenAtivacao,
+        req.user.id
+      );
+
+      // Enviar email de ativação
+      const usuarioAtualizado = await usuarioRepository.findById(id);
+      await emailService.sendApprovalEmail(
+        usuarioAtualizado.email,
+        usuarioAtualizado.nome,
+        tokenAtivacao
+      );
+
+      res.json({
+        success: true,
+        message: 'Usuário reativado com sucesso. Email de ativação enviado.',
+        data: usuarioAtualizado.toJSON()
+      });
+    } catch (error) {
+      console.error('Erro ao reativar e atualizar usuário:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Erro interno do servidor',
