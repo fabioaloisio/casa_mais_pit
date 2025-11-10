@@ -21,6 +21,10 @@ const relatorioRoutes = require('./routes/relatorioRoutes');
 const medicosRoutes = require('./routes/medicosRoutes');
 const especialidadesRoutes = require('./routes/especialidadesRoutes');
 const campanhaRoutes = require('./routes/campanhaRoutes');
+const materiaPrimaRoutes = require('./routes/materiaPrimaRoutes');
+const produtoRoutes = require('./routes/produtoRoutes');
+const receitaRoutes = require('./routes/receitaRoutes');
+const vendaRoutes = require('./routes/vendaRoutes');
 
 
 const app = express();
@@ -52,6 +56,10 @@ app.use('/api/relatorios', relatorioRoutes);
 app.use('/api/medicos', medicosRoutes);
 app.use('/api/especialidades', especialidadesRoutes);
 app.use('/api/campanhas', campanhaRoutes);
+app.use('/api/materias-primas', materiaPrimaRoutes);
+app.use('/api/produtos', produtoRoutes);
+app.use('/api/receitas', receitaRoutes);
+app.use('/api/vendas', vendaRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'API Casa+ funcionando!' });
