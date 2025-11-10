@@ -30,19 +30,19 @@ VALUES
   ('PF', 'Mariana Gomes', '01650993560', 'mariana.gomes@email.com', '11909876543', 'Av. Consolação, 369', 'São Paulo', 'SP', '01301100', 1),
   ('PJ', 'Supermercado Bom Preço LTDA', '68569796000131', 'contato@bompreco.com.br', '1133334444', 'Av. do Comércio, 1000', 'São Paulo', 'SP', '03031000', 1),
   ('PJ', 'Farmácia Saúde & Vida ME', '20729550000153', 'contato@saudevida.com.br', '1144445555', 'Rua da Saúde, 200', 'São Paulo', 'SP', '04038001', 1),
-  
+
   -- DOADORES INATIVOS SEM DOAÇÕES (IDs 9-12)
   ('PF', 'Ana Beatriz Costa', '02951994150', 'ana.costa@email.com', '11965432109', 'Rua Augusta, 789', 'São Paulo', 'SP', '01305100', 0),
   ('PF', 'Juliana Ferreira', '41682563677', 'juliana.f@email.com', '11943210987', 'Av. Faria Lima, 654', 'São Paulo', 'SP', '01452000', 0),
   ('PJ', 'Padaria Pão Quente EIRELI', '28097821000107', 'contato@paoquente.com.br', '1155556666', 'Av. São João, 300', 'São Paulo', 'SP', '01035000', 0),
   ('PJ', 'Auto Peças Central LTDA', '64040600000166', 'vendas@autopecas.com.br', '1166667777', 'Rua do Gasômetro, 400', 'São Paulo', 'SP', '04047020', 0),
-  
+
   -- DOADORES ATIVOS SEM DOAÇÕES - PODEM SER EXCLUÍDOS (IDs 13-16)
   ('PF', 'Paulo Henrique Silva', '57352730869', 'paulo.silva@email.com', '11910987654', 'Rua Cardeal Arcoverde, 258', 'São Paulo', 'SP', '05407002', 1),
   ('PF', 'Ricardo Martins', '28937353989', 'ricardo.m@email.com', '11898765432', 'Rua da Consolação, 741', 'São Paulo', 'SP', '01302907', 1),
   ('PJ', 'Restaurante Sabor Caseiro ME', '67444698000105', 'contato@saborcaseiro.com.br', '1177778888', 'Av. Lins de Vasconcelos, 500', 'São Paulo', 'SP', '01538001', 1),
   ('PJ', 'Loja de Roupas Fashion LTDA', '12345678000195', 'contato@fashionloja.com.br', '1188889999', 'Rua 25 de Março, 600', 'São Paulo', 'SP', '01021200', 1),
-  
+
   -- DOADORES INATIVOS SEM DOAÇÕES - PODEM SER EXCLUÍDOS (IDs 17-20)
   ('PF', 'Lucas Pereira Santos', '88776655443', 'lucas.santos@email.com', '11999887766', 'Av. Brigadeiro Faria Lima, 800', 'São Paulo', 'SP', '01451000', 0),
   ('PF', 'Camila Souza Lima', '77665544332', 'camila.lima@email.com', '11988776655', 'Rua Pamplona, 900', 'São Paulo', 'SP', '01405000', 0),
@@ -194,20 +194,204 @@ SELECT 'Medicamentos:', COUNT(*) as total FROM medicamentos;
 SELECT 'Assistidas:', COUNT(*) as total FROM assistidas;
 
 -- 9. Verificar distribuição de doadores
-SELECT 
+SELECT
   'RESUMO DOADORES:' as info,
   COUNT(*) as total_doadores,
   SUM(CASE WHEN ativo = 1 THEN 1 ELSE 0 END) as ativos,
   SUM(CASE WHEN ativo = 0 THEN 1 ELSE 0 END) as inativos
 FROM doadores;
 
-SELECT 
+SELECT
   'DOADORES COM DOAÇÕES (NÃO PODEM SER EXCLUÍDOS):' as info,
   COUNT(DISTINCT d.doador_id) as total
 FROM doacoes d;
 
-SELECT 
+SELECT
   'DOADORES SEM DOAÇÕES (PODEM SER EXCLUÍDOS):' as info,
   COUNT(*) as total
 FROM doadores d
 WHERE d.id NOT IN (SELECT DISTINCT doador_id FROM doacoes);
+
+
+-- ========================================
+-- Módulo Produção & Vendas
+-- ========================================
+
+-- ========================================
+-- 1. MATÉRIAS-PRIMAS (Exemplo do Bolo)
+-- ========================================
+
+INSERT INTO materias_primas (nome, unidade_medida, preco_por_unidade, descricao, ativo) VALUES
+('Trigo', 'kg', 3.00, 'Farinha de trigo', 1),
+('Óleo', 'L', 7.00, 'Óleo de soja', 1),
+('Achocolatado', 'kg', 20.00, 'Achocolatado em pó', 1),
+('Açúcar', 'kg', 3.00, 'Açúcar refinado', 1),
+('Fermento', 'g', 0.035, 'Fermento biológico seco', 1),
+('Ovos', 'un', 0.50, 'Ovos de galinha', 1),
+('Leite', 'L', 5.00, 'Leite integral', 1),
+('Manteiga', 'kg', 25.00, 'Manteiga sem sal', 1),
+('Cacau em pó', 'kg', 30.00, 'Cacau em pó 100%', 1),
+('Bicarbonato de sódio', 'g', 0.02, 'Bicarbonato de sódio', 1),
+('Sal', 'kg', 2.00, 'Sal refinado', 1),
+('Essência de baunilha', 'ml', 0.15, 'Essência de baunilha', 1);
+
+-- ========================================
+-- 2. RECEITAS
+-- ========================================
+
+-- Receita: Bolo de Chocolate (1 unidade)
+INSERT INTO receitas (nome, descricao, rendimento, custo_estimado, ativo) VALUES
+('Bolo de Chocolate', 'Bolo de chocolate caseiro', 1, 0.00, 1),
+('Bolo de Cenoura', 'Bolo de cenoura com cobertura', 1, 0.00, 1),
+('Pão Caseiro', 'Pão de forma caseiro', 1, 0.00, 1),
+('Biscoito de Chocolate', 'Biscoitos de chocolate', 24, 0.00, 1);
+
+-- ========================================
+-- 3. RECEITAS_MATERIAS_PRIMAS
+-- ========================================
+-- IMPORTANTE: Não incluir custo_parcial no INSERT - será calculado pelo trigger
+
+-- Receita 1: Bolo de Chocolate (1 unidade)
+INSERT INTO receitas_materias_primas (receita_id, materia_prima_id, quantidade) VALUES
+(1, 1, 0.300),  -- Trigo: 300g
+(1, 2, 0.200),  -- Óleo: 200ml (0.2L)
+(1, 3, 0.100),  -- Achocolatado: 100g (0.1kg)
+(1, 4, 0.200),  -- Açúcar: 200g (0.2kg)
+(1, 5, 10.000); -- Fermento: 10g
+
+-- Receita 2: Bolo de Cenoura (1 unidade)
+INSERT INTO receitas_materias_primas (receita_id, materia_prima_id, quantidade) VALUES
+(2, 1, 0.250),  -- Trigo: 250g
+(2, 2, 0.150),  -- Óleo: 150ml
+(2, 4, 0.300),  -- Açúcar: 300g
+(2, 6, 3.000),  -- Ovos: 3 unidades
+(2, 5, 10.000), -- Fermento: 10g
+(2, 11, 0.010); -- Sal: 10g (0.01kg)
+
+-- Receita 3: Pão Caseiro (1 unidade)
+INSERT INTO receitas_materias_primas (receita_id, materia_prima_id, quantidade) VALUES
+(3, 1, 0.500),  -- Trigo: 500g
+(3, 7, 0.300),  -- Leite: 300ml (0.3L)
+(3, 8, 0.050),  -- Manteiga: 50g (0.05kg)
+(3, 11, 0.010), -- Sal: 10g
+(3, 5, 5.000);  -- Fermento: 5g
+
+-- Receita 4: Biscoito de Chocolate (24 unidades)
+INSERT INTO receitas_materias_primas (receita_id, materia_prima_id, quantidade) VALUES
+(4, 1, 0.200),  -- Trigo: 200g
+(4, 8, 0.100),  -- Manteiga: 100g
+(4, 4, 0.150),  -- Açúcar: 150g
+(4, 9, 0.050),  -- Cacau: 50g (0.05kg)
+(4, 10, 5.000), -- Bicarbonato: 5g
+(4, 6, 1.000),  -- Ovo: 1 unidade
+(4, 12, 5.000); -- Essência: 5ml
+
+-- ========================================
+-- 4. PRODUTOS
+-- ========================================
+-- Nota: Os triggers calculam automaticamente custo_estimado, margem_bruta e margem_percentual
+
+INSERT INTO produtos (nome, descricao, preco_venda, receita_id, ativo) VALUES
+('Bolo de Chocolate', 'Bolo de chocolate caseiro delicioso', 13.00, 1, 1),
+('Bolo de Cenoura', 'Bolo de cenoura com cobertura de chocolate', 12.00, 2, 1),
+('Pão Caseiro', 'Pão de forma caseiro fresco', 8.00, 3, 1),
+('Biscoito de Chocolate', 'Pacote com 24 biscoitos de chocolate', 10.00, 4, 1);
+
+-- ========================================
+-- 5. VENDAS (Dados fictícios dos últimos 30 dias)
+-- ========================================
+-- Nota: Os triggers calculam automaticamente todos os valores
+
+INSERT INTO vendas (produto_id, quantidade, desconto, forma_pagamento, data_venda, observacoes) VALUES
+(1, 10, 10.00, 'Pix', DATE_SUB(CURDATE(), INTERVAL 5 DAY), 'Venda em lote'),
+(1, 5, 0.00, 'Dinheiro', DATE_SUB(CURDATE(), INTERVAL 3 DAY), NULL),
+(2, 8, 5.00, 'Crédito', DATE_SUB(CURDATE(), INTERVAL 7 DAY), NULL),
+(2, 3, 0.00, 'Pix', DATE_SUB(CURDATE(), INTERVAL 2 DAY), NULL),
+(3, 15, 0.00, 'Débito', DATE_SUB(CURDATE(), INTERVAL 4 DAY), NULL),
+(3, 6, 3.00, 'Dinheiro', DATE_SUB(CURDATE(), INTERVAL 1 DAY), NULL),
+(4, 5, 0.00, 'Pix', DATE_SUB(CURDATE(), INTERVAL 6 DAY), NULL),
+(4, 10, 10.00, 'Crédito', DATE_SUB(CURDATE(), INTERVAL 8 DAY), NULL),
+(1, 2, 0.00, 'Dinheiro', CURDATE(), NULL),
+(2, 4, 2.00, 'Pix', CURDATE(), NULL),
+(3, 8, 0.00, 'Débito', CURDATE(), NULL),
+(4, 3, 0.00, 'Dinheiro', CURDATE(), NULL);
+
+-- ========================================
+-- VALIDAÇÃO DOS DADOS
+-- ========================================
+
+-- Verificar totais
+SELECT
+  'Total de Matérias-Primas' as item,
+  COUNT(*) as quantidade
+FROM materias_primas
+WHERE ativo = 1
+UNION ALL
+SELECT
+  'Total de Receitas' as item,
+  COUNT(*) as quantidade
+FROM receitas
+WHERE ativo = 1
+UNION ALL
+SELECT
+  'Total de Produtos' as item,
+  COUNT(*) as quantidade
+FROM produtos
+WHERE ativo = 1
+UNION ALL
+SELECT
+  'Total de Vendas' as item,
+  COUNT(*) as quantidade
+FROM vendas;
+
+-- Verificar custos das receitas
+SELECT
+  r.id,
+  r.nome,
+  r.rendimento,
+  ROUND(r.custo_estimado, 2) as custo_total,
+  CASE
+    WHEN r.rendimento > 0 THEN ROUND(r.custo_estimado / r.rendimento, 2)
+    ELSE 0
+  END as custo_por_unidade
+FROM receitas r
+ORDER BY r.id;
+
+-- Verificar produtos e margens
+SELECT
+  p.id,
+  p.nome,
+  ROUND(p.preco_venda, 2) as preco_venda,
+  ROUND(p.custo_estimado, 2) as custo_estimado,
+  ROUND(p.margem_bruta, 2) as margem_bruta,
+  ROUND(p.margem_percentual, 2) as margem_percentual,
+  r.nome as receita
+FROM produtos p
+LEFT JOIN receitas r ON p.receita_id = r.id
+ORDER BY p.id;
+
+-- Verificar vendas e lucros
+SELECT
+  DATE(v.data_venda) as data,
+  COUNT(*) as total_vendas,
+  SUM(v.quantidade) as total_quantidade,
+  ROUND(SUM(v.valor_final), 2) as total_vendas_valor,
+  ROUND(SUM(v.custo_estimado_total), 2) as total_custo,
+  ROUND(SUM(v.lucro_estimado), 2) as total_lucro
+FROM vendas v
+GROUP BY DATE(v.data_venda)
+ORDER BY data DESC;
+
+-- Verificar composição das receitas
+SELECT
+  r.nome as receita,
+  mp.nome as materia_prima,
+  rmp.quantidade,
+  mp.unidade_medida,
+  ROUND(rmp.custo_parcial, 2) as custo_parcial
+FROM receitas_materias_primas rmp
+JOIN receitas r ON rmp.receita_id = r.id
+JOIN materias_primas mp ON rmp.materia_prima_id = mp.id
+ORDER BY r.id, mp.nome;
+
+SELECT 'Dados de produção e vendas populados com sucesso!' as status;

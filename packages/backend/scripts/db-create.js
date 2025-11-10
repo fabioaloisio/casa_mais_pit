@@ -4,7 +4,7 @@ const SQLExecutor = require('./utils/sql-executor');
 
 async function createDatabase() {
   let connection;
-  
+
   try {
     console.log('📡 Conectando ao MySQL...');
     // Conectar ao MySQL sem especificar database
@@ -15,12 +15,12 @@ async function createDatabase() {
       password: process.env.DB_PASSWORD || '3511',
       port: process.env.DB_PORT || 3306
     });
-    
+
     // Criar banco se não existir
     await tempConnection.execute('CREATE DATABASE IF NOT EXISTS casamais_db');
     console.log('🏗️ Banco casamais_db criado/verificado');
     await tempConnection.end();
-    
+
     // Conectar ao banco específico
     console.log('🔗 Conectando ao banco casamais_db...');
     connection = await db.getConnection();
@@ -30,6 +30,7 @@ async function createDatabase() {
     const sqlExecutor = new SQLExecutor(connection);
     const sqlFilePath = path.join(__dirname, 'sql', 'create_tables.sql');
     const campanhasFilePath = path.join(__dirname, 'sql', 'create_campanhas_tables.sql');
+    const triggersFilePath = path.join(__dirname, 'sql', 'create_triggers.sql');
 
     console.log('\n📋 Criando estrutura das tabelas...');
     await sqlExecutor.executeFile(sqlFilePath);
@@ -38,13 +39,18 @@ async function createDatabase() {
     console.log('\n🎯 Criando estrutura das campanhas (N:N)...');
     await sqlExecutor.executeFile(campanhasFilePath);
 
+    // Criar triggers do módulo Produção & Vendas
+    console.log('\n⚡ Criando triggers do módulo Produção & Vendas...');
+    await sqlExecutor.executeFile(triggersFilePath, '$$');
+
     // Mostrar estatísticas
     const tables = [
       'tipos_despesas', 'doadores', 'unidades_medida', 'assistidas',
       'usuarios', 'despesas', 'doacoes', 'medicamentos', 'consultas',
-      'internacoes', 'medicamentos_utilizados', 'campanhas', 'doadores_campanhas'
+      'internacoes', 'medicamentos_utilizados', 'campanhas', 'doadores_campanhas',
+      'materias_primas', 'receitas', 'receitas_materias_primas', 'produtos', 'vendas'
     ];
-    
+
     await sqlExecutor.showTableStats(tables);
     await sqlExecutor.showForeignKeys();
 
