@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Button, Card, Row, Col, Form, Modal, Alert, Badge, Nav } from 'react-bootstrap';
-import { 
-  FaFileAlt, 
-  FaDownload, 
-  FaFilePdf, 
-  FaFileExcel, 
-  FaChartBar, 
-  FaChartPie, 
+import {
+  FaFileAlt,
+  FaDownload,
+  FaFilePdf,
+  FaFileExcel,
+  FaChartBar,
+  FaChartPie,
   FaChartLine,
   FaUsers,
   FaDollarSign,
@@ -43,54 +43,61 @@ const Relatorios = () => {
   const [graficos, setGraficos] = useState({});
 
   const tiposRelatorio = [
-    { 
-      key: 'assistidas', 
-      nome: 'Relatório de Assistidas', 
-      icone: FaUsers, 
+    {
+      key: 'assistidas',
+      nome: 'Relatório de Assistidas',
+      icone: FaUsers,
       cor: 'primary',
       descricao: 'Dados completos das assistidas, internações e histórico'
     },
-    { 
-      key: 'medicamentos', 
-      nome: 'Relatório de Medicamentos', 
-      icone: FaPills, 
+    {
+      key: 'medicamentos',
+      nome: 'Relatório de Medicamentos',
+      icone: FaPills,
       cor: 'success',
       descricao: 'Controle de medicamentos, estoque e prescrições'
     },
-    { 
-      key: 'doacoes', 
-      nome: 'Relatório de Doações', 
-      icone: FaGift, 
+    {
+      key: 'doacoes',
+      nome: 'Relatório de Doações',
+      icone: FaGift,
       cor: 'info',
       descricao: 'Doações recebidas, doadores e valores arrecadados'
     },
-    { 
-      key: 'despesas', 
-      nome: 'Relatório de Despesas', 
-      icone: FaDollarSign, 
+    {
+      key: 'despesas',
+      nome: 'Relatório de Despesas',
+      icone: FaDollarSign,
       cor: 'warning',
       descricao: 'Gastos da instituição por categoria e período'
     },
-    { 
-      key: 'internacoes', 
-      nome: 'Relatório de Internações', 
-      icone: FaBed, 
+    {
+      key: 'internacoes',
+      nome: 'Relatório de Internações',
+      icone: FaBed,
       cor: 'secondary',
       descricao: 'Histórico de internações, permanência e estatísticas'
     },
-    { 
-      key: 'consultas', 
-      nome: 'Relatório de Consultas', 
-      icone: FaStethoscope, 
+    {
+      key: 'consultas',
+      nome: 'Relatório de Consultas',
+      icone: FaStethoscope,
       cor: 'primary',
       descricao: 'Atendimentos médicos realizados e agendados'
     },
-    { 
-      key: 'caixa', 
-      nome: 'Relatório de Caixa', 
-      icone: FaCash, 
+    {
+      key: 'caixa',
+      nome: 'Relatório de Caixa',
+      icone: FaCash,
       cor: 'dark',
       descricao: 'Movimentação financeira e fechamentos de caixa'
+    },
+    {
+      key: 'vendas',
+      nome: 'Relatório de Vendas',
+      icone: FaDollarSign,
+      cor: 'success',
+      descricao: 'Vendas de produtos, lucros estimados e análise financeira'
     }
   ];
 
@@ -123,8 +130,21 @@ const Relatorios = () => {
     }
   };
 
-  const handleGerarRelatorio = (tipo) => {
+  const handleGerarRelatorio = async (tipo) => {
     setRelatorioPeriodo({ ...relatorioPeriodo, tipo });
+
+    // Para vendas, carregar dados diretamente se houver período
+    if (tipo === 'vendas') {
+      const hoje = new Date();
+      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      setRelatorioPeriodo({
+        ...relatorioPeriodo,
+        tipo: 'vendas',
+        dataInicio: inicioMes.toISOString().split('T')[0],
+        dataFim: hoje.toISOString().split('T')[0]
+      });
+    }
+
     setShowModalFiltros(true);
   };
 
@@ -199,7 +219,7 @@ const Relatorios = () => {
       <div className="topo">
         <h1>Relatórios e Estatísticas</h1>
         <p>
-          Visualize relatórios detalhados e estatísticas da instituição. 
+          Visualize relatórios detalhados e estatísticas da instituição.
           Exporte dados em PDF ou Excel e acompanhe indicadores importantes.
         </p>
       </div>
@@ -207,8 +227,8 @@ const Relatorios = () => {
       {/* Abas de Navegação */}
       <Nav variant="tabs" className="mb-4">
         <Nav.Item>
-          <Nav.Link 
-            active={activeTab === 'dashboard'} 
+          <Nav.Link
+            active={activeTab === 'dashboard'}
             onClick={() => setActiveTab('dashboard')}
           >
             <FaChartBar className="me-2" />
@@ -216,8 +236,8 @@ const Relatorios = () => {
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link 
-            active={activeTab === 'relatorios'} 
+          <Nav.Link
+            active={activeTab === 'relatorios'}
             onClick={() => setActiveTab('relatorios')}
           >
             <FaFileAlt className="me-2" />
@@ -225,8 +245,8 @@ const Relatorios = () => {
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link 
-            active={activeTab === 'graficos'} 
+          <Nav.Link
+            active={activeTab === 'graficos'}
             onClick={() => setActiveTab('graficos')}
           >
             <FaChartPie className="me-2" />
@@ -448,14 +468,14 @@ const Relatorios = () => {
                     <h5 className="card-title">{tipo.nome}</h5>
                     <p className="text-muted">{tipo.descricao}</p>
                     <div className="d-grid gap-2">
-                      <Button 
+                      <Button
                         className="azul"
                         onClick={() => handleGerarRelatorio(tipo.key)}
                       >
                         <FaFileAlt className="me-2" />
                         Gerar Relatório
                       </Button>
-                      <Button 
+                      <Button
                         variant="outline-primary"
                         onClick={() => handleVisualizarGraficos(tipo.key)}
                       >
@@ -477,10 +497,10 @@ const Relatorios = () => {
           <Col md={12}>
             <Alert variant="info">
               <FaChartLine className="me-2" />
-              <strong>Análise Gráfica</strong> - Selecione um tipo de relatório na aba "Gerar Relatórios" 
+              <strong>Análise Gráfica</strong> - Selecione um tipo de relatório na aba "Gerar Relatórios"
               e clique em "Ver Gráficos" para visualizar os dados em formato gráfico.
             </Alert>
-            
+
             <Card>
               <Card.Header>
                 <h5 className="mb-0">Gráficos Disponíveis</h5>
@@ -491,7 +511,7 @@ const Relatorios = () => {
                     const IconeComponente = tipo.icone;
                     return (
                       <Col md={4} key={tipo.key} className="mb-3">
-                        <Button 
+                        <Button
                           variant="outline-secondary"
                           className="w-100 p-3"
                           onClick={() => handleVisualizarGraficos(tipo.key)}
@@ -544,13 +564,13 @@ const Relatorios = () => {
                 </Form.Group>
               </Col>
             </Row>
-            
+
             {/* Atalhos de Período */}
             <div className="mb-3">
               <Form.Label>Períodos Predefinidos</Form.Label>
               <div className="d-flex gap-2 flex-wrap">
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline-secondary"
                   onClick={() => {
                     const hoje = new Date();
@@ -564,8 +584,8 @@ const Relatorios = () => {
                 >
                   Este Mês
                 </Button>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline-secondary"
                   onClick={() => {
                     const hoje = new Date();
@@ -580,8 +600,8 @@ const Relatorios = () => {
                 >
                   Mês Passado
                 </Button>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline-secondary"
                   onClick={() => {
                     const hoje = new Date();
@@ -595,8 +615,8 @@ const Relatorios = () => {
                 >
                   Últimos 30 Dias
                 </Button>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline-secondary"
                   onClick={() => {
                     const hoje = new Date();
@@ -619,7 +639,7 @@ const Relatorios = () => {
             Cancelar
           </Button>
           <div className="d-flex gap-2">
-            <Button 
+            <Button
               variant="danger"
               onClick={() => handleExportarRelatorio('pdf')}
               disabled={loading}
@@ -627,7 +647,7 @@ const Relatorios = () => {
               <FaFilePdf className="me-2" />
               Exportar PDF
             </Button>
-            <Button 
+            <Button
               variant="success"
               onClick={() => handleExportarRelatorio('excel')}
               disabled={loading}
