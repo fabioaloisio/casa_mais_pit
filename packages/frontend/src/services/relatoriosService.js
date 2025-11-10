@@ -33,10 +33,14 @@ class RelatoriosService {
     return apiService.get('/relatorios/caixa', filtros);
   }
 
+  async getRelatorioVendas(filtros = {}) {
+    return apiService.get('/relatorios/vendas', filtros);
+  }
+
   // Helper method to transform camelCase to snake_case for backend compatibility
   _transformFilters(filtros) {
     const transformed = { ...filtros };
-    
+
     // Transform date fields from camelCase to snake_case
     if (transformed.dataInicio) {
       transformed.data_inicio = transformed.dataInicio;
@@ -46,7 +50,7 @@ class RelatoriosService {
       transformed.data_fim = transformed.dataFim;
       delete transformed.dataFim;
     }
-    
+
     // Transform other common fields
     if (transformed.doadorId) {
       transformed.doador_id = transformed.doadorId;
@@ -76,7 +80,7 @@ class RelatoriosService {
       transformed.idade_max = transformed.idadeMax;
       delete transformed.idadeMax;
     }
-    
+
     return transformed;
   }
 
