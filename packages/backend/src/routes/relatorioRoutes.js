@@ -24,6 +24,9 @@ router.get('/internacoes', verifyToken, requirePermission('RF_S6'), relatorioCon
 // RF_S7 - Relatório de Doadores (Apenas Administrador)
 router.get('/doadores', verifyToken, requirePermission('RF_S7'), relatorioController.relatorioDoadores);
 
+// Relatório de Vendas (Administrador e Financeiro)
+router.get('/vendas', verifyToken, requirePermission('RF_B4'), relatorioController.relatorioVendas);
+
 // Relatórios adicionais (úteis para gestão)
 // Dashboard geral - mesmo acesso que RF_S1
 router.get('/dashboard', verifyToken, requirePermission('RF_S1'), relatorioController.dashboard);

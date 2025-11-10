@@ -216,6 +216,34 @@ const dashboard = async (req, res) => {
   }
 };
 
+// Relatório de Vendas
+const relatorioVendas = async (req, res) => {
+  try {
+    const { 
+      data_inicio, 
+      data_fim, 
+      produto_id,
+      forma_pagamento
+    } = req.query;
+    
+    if (!data_inicio || !data_fim) {
+      return badRequest(res, 'Período é obrigatório', ['Informe data_inicio e data_fim']);
+    }
+
+    const relatorio = await relatorioRepository.relatorioVendas({
+      data_inicio,
+      data_fim,
+      produto_id,
+      forma_pagamento
+    });
+
+    return success(res, 'Relatório de vendas gerado com sucesso', relatorio);
+  } catch (error) {
+    console.error('Erro ao gerar relatório de vendas:', error);
+    return serverError(res, 'Erro ao gerar relatório de vendas', [error.message]);
+  }
+};
+
 // Helper function to generate PDF
 const gerarPDF = (dados, titulo, colunas, res) => {
   try {
@@ -1244,6 +1272,7 @@ module.exports = {
   relatorioMedicamentos,
   relatorioInternacoes,
   relatorioDoadores,
+  relatorioVendas,
   relatorioGerencial,
   dashboard,
   // PDF exports

@@ -619,6 +619,114 @@ class RelatorioRepository extends BaseRepository {
       dataAtualizacao: new Date()
     };
   }
+
+  // Relatório de Vendas
+  async relatorioVendas(filtros = {}) {
+    const { data_inicio, data_fim, produto_id, forma_pagamento } = filtros;
+    
+    if (!data_inicio || !data_fim) {
+      throw new Error('Data de início e data de fim são obrigatórias.');
+    }
+    
+    let query = `
+      SELECT 
+        v.*,
+        p.nome as produto_nome,
+        p.preco_venda as produto_preco_venda,
+        p.custo_estimado as produto_custo_estimado,
+        u.nome as usuario_nome
+      FROM vendas v
+      LEFT JOIN produtos p ON v.produto_id = p.id
+      LEFT JOIN usuarios u ON v.usuario_id = u.id
+      WHERE DATE(v.data_venda) BETWEEN ? AND ?
+    `;
+    
+    const params = [data_inicio, data_fim];
+    
+    if (produto_id) {
+      query += ` AND v.produto_id = ?`;
+      params.push(produto_id);
+    }
+    
+    if (forma_pagamento) {
+      query += ` AND v.forma_pagamento = ?`;
+      params.push(forma_pagamento);
+    }
+    
+    query += ` ORDER BY v.data_venda DESC, v.id DESC`;
+    
+    const vendas = await this.executeQuery(query, params);
+    
+    // Estatísticas
+    let statsQuery = `
+      SELECT 
+        COUNT(*) as total_vendas,
+        SUM(quantidade) as total_quantidade_vendida,
+        SUM(valor_bruto) as total_valor_bruto,
+        SUM(desconto) as total_desconto,
+        SUM(valor_final) as total_valor_final,
+        SUM(custo_estimado_total) as total_custo_estimado,
+        SUM(lucro_estimado) as total_lucro_estimado,
+        AVG(valor_final) as valor_medio_venda,
+        COUNT(DISTINCT produto_id) as total_produtos_vendidos,
+        COUNT(DISTINCT forma_pagamento) as total_formas_pagamento
+      FROM vendas
+      WHERE DATE(data_venda) BETWEEN ? AND ?
+    `;
+    
+    const statsParams = [data_inicio, data_fim];
+    if (produto_id) {
+      statsQuery += ` AND produto_id = ?`;
+      statsParams.push(produto_id);
+    }
+    if (forma_pagamento) {
+      statsQuery += ` AND forma_pagamento = ?`;
+      statsParams.push(forma_pagamento);
+    }
+    
+    const stats = await this.executeQuery(statsQuery, statsParams);
+    const statsResult = stats[0] || {};
+    
+    // Vendas por produto
+    const vendasPorProdutoQuery = `
+      SELECT 
+        p.id,
+        p.nome as produto_nome,
+        COUNT(v.id) as total_vendas,
+        SUM(v.quantidade) as total_quantidade,
+        SUM(v.valor_final) as total_valor,
+        SUM(v.lucro_estimado) as total_lucro
+      FROM produtos p
+      LEFT JOIN vendas v ON p.id = v.produto_id
+      WHERE DATE(v.data_venda) BETWEEN ? AND ?
+      GROUP BY p.id, p.nome
+      ORDER BY total_valor DESC
+    `;
+    
+    const vendasPorProduto = await this.executeQuery(vendasPorProdutoQuery, [data_inicio, data_fim]);
+    
+    // Vendas por forma de pagamento
+    const vendasPorFormaPagamentoQuery = `
+      SELECT 
+        forma_pagamento,
+        COUNT(*) as total_vendas,
+        SUM(valor_final) as total_valor
+      FROM vendas
+      WHERE DATE(data_venda) BETWEEN ? AND ?
+      GROUP BY forma_pagamento
+      ORDER BY total_valor DESC
+    `;
+    
+    const vendasPorFormaPagamento = await this.executeQuery(vendasPorFormaPagamentoQuery, [data_inicio, data_fim]);
+    
+    return {
+      periodo: { data_inicio, data_fim },
+      estatisticas: statsResult,
+      vendas,
+      vendas_por_produto: vendasPorProduto,
+      vendas_por_forma_pagamento: vendasPorFormaPagamento
+    };
+  }
 }
 
 module.exports = RelatorioRepository;
