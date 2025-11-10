@@ -30,6 +30,10 @@ import TitleHandler from "./components/TitleHandler";
 import './App.css'
 import 'react-toastify/dist/ReactToastify.css'
 import Substancias from './pages/substancias-psicoativas'
+import GerenciarProdutos from './pages/GerenciarProdutos'
+import GerenciarMateriaPrima from './pages/GerenciarMateriaPrima'
+import GerenciarReceitas from './pages/GerenciarReceitas'
+import GerenciarVendas from './pages/GerenciarVendas'
 
 function App() {
   return (
@@ -64,6 +68,10 @@ function App() {
             <Route path="relatorios" element={<Relatorios />} />
             <Route path="estoque/entradas" element={<EstoqueEntradas />} />
             <Route path="estoque/saidas" element={<EstoqueSaidas />} />
+            <Route path="produtos" element={<GerenciarProdutos />} />
+            <Route path="materias-primas" element={<GerenciarMateriaPrima />} />
+            <Route path="receitas" element={<GerenciarReceitas />} />
+            <Route path="vendas" element={<GerenciarVendas />} />
           </Route>
         </Routes>
         <ToastContainer

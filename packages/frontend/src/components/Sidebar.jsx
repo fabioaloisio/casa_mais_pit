@@ -174,6 +174,28 @@ function Sidebar() {
             </div>
           )}
 
+          {hasPermission('RF_B4') && (
+            <div className="menu-section">
+              <div className="menu-section-title">Produção & Vendas</div>
+              <Nav.Link as={Link} onClick={closeSidebar} to="/materias-primas"
+                className={location.pathname.includes('/materias-primas') ? 'active' : ''}>
+                <FaFlask /> Gerenciar Matérias-Primas
+              </Nav.Link>
+              <Nav.Link as={Link} onClick={closeSidebar} to="/receitas"
+                className={location.pathname.includes('/receitas') ? 'active' : ''}>
+                <FaGripHorizontal /> Gerenciar Receitas
+              </Nav.Link>
+              <Nav.Link as={Link} onClick={closeSidebar} to="/produtos"
+                className={location.pathname.includes('/produtos') ? 'active' : ''}>
+                <FaTags /> Gerenciar Produtos
+              </Nav.Link>
+              <Nav.Link as={Link} onClick={closeSidebar} to="/vendas"
+                className={location.pathname.includes('/vendas') ? 'active' : ''}>
+                <FaMoneyBillWave /> Gerenciar Vendas
+              </Nav.Link>
+            </div>
+          )}
+
           {hasPermission('RF_I2') && (
             <div className="menu-section">
               <div className="menu-section-title">Relatórios e Análises</div>
