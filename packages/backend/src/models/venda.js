@@ -1,3 +1,6 @@
+const VendaRepository = require('../repository/vendaRepository');
+const ProdutoRepository = require('../repository/produtoRepository');
+
 class Venda {
   constructor(data) {
     this.id = data.id || null;
@@ -13,6 +16,8 @@ class Venda {
     this.data_venda = data.data_venda || new Date().toISOString().split('T')[0];
     this.usuario_id = data.usuario_id || null;
   }
+
+  // ===== MÉTODOS DE INSTÂNCIA =====
 
   validate(isUpdate = false) {
     const errors = [];
@@ -61,7 +66,151 @@ class Venda {
       usuario_id: this.usuario_id
     };
   }
+
+  // ===== MÉTODOS ESTÁTICOS DE NEGÓCIO =====
+
+  /**
+   * Calcula valores da venda baseado no produto
+   * @param {number} quantidade - Quantidade vendida
+   * @param {number} precoVenda - Preço de venda unitário
+   * @param {number} custoEstimado - Custo estimado unitário
+   * @param {number} desconto - Desconto aplicado
+   * @returns {Object} Valores calculados
+   */
+  static calcularValores(quantidade, precoVenda, custoEstimado, desconto = 0) {
+    const valorBruto = quantidade * precoVenda;
+    const valorFinal = valorBruto - desconto;
+    const custoEstimadoTotal = quantidade * custoEstimado;
+    const lucroEstimado = valorFinal - custoEstimadoTotal;
+
+    return {
+      valor_bruto: valorBruto,
+      valor_final: valorFinal,
+      custo_estimado_total: custoEstimadoTotal,
+      lucro_estimado: lucroEstimado
+    };
+  }
+
+  // ===== MÉTODOS ESTÁTICOS CRUD =====
+
+  /**
+   * Busca todas as vendas com filtros opcionais
+   * @param {Object} filters - Filtros de busca
+   * @returns {Promise<Venda[]>}
+   */
+  static async findAll(filters = {}) {
+    return VendaRepository.findAll(filters);
+  }
+
+  /**
+   * Busca uma venda por ID
+   * @param {number} id - ID da venda
+   * @returns {Promise<Venda|null>}
+   */
+  static async findById(id) {
+    return VendaRepository.findById(id);
+  }
+
+  /**
+   * Cria uma nova venda
+   * @param {Object} data - Dados da venda
+   * @returns {Promise<Venda>}
+   */
+  static async create(data) {
+    // 1. Criar instância e validar
+    const venda = new Venda(data);
+    const errors = venda.validate();
+    if (errors.length > 0) {
+      throw { type: 'validation', errors };
+    }
+
+    // 2. Buscar dados do produto para cálculos
+    const produto = await ProdutoRepository.findById(data.produto_id);
+    if (!produto) {
+      throw { type: 'not_found', message: 'Produto não encontrado.' };
+    }
+
+    // 3. Calcular valores (lógica de negócio NO MODEL)
+    const valores = Venda.calcularValores(
+      venda.quantidade,
+      produto.preco_venda,
+      produto.custo_estimado,
+      venda.desconto
+    );
+
+    // 4. Atribuir valores calculados à instância
+    Object.assign(venda, valores);
+
+    // 5. Persistir via Repository
+    return VendaRepository.create(venda);
+  }
+
+  /**
+   * Atualiza uma venda existente
+   * @param {number} id - ID da venda
+   * @param {Object} data - Dados para atualização
+   * @returns {Promise<Venda>}
+   */
+  static async update(id, data) {
+    // 1. Verificar existência
+    const exists = await VendaRepository.findById(id);
+    if (!exists) {
+      throw { type: 'not_found', message: 'Venda não encontrada.' };
+    }
+
+    // 2. Validar dados
+    const venda = new Venda({ ...data, id });
+    const errors = venda.validate(true);
+    if (errors.length > 0) {
+      throw { type: 'validation', errors };
+    }
+
+    // 3. Buscar produto e recalcular valores
+    const produtoId = data.produto_id || exists.produto_id;
+    const produto = await ProdutoRepository.findById(produtoId);
+    if (!produto) {
+      throw { type: 'not_found', message: 'Produto não encontrado.' };
+    }
+
+    // 4. Calcular valores usando dados novos ou existentes
+    const valores = Venda.calcularValores(
+      venda.quantidade ?? exists.quantidade,
+      produto.preco_venda,
+      produto.custo_estimado,
+      venda.desconto ?? exists.desconto
+    );
+    Object.assign(venda, valores);
+
+    // 5. Persistir e retornar atualizado
+    await VendaRepository.update(id, venda);
+    return VendaRepository.findById(id);
+  }
+
+  /**
+   * Exclui uma venda
+   * @param {number} id - ID da venda
+   * @returns {Promise<boolean>}
+   */
+  static async delete(id) {
+    const exists = await VendaRepository.findById(id);
+    if (!exists) {
+      throw { type: 'not_found', message: 'Venda não encontrada.' };
+    }
+    return VendaRepository.delete(id);
+  }
+
+  /**
+   * Gera relatório de vendas por período
+   * @param {string} dataInicio - Data inicial
+   * @param {string} dataFim - Data final
+   * @returns {Promise<Array>}
+   */
+  static async getRelatorio(dataInicio, dataFim) {
+    if (!dataInicio || !dataFim) {
+      throw { type: 'validation', errors: ['Data de início e data de fim são obrigatórias.'] };
+    }
+    return VendaRepository.getRelatorioPeriodo(dataInicio, dataFim);
+  }
 }
 
 module.exports = Venda;
-
