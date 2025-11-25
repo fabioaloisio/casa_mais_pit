@@ -1,6 +1,15 @@
 const db = require('../config/database');
 const BaseRepository = require('../../../shared/repository/BaseRepository');
-const Venda = require('../models/venda');
+
+// Lazy loading para evitar dependência circular
+// O Model Venda importa este Repository, então não podemos importar Venda no topo
+let Venda = null;
+const getVendaModel = () => {
+  if (!Venda) {
+    Venda = require('../models/venda');
+  }
+  return Venda;
+};
 
 class VendaRepository extends BaseRepository {
   constructor() {
@@ -9,7 +18,7 @@ class VendaRepository extends BaseRepository {
 
   async findAll(filters = {}) {
     let query = `
-      SELECT 
+      SELECT
         v.*,
         p.nome as produto_nome,
         p.preco_venda as produto_preco_venda,
@@ -39,12 +48,13 @@ class VendaRepository extends BaseRepository {
     query += ' ORDER BY v.data_venda DESC, v.id DESC';
 
     const [rows] = await db.execute(query, params);
-    return rows.map(row => new Venda(row));
+    const VendaModel = getVendaModel();
+    return rows.map(row => new VendaModel(row));
   }
 
   async findById(id) {
     const [rows] = await db.execute(`
-      SELECT 
+      SELECT
         v.*,
         p.nome as produto_nome,
         p.preco_venda as produto_preco_venda,
@@ -54,78 +64,56 @@ class VendaRepository extends BaseRepository {
       LEFT JOIN usuarios u ON v.usuario_id = u.id
       WHERE v.id = ?;
     `, [id]);
-    return rows.length ? new Venda(rows[0]) : null;
+
+    if (!rows.length) return null;
+
+    const VendaModel = getVendaModel();
+    return new VendaModel(rows[0]);
   }
 
+  /**
+   * Cria uma nova venda no banco de dados
+   * Recebe venda já com valores calculados pelo Model
+   * @param {Venda} venda - Instância de Venda com valores calculados
+   * @returns {Promise<Venda>}
+   */
   async create(venda) {
-    // Buscar preço e custo do produto
-    const [produtoRows] = await db.execute(`
-      SELECT preco_venda, custo_estimado 
-      FROM produtos 
-      WHERE id = ?;
-    `, [venda.produto_id]);
-
-    if (!produtoRows.length) {
-      throw new Error('Produto não encontrado.');
-    }
-
-    const produto = produtoRows[0];
-    const valorBruto = venda.quantidade * produto.preco_venda;
-    const valorFinal = valorBruto - (venda.desconto || 0);
-    const custoEstimadoTotal = venda.quantidade * produto.custo_estimado;
-    const lucroEstimado = valorFinal - custoEstimadoTotal;
-
     const [result] = await db.execute(`
       INSERT INTO vendas (
         produto_id, quantidade, valor_bruto, desconto, valor_final,
         forma_pagamento, custo_estimado_total, lucro_estimado,
         observacoes, data_venda, usuario_id
-      ) 
+      )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `, [
       venda.produto_id,
       venda.quantidade,
-      valorBruto,
+      venda.valor_bruto,
       venda.desconto || 0,
-      valorFinal,
+      venda.valor_final,
       venda.forma_pagamento,
-      custoEstimadoTotal,
-      lucroEstimado,
+      venda.custo_estimado_total,
+      venda.lucro_estimado,
       venda.observacoes || '',
       venda.data_venda,
       venda.usuario_id || null
     ]);
 
-    venda.id = result.insertId;
-    venda.valor_bruto = valorBruto;
-    venda.valor_final = valorFinal;
-    venda.custo_estimado_total = custoEstimadoTotal;
-    venda.lucro_estimado = lucroEstimado;
-
-    return venda;
+    return this.findById(result.insertId);
   }
 
+  /**
+   * Atualiza uma venda no banco de dados
+   * Recebe venda já com valores calculados pelo Model
+   * @param {number} id - ID da venda
+   * @param {Venda} venda - Instância de Venda com valores calculados
+   * @returns {Promise<boolean>}
+   */
   async update(id, venda) {
-    // Buscar preço e custo do produto
-    const [produtoRows] = await db.execute(`
-      SELECT preco_venda, custo_estimado 
-      FROM produtos 
-      WHERE id = ?;
-    `, [venda.produto_id]);
-
-    if (!produtoRows.length) {
-      throw new Error('Produto não encontrado.');
-    }
-
-    const produto = produtoRows[0];
-    const valorBruto = venda.quantidade * produto.preco_venda;
-    const valorFinal = valorBruto - (venda.desconto || 0);
-    const custoEstimadoTotal = venda.quantidade * produto.custo_estimado;
-    const lucroEstimado = valorFinal - custoEstimadoTotal;
-
     const campos = [];
     const valores = [];
 
+    // Campos básicos
     if (venda.produto_id !== undefined) {
       campos.push('produto_id = ?');
       valores.push(venda.produto_id);
@@ -133,16 +121,10 @@ class VendaRepository extends BaseRepository {
     if (venda.quantidade !== undefined) {
       campos.push('quantidade = ?');
       valores.push(venda.quantidade);
-      campos.push('valor_bruto = ?');
-      valores.push(valorBruto);
-      campos.push('custo_estimado_total = ?');
-      valores.push(custoEstimadoTotal);
     }
     if (venda.desconto !== undefined) {
       campos.push('desconto = ?');
       valores.push(venda.desconto);
-      campos.push('valor_final = ?');
-      valores.push(valorFinal);
     }
     if (venda.forma_pagamento !== undefined) {
       campos.push('forma_pagamento = ?');
@@ -157,8 +139,23 @@ class VendaRepository extends BaseRepository {
       valores.push(venda.data_venda);
     }
 
-    campos.push('lucro_estimado = ?');
-    valores.push(lucroEstimado);
+    // Campos calculados (já vêm prontos do Model)
+    if (venda.valor_bruto !== undefined) {
+      campos.push('valor_bruto = ?');
+      valores.push(venda.valor_bruto);
+    }
+    if (venda.valor_final !== undefined) {
+      campos.push('valor_final = ?');
+      valores.push(venda.valor_final);
+    }
+    if (venda.custo_estimado_total !== undefined) {
+      campos.push('custo_estimado_total = ?');
+      valores.push(venda.custo_estimado_total);
+    }
+    if (venda.lucro_estimado !== undefined) {
+      campos.push('lucro_estimado = ?');
+      valores.push(venda.lucro_estimado);
+    }
 
     if (campos.length === 0) return false;
 
@@ -178,7 +175,7 @@ class VendaRepository extends BaseRepository {
 
   async getRelatorioPeriodo(dataInicio, dataFim) {
     const [rows] = await db.execute(`
-      SELECT 
+      SELECT
         DATE(v.data_venda) as data,
         COUNT(v.id) as total_vendas,
         SUM(v.quantidade) as total_quantidade,
@@ -198,4 +195,3 @@ class VendaRepository extends BaseRepository {
 }
 
 module.exports = new VendaRepository();
-
