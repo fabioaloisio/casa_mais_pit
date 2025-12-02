@@ -149,20 +149,22 @@ INSERT INTO assistidas (
 ('Eliane Costa', '55667788990', 'CE-77889900', 50, '1974-08-08', 'Brasileira', 'Viúva', 'Artesã', 'Fundamental Incompleto', 'ativo',
  'Travessa das Palmeiras', 'Mucuripe', '55', '60165-000', 'CE', 'Fortaleza', '85991234567', '85993456789');
 
--- 8. Popular consultas (com datas do mês atual)
-INSERT INTO consultas (assistida_id, data_consulta, profissional, tipo_consulta, status, observacoes) VALUES
-(1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), 'Dr. Silva', 'Clínico Geral', 'realizada', 'Consulta de rotina'),
-(2, DATE_SUB(CURDATE(), INTERVAL 9 DAY), 'Dr. Santos', 'Psiquiatria', 'realizada', 'Acompanhamento psiquiátrico'),
-(3, DATE_SUB(CURDATE(), INTERVAL 8 DAY), 'Dr. Silva', 'Clínico Geral', 'realizada', 'Avaliação clínica'),
-(4, DATE_SUB(CURDATE(), INTERVAL 7 DAY), 'Dr. Santos', 'Psiquiatria', 'realizada', 'Consulta inicial'),
-(5, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 'Dr. Silva', 'Clínico Geral', 'realizada', 'Retorno médico'),
-(1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 'Dr. Santos', 'Psiquiatria', 'realizada', 'Acompanhamento'),
-(2, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 'Dr. Silva', 'Clínico Geral', 'realizada', 'Consulta de rotina'),
-(3, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 'Dr. Santos', 'Psiquiatria', 'realizada', 'Avaliação psicológica'),
-(4, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 'Dr. Silva', 'Clínico Geral', 'realizada', 'Check-up'),
-(5, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 'Dr. Santos', 'Psiquiatria', 'realizada', 'Consulta de acompanhamento');
+INSERT INTO medicos (nome, crm, especialidade) VALUES
+('Dr. Ricardo Silva', '123456/SP', 'Clínico Geral'),
+('Dra. Amanda Santos', '789012/RJ', 'Psiquiatria');
 
--- 9. Popular internações (ativas no momento)
+INSERT INTO consultas (assistida_id, medico_id, data_consulta, tipo_consulta, status, observacoes) VALUES
+(1, 1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), 'Clínico Geral', 'realizada', 'Consulta de rotina'),
+(2, 2, DATE_SUB(CURDATE(), INTERVAL 9 DAY), 'Psiquiatria', 'realizada', 'Acompanhamento psiquiátrico'),
+(3, 1, DATE_SUB(CURDATE(), INTERVAL 8 DAY), 'Clínico Geral', 'realizada', 'Avaliação clínica'),
+(4, 2, DATE_SUB(CURDATE(), INTERVAL 7 DAY), 'Psiquiatria', 'realizada', 'Consulta inicial'),
+(5, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 'Clínico Geral', 'realizada', 'Retorno médico'),
+(1, 2, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 'Psiquiatria', 'realizada', 'Acompanhamento'),
+(2, 1, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 'Clínico Geral', 'realizada', 'Consulta de rotina'),
+(3, 2, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 'Psiquiatria', 'realizada', 'Avaliação psicológica'),
+(4, 1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 'Clínico Geral', 'realizada', 'Check-up'),
+(5, 2, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 'Psiquiatria', 'realizada', 'Consulta de acompanhamento');
+
 INSERT INTO internacoes (assistida_id, data_entrada, status, observacoes) VALUES
 (1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 'ativa', 'Internação para tratamento'),
 (2, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 'ativa', 'Tratamento intensivo'),
@@ -192,6 +194,7 @@ SELECT 'Doações:', COUNT(*) as total FROM doacoes;
 SELECT 'Unidades de medida:', COUNT(*) as total FROM unidades_medida;
 SELECT 'Medicamentos:', COUNT(*) as total FROM medicamentos;
 SELECT 'Assistidas:', COUNT(*) as total FROM assistidas;
+SELECT 'Médicos:', COUNT(*) as total FROM medicos;
 
 -- 9. Verificar distribuição de doadores
 SELECT

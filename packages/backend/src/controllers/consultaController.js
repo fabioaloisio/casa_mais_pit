@@ -1,31 +1,27 @@
-const ConsultaRepository = require('../repository/consultaRepository');
+const consultaRepository = require('../repository/consultaRepository');
 
-const consultaRepository = new ConsultaRepository();
-
-// RF_F6 - Gerenciar Consultas
 const criar = async (req, res) => {
   try {
-    const { 
+    const {
       assistida_id,
       data_consulta,
-      profissional,
+      medico_id,
       tipo_consulta,
-      observacoes 
+      observacoes
     } = req.body;
-    
-    // Validação dos campos obrigatórios
-    if (!assistida_id || !data_consulta || !profissional) {
+
+    if (!assistida_id || !data_consulta || !medico_id) {
       return res.status(400).json({
         success: false,
         message: 'Campos obrigatórios não fornecidos',
-        errors: ['assistida_id, data_consulta e profissional são obrigatórios']
+        errors: ['assistida_id, data_consulta e medico_id são obrigatórios']
       });
     }
 
     const consulta = await consultaRepository.criar({
       assistida_id,
       data_consulta,
-      profissional,
+      medico_id,
       tipo_consulta,
       observacoes,
       usuario_id: req.user.id
@@ -46,12 +42,11 @@ const criar = async (req, res) => {
   }
 };
 
-// RF_F7 - Lançar Prescrição
 const lancarPrescricao = async (req, res) => {
   try {
     const { id } = req.params;
     const { prescricao, medicamentos } = req.body;
-    
+
     if (!prescricao) {
       return res.status(400).json({
         success: false,
@@ -82,18 +77,17 @@ const lancarPrescricao = async (req, res) => {
   }
 };
 
-// RF_F8 - Lançar História Patológica Pregressa
 const lancarHistoriaPatologica = async (req, res) => {
   try {
     const { id } = req.params;
-    const { 
+    const {
       historia_patologica,
       alergias,
       condicoes_cronicas,
       cirurgias_previas,
-      medicamentos_uso_continuo 
+      medicamentos_uso_continuo
     } = req.body;
-    
+
     if (!historia_patologica) {
       return res.status(400).json({
         success: false,
@@ -127,17 +121,16 @@ const lancarHistoriaPatologica = async (req, res) => {
   }
 };
 
-// RF_F9 - Registrar Dados Pós-Consulta
 const registrarPosConsulta = async (req, res) => {
   try {
     const { id } = req.params;
-    const { 
+    const {
       evolucao,
       encaminhamentos,
       retorno_agendado,
-      observacoes_pos_consulta 
+      observacoes_pos_consulta
     } = req.body;
-    
+
     if (!evolucao) {
       return res.status(400).json({
         success: false,
@@ -170,11 +163,10 @@ const registrarPosConsulta = async (req, res) => {
   }
 };
 
-// Listar consultas
 const listar = async (req, res) => {
   try {
     const { assistida_id, data_inicio, data_fim, status } = req.query;
-    
+
     const consultas = await consultaRepository.listar({
       assistida_id,
       data_inicio,
@@ -197,13 +189,12 @@ const listar = async (req, res) => {
   }
 };
 
-// Buscar consulta por ID
 const buscarPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const consulta = await consultaRepository.buscarPorId(id);
-    
+
     if (!consulta) {
       return res.status(404).json({
         success: false,
@@ -227,12 +218,11 @@ const buscarPorId = async (req, res) => {
   }
 };
 
-// Atualizar consulta
 const atualizar = async (req, res) => {
   try {
     const { id } = req.params;
     const dados = req.body;
-    
+
     const consulta = await consultaRepository.atualizar(id, dados);
 
     res.status(200).json({
@@ -250,12 +240,11 @@ const atualizar = async (req, res) => {
   }
 };
 
-// Cancelar consulta
 const cancelar = async (req, res) => {
   try {
     const { id } = req.params;
     const { motivo_cancelamento } = req.body;
-    
+
     const consulta = await consultaRepository.cancelar({
       id,
       motivo_cancelamento,
@@ -277,11 +266,10 @@ const cancelar = async (req, res) => {
   }
 };
 
-// Obter estatísticas de consultas
 const estatisticas = async (req, res) => {
   try {
     const stats = await consultaRepository.getEstatisticas();
-    
+
     res.status(200).json({
       success: true,
       message: 'Estatísticas obtidas com sucesso',

@@ -34,6 +34,7 @@ import GerenciarProdutos from './pages/GerenciarProdutos'
 import GerenciarMateriaPrima from './pages/GerenciarMateriaPrima'
 import GerenciarReceitas from './pages/GerenciarReceitas'
 import GerenciarVendas from './pages/GerenciarVendas'
+import Medicos from './pages/Medicos/Medicos.jsx'; // Added Medicos import
 
 function App() {
   return (
@@ -72,6 +73,7 @@ function App() {
             <Route path="materias-primas" element={<GerenciarMateriaPrima />} />
             <Route path="receitas" element={<GerenciarReceitas />} />
             <Route path="vendas" element={<GerenciarVendas />} />
+            <Route path="medicos" element={<Medicos />} /> {/* Added Medicos route */}
           </Route>
         </Routes>
         <ToastContainer

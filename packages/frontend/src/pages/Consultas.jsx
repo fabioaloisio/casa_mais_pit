@@ -21,6 +21,7 @@ import {
 } from 'react-icons/fa';
 import consultasService from '../services/consultasService';
 import assistidasService from '../services/assistidasService';
+import { getAllMedicos } from '../services/medicoService';
 import Toast from '../components/common/Toast';
 import InfoTooltip from '../utils/tooltip';
 import './Doacoes.css';
@@ -101,7 +102,7 @@ const Consultas = () => {
         consultasService.getAll(),
         consultasService.getEstatisticas(),
         assistidasService.getAll(),
-        consultasService.getMedicos(),
+        getAllMedicos(),
         consultasService.getEspecialidades()
       ]);
 
@@ -112,9 +113,8 @@ const Consultas = () => {
         totalCanceladas: 0,
         proximasConsultas: 0
       });
-      // assistidasService.getAll() já retorna os dados diretamente
       setAssistidas(assistidasData || []);
-      setMedicos(medicosData.data || []);
+      setMedicos(medicosData || []);
       setEspecialidades(especialidadesData.data || []);
     } catch (error) {
       setToast({
@@ -137,14 +137,12 @@ const Consultas = () => {
         message: 'Consulta agendada com sucesso!',
         type: 'success'
       });
-      // Recarregar consultas e estatísticas
       const [consultasData, statsData] = await Promise.all([
         consultasService.getAll(),
         consultasService.getEstatisticas()
       ]);
       setConsultas(consultasData.data || []);
 
-      // Processar estatísticas corretamente
       const estatisticas = statsData?.data || statsData || {};
       setStats({
         totalAgendadas: Number(estatisticas.totalAgendadas) || 0,
@@ -180,14 +178,12 @@ const Consultas = () => {
         message: 'Consulta realizada com sucesso!',
         type: 'success'
       });
-      // Recarregar consultas e estatísticas
       const [consultasData, statsData] = await Promise.all([
         consultasService.getAll(),
         consultasService.getEstatisticas()
       ]);
       setConsultas(consultasData.data || []);
 
-      // Processar estatísticas corretamente
       const estatisticas = statsData?.data || statsData || {};
       setStats({
         totalAgendadas: Number(estatisticas.totalAgendadas) || 0,
@@ -212,14 +208,12 @@ const Consultas = () => {
         const response = await consultasService.cancelar(consulta.id, motivo);
         console.log('Resposta do cancelamento:', response);
 
-        // Atualizar estatísticas localmente imediatamente
         setStats(prevStats => ({
           ...prevStats,
           totalAgendadas: Math.max(0, (prevStats.totalAgendadas || 0) - 1),
           totalCanceladas: (prevStats.totalCanceladas || 0) + 1
         }));
 
-        // Atualizar a consulta localmente
         setConsultas(prevConsultas =>
           prevConsultas.map(c =>
             c.id === consulta.id
@@ -234,7 +228,6 @@ const Consultas = () => {
           type: 'success'
         });
 
-        // Recarregar dados do backend após um pequeno delay
         setTimeout(async () => {
           try {
             const [consultasData, statsData] = await Promise.all([
@@ -434,7 +427,6 @@ const Consultas = () => {
         </p>
       </div>
 
-      {/* Cards de Estatísticas */}
       <Row className="mb-4">
         <Col md={3}>
           <Card className="stats-card h-100">
@@ -490,7 +482,6 @@ const Consultas = () => {
         </Col>
       </Row>
 
-      {/* Abas de Navegação */}
       <Nav variant="tabs" className="mb-4">
         <Nav.Item>
           <Nav.Link
@@ -521,7 +512,6 @@ const Consultas = () => {
         </Nav.Item>
       </Nav>
 
-      {/* Barra de ações */}
       <div className="filtros mb-4">
         <Button
           className="azul d-flex align-items-center gap-2"
@@ -556,7 +546,6 @@ const Consultas = () => {
         </div>
       </div>
 
-      {/* Conteúdo baseado na aba ativa */}
       {activeTab === 'calendario' && (
         <div className="tabela-container">
           <Table className="tabela-assistidas" hover responsive>
@@ -769,7 +758,6 @@ const Consultas = () => {
         </Row>
       )}
 
-      {/* Modal Agendar Consulta */}
       <Modal show={showModalAgendar} onHide={() => setShowModalAgendar(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Agendar Nova Consulta</Modal.Title>
@@ -799,7 +787,15 @@ const Consultas = () => {
                   <Form.Label>Médico *</Form.Label>
                   <Form.Select
                     value={formAgendar.medico_id}
-                    onChange={(e) => setFormAgendar({...formAgendar, medico_id: e.target.value})}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const selectedMedicoObj = medicos.find(m => m.id == selectedId);
+                      setFormAgendar(prev => ({
+                        ...prev,
+                        medico_id: selectedId,
+                        especialidade: selectedMedicoObj ? selectedMedicoObj.especialidade : ''
+                      }));
+                    }}
                     required
                   >
                     <option value="">Selecione o médico</option>
@@ -820,6 +816,7 @@ const Consultas = () => {
                     value={formAgendar.especialidade}
                     onChange={(e) => setFormAgendar({...formAgendar, especialidade: e.target.value})}
                     required
+                    disabled={!!formAgendar.medico_id} // Disable if a medico is selected
                   >
                     <option value="">Selecione a especialidade</option>
                     {especialidades.map(esp => (
@@ -886,7 +883,6 @@ const Consultas = () => {
         </Form>
       </Modal>
 
-      {/* Modal Realizar Consulta */}
       <Modal show={showModalRealizar} onHide={() => setShowModalRealizar(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Realizar Consulta</Modal.Title>
@@ -994,7 +990,6 @@ const Consultas = () => {
         )}
       </Modal>
 
-      {/* Modal Prescrição Médica */}
       <Modal show={showModalPrescricao} onHide={() => setShowModalPrescricao(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Criar Prescrição Médica</Modal.Title>
@@ -1102,7 +1097,6 @@ const Consultas = () => {
         </Form>
       </Modal>
 
-      {/* Modal História Patológica */}
       <Modal show={showModalHistoria} onHide={() => setShowModalHistoria(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
@@ -1188,7 +1182,6 @@ const Consultas = () => {
         </Form>
       </Modal>
 
-      {/* Modal Detalhes da Consulta */}
       <Modal show={showModalDetalhes} onHide={() => setShowModalDetalhes(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Detalhes da Consulta</Modal.Title>

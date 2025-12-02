@@ -1,9 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const medicosController = require('../controllers/medicosController');
-const { verifyToken, requirePermission } = require('../middleware/authMiddleware');
+const { verifyToken } = require('../middleware/authMiddleware');
 
-// Listar médicos disponíveis para consultas
-router.get('/', verifyToken, requirePermission('RF_F6'), medicosController.listar);
+router.get('/', verifyToken, medicosController.listMedicos);
+
+router.get('/:id', verifyToken, medicosController.getMedicoById);
+
+router.post('/', verifyToken, medicosController.createMedico);
+
+router.put('/:id', verifyToken, medicosController.updateMedico);
+
+router.delete('/:id', verifyToken, medicosController.deleteMedico);
 
 module.exports = router;

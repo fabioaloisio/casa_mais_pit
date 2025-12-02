@@ -22,11 +22,10 @@ class ConsultasService {
   }
 
   async agendar(data) {
-    // Mapear campos do frontend para o formato esperado pelo backend
     const payload = {
       assistida_id: data.assistida_id,
       data_consulta: `${data.dataConsulta} ${data.horaConsulta || '00:00:00'}`,
-      profissional: data.medico_id,
+      medico_id: data.medico_id,
       tipo_consulta: data.especialidade,
       observacoes: `${data.motivo ? 'Motivo: ' + data.motivo + '\n' : ''}${data.observacoes || ''}`
     };
@@ -38,8 +37,6 @@ class ConsultasService {
   }
 
   async cancelar(id, motivo) {
-    // Backend espera DELETE /consultas/:id/cancelar com motivo_cancelamento no body
-    // Como o método delete() do apiService não aceita body, usamos request() diretamente
     return apiService.request(`/consultas/${id}/cancelar`, {
       method: 'DELETE',
       body: JSON.stringify({ motivo_cancelamento: motivo }),

@@ -20,7 +20,8 @@ import {
   FaBed,
   FaMoneyBillWave as FaCash,
   FaFileAlt,
-  FaBullseye
+  FaBullseye,
+  FaUserMd
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import './Sidebar.css';
@@ -32,6 +33,7 @@ function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMedicamentosOpen, setIsMedicamentosOpen] = useState(false);
   const [isDespesasOpen, setIsDespesasOpen] = useState(false);
+  const [isConsultasOpen, setIsConsultasOpen] = useState(false);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const closeSidebar = () => setIsOpen(false);
@@ -92,11 +94,21 @@ function Sidebar() {
                   <FaBed /> Gestão de Internações
                 </Nav.Link>
               )}
+              
               {hasPermission('RF_B11') && (
-                <Nav.Link as={Link} onClick={closeSidebar} to="/consultas"
-                  className={location.pathname.includes('/consultas') ? 'active' : ''}>
+                <Nav.Link onClick={() => setIsConsultasOpen(!isConsultasOpen)} className={isConsultasOpen ? 'active' : ''}>
                   <FaStethoscope /> Gestão de Consultas
                 </Nav.Link>
+              )}
+              {isConsultasOpen && hasPermission('RF_B11') && (
+                <div className="submenu">
+                  <Nav.Link as={Link} onClick={closeSidebar} to="/medicos">
+                    <FaUserMd /> Gerenciar Médicos
+                  </Nav.Link>
+                  <Nav.Link as={Link} onClick={closeSidebar} to="/consultas">
+                    <FaStethoscope /> Gerenciar Consultas
+                  </Nav.Link>
+                </div>
               )}
 
               {hasPermission('RF_B2') && (

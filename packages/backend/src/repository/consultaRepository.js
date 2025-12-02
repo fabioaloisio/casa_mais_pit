@@ -51,12 +51,11 @@ class ConsultaRepository extends BaseRepository {
     };
   }
 
-  // RF_F6 - Criar consulta
   async criar(data) {
     const consulta = await this.create({
       assistida_id: data.assistida_id,
+      medico_id: data.medico_id,
       data_consulta: data.data_consulta,
-      profissional: data.profissional,
       tipo_consulta: data.tipo_consulta || 'Geral',
       observacoes: data.observacoes || null,
       status: 'agendada',
@@ -67,7 +66,6 @@ class ConsultaRepository extends BaseRepository {
     return this.buscarPorIdCompleto(consulta.id);
   }
 
-  // RF_F7 - Lançar prescrição
   async lancarPrescricao(data) {
     const { id, prescricao, medicamentos, usuario_id } = data;
 
@@ -81,7 +79,6 @@ class ConsultaRepository extends BaseRepository {
     return this.buscarPorIdCompleto(id);
   }
 
-  // RF_F8 - Lançar história patológica
   async lancarHistoriaPatologica(data) {
     const {
       id,
@@ -110,7 +107,6 @@ class ConsultaRepository extends BaseRepository {
     return this.buscarPorIdCompleto(id);
   }
 
-  // RF_F9 - Registrar dados pós-consulta
   async registrarPosConsulta(data) {
     const {
       id,
@@ -134,19 +130,22 @@ class ConsultaRepository extends BaseRepository {
     return this.buscarPorIdCompleto(id);
   }
 
-  // Buscar consulta com todos os dados relacionados
   async buscarPorIdCompleto(id) {
     const query = `
       SELECT
         c.*,
         a.nome as assistida_nome,
         a.cpf as assistida_cpf,
+        m.nome as medico_nome,
+        m.crm as medico_crm,
+        m.especialidade as medico_especialidade,
         u1.nome as usuario_criacao_nome,
         u2.nome as usuario_prescricao_nome,
         u3.nome as usuario_historia_nome,
         u4.nome as usuario_pos_consulta_nome
       FROM consultas c
       LEFT JOIN assistidas a ON c.assistida_id = a.id
+      LEFT JOIN medicos m ON c.medico_id = m.id
       LEFT JOIN usuarios u1 ON c.usuario_criacao_id = u1.id
       LEFT JOIN usuarios u2 ON c.usuario_prescricao_id = u2.id
       LEFT JOIN usuarios u3 ON c.usuario_historia_id = u3.id
@@ -160,7 +159,6 @@ class ConsultaRepository extends BaseRepository {
       const row = rows[0];
       const mapped = this.mapToFrontend(row);
 
-      // Parsear campos JSON
       if (row.medicamentos) {
         try {
           mapped.medicamentos = JSON.parse(row.medicamentos);
@@ -195,12 +193,14 @@ class ConsultaRepository extends BaseRepository {
         usuarioPosConsulta: row.usuario_pos_consulta_nome ? {
           nome: row.usuario_pos_consulta_nome
         } : null,
-        medico: mapped.profissional ? {
-          nome: mapped.profissional
-        } : null,
+        medico: row.medico_id ? {
+          id: row.medico_id,
+          nome: row.medico_nome,
+          crm: row.medico_crm,
+          especialidade: row.medico_especialidade
+        } : (mapped.profissional ? { nome: mapped.profissional } : null), // Fallback para profissional antigo
         motivo: mapped.observacoes || null,
         especialidade: mapped.tipoConsulta || 'Não definida',
-        // Remove campos duplicados
         assistida_nome: undefined,
         assistida_cpf: undefined,
         usuario_criacao_nome: undefined,
@@ -213,20 +213,20 @@ class ConsultaRepository extends BaseRepository {
     return null;
   }
 
-  // Buscar por ID (método simples da classe base)
   async buscarPorId(id) {
     return this.buscarPorIdCompleto(id);
   }
 
-  // Listar consultas com filtros
   async listar(filtros = {}) {
     let query = `
       SELECT
         c.*,
         a.nome as assistida_nome,
-        a.cpf as assistida_cpf
+        a.cpf as assistida_cpf,
+        m.nome as medico_nome
       FROM consultas c
       LEFT JOIN assistidas a ON c.assistida_id = a.id
+      LEFT JOIN medicos m ON c.medico_id = m.id
       WHERE 1=1
     `;
 
@@ -256,11 +256,9 @@ class ConsultaRepository extends BaseRepository {
 
     const rows = await this.executeQuery(query, params);
 
-    // Mapear para estrutura esperada pelo frontend
     return rows.map(row => {
       const mapped = this.mapToFrontend(row);
 
-      // Parsear campos JSON
       if (row.medicamentos) {
         try {
           mapped.medicamentos = JSON.parse(row.medicamentos);
@@ -283,25 +281,23 @@ class ConsultaRepository extends BaseRepository {
           nome: row.assistida_nome,
           cpf: row.assistida_cpf
         },
-        medico: mapped.profissional ? {
-          nome: mapped.profissional
-        } : null,
+        medico: row.medico_id ? {
+          id: row.medico_id,
+          nome: row.medico_nome
+        } : (mapped.profissional ? { nome: mapped.profissional } : null), // Fallback
         motivo: mapped.observacoes || null,
         especialidade: mapped.tipoConsulta || 'Não definida',
-        // Remove campos duplicados
         assistida_nome: undefined,
         assistida_cpf: undefined
       };
     });
   }
 
-  // Atualizar consulta
   async atualizar(id, dados) {
     await this.update(id, dados);
     return this.buscarPorIdCompleto(id);
   }
 
-  // Cancelar consulta
   async cancelar(data) {
     const { id, motivo_cancelamento, usuario_id } = data;
 
@@ -315,10 +311,8 @@ class ConsultaRepository extends BaseRepository {
     return this.buscarPorIdCompleto(id);
   }
 
-  // Estatísticas de consultas
   async getEstatisticas(periodo = 30) {
     try {
-      // Query direta para verificar todas as consultas canceladas (debug)
       const debugQuery = `SELECT id, status, data_consulta FROM consultas WHERE status = 'cancelada'`;
       const debugResult = await this.executeQuery(debugQuery);
       console.log('[DEBUG] Consultas canceladas encontradas:', debugResult);
@@ -330,7 +324,6 @@ class ConsultaRepository extends BaseRepository {
           FROM consultas
           WHERE data_consulta >= DATE_SUB(CURRENT_DATE(), INTERVAL ? DAY)
         `,
-        // Para agendadas e realizadas, usar período
         consultasAgendadas: `
           SELECT COUNT(*) as total
           FROM consultas
@@ -343,7 +336,6 @@ class ConsultaRepository extends BaseRepository {
           WHERE status = 'realizada'
           AND data_consulta >= DATE_SUB(CURRENT_DATE(), INTERVAL ? DAY)
         `,
-        // Para canceladas, contar TODAS (sem filtro de período)
         consultasCanceladas: `
           SELECT COUNT(*) as total
           FROM consultas
@@ -364,10 +356,11 @@ class ConsultaRepository extends BaseRepository {
           ORDER BY total DESC
         `,
         topProfissionais: `
-          SELECT profissional, COUNT(*) as total
-          FROM consultas
-          WHERE data_consulta >= DATE_SUB(CURRENT_DATE(), INTERVAL ? DAY)
-          GROUP BY profissional
+          SELECT m.nome as profissional, COUNT(c.id) as total
+          FROM consultas c
+          JOIN medicos m ON c.medico_id = m.id
+          WHERE c.data_consulta >= DATE_SUB(CURRENT_DATE(), INTERVAL ? DAY)
+          GROUP BY m.nome
           ORDER BY total DESC
           LIMIT 5
         `
@@ -389,7 +382,6 @@ class ConsultaRepository extends BaseRepository {
         console.log('[DEBUG] Total de canceladas no primeiro item:', canceladasResult[0]?.total);
       }
 
-      // executeQuery retorna um array diretamente (rows)
       const total = totalResult && totalResult[0] ? totalResult[0] : { total: 0 };
       const agendadas = agendadasResult && agendadasResult[0] ? agendadasResult[0] : { total: 0 };
       const realizadas = realizadasResult && realizadasResult[0] ? realizadasResult[0] : { total: 0 };
@@ -416,6 +408,10 @@ class ConsultaRepository extends BaseRepository {
       throw error;
     }
   }
+
+  async findByMedicoId(medicoId) {
+    return this.findAll({ medico_id: medicoId });
+  }
 }
 
-module.exports = ConsultaRepository;
+module.exports = new ConsultaRepository();

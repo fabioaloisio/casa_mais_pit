@@ -59,7 +59,18 @@ CREATE TABLE IF NOT EXISTS unidades_medida (
   UNIQUE KEY sigla (sigla)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 4. Tabela usuarios
+CREATE TABLE IF NOT EXISTS medicos (
+  id int NOT NULL AUTO_INCREMENT,
+  nome varchar(255) NOT NULL,
+  crm varchar(20) NOT NULL,
+  especialidade varchar(100) NOT NULL,
+  data_cadastro timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  data_atualizacao timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY crm (crm),
+  KEY nome (nome)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE TABLE IF NOT EXISTS usuarios (
   id int NOT NULL AUTO_INCREMENT,
   nome varchar(255) NOT NULL,
@@ -98,7 +109,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   CONSTRAINT fk_usuarios_suspenso_por FOREIGN KEY (suspenso_por) REFERENCES usuarios (id) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 5. Tabela assistidas
+-- 6. Tabela assistidas
 CREATE TABLE IF NOT EXISTS assistidas (
   id int NOT NULL AUTO_INCREMENT,
   nome varchar(255) NOT NULL COMMENT 'Nome completo da assistida',
@@ -129,7 +140,7 @@ CREATE TABLE IF NOT EXISTS assistidas (
   KEY estado (estado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 6. Tabela substancias
+-- 7. Tabela substancias
 CREATE TABLE IF NOT EXISTS substancias (
   id INT NOT NULL AUTO_INCREMENT,
   nome VARCHAR(100) NOT NULL COMMENT 'Nome da substância psicoativa',
@@ -145,7 +156,7 @@ CREATE TABLE IF NOT EXISTS substancias (
 -- SEÇÃO 2: TABELAS COM FK SIMPLES
 -- ========================================
 
--- 7. Tabela despesas (com FK para tipos_despesas)
+-- 8. Tabela despesas (com FK para tipos_despesas)
 CREATE TABLE IF NOT EXISTS despesas (
   id int NOT NULL AUTO_INCREMENT,
   tipo_despesa_id int NOT NULL,
@@ -168,7 +179,7 @@ CREATE TABLE IF NOT EXISTS despesas (
   CONSTRAINT fk_despesas_tipo_despesa FOREIGN KEY (tipo_despesa_id) REFERENCES tipos_despesas (id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 8. Tabela doacoes (com FK para doadores)
+-- 9. Tabela doacoes (com FK para doadores)
 CREATE TABLE IF NOT EXISTS doacoes (
   id int NOT NULL AUTO_INCREMENT,
   doador_id int NOT NULL,
@@ -183,7 +194,7 @@ CREATE TABLE IF NOT EXISTS doacoes (
   CONSTRAINT fk_doacoes_doador FOREIGN KEY (doador_id) REFERENCES doadores (id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 9. Tabela medicamentos (com FK para unidades_medida)
+-- 10. Tabela medicamentos (com FK para unidades_medida)
 CREATE TABLE IF NOT EXISTS medicamentos (
   id int NOT NULL AUTO_INCREMENT,
   nome varchar(100) NOT NULL,
@@ -199,7 +210,7 @@ CREATE TABLE IF NOT EXISTS medicamentos (
   CONSTRAINT fk_medicamentos_unidade_medida FOREIGN KEY (unidade_medida_id) REFERENCES unidades_medida (id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 10. Tabela drogas_utilizadas (com FK para assistidas e substancias)
+-- 11. Tabela drogas_utilizadas (com FK para assistidas e substancias)
 CREATE TABLE IF NOT EXISTS drogas_utilizadas (
   id INT NOT NULL AUTO_INCREMENT,
   assistida_id INT NOT NULL COMMENT 'Referência à assistida',
@@ -217,7 +228,7 @@ CREATE TABLE IF NOT EXISTS drogas_utilizadas (
   CONSTRAINT fk_drogas_substancia FOREIGN KEY (substancia_id) REFERENCES substancias (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 11. Tabela medicamentos_utilizados (com FK para assistidas)
+-- 12. Tabela medicamentos_utilizados (com FK para assistidas)
 CREATE TABLE IF NOT EXISTS medicamentos_utilizados (
   id int NOT NULL AUTO_INCREMENT,
   assistida_id int NOT NULL COMMENT 'Referência à assistida (foreign key)',
@@ -236,7 +247,7 @@ CREATE TABLE IF NOT EXISTS medicamentos_utilizados (
 -- SEÇÃO 3: TABELAS DE GESTÃO OPERACIONAL
 -- ========================================
 
--- 12. TABELA: internacoes (RF_F1, RF_F2) - Versão completa
+-- 13. TABELA: internacoes (RF_F1, RF_F2) - Versão completa
 CREATE TABLE IF NOT EXISTS internacoes (
   id INT PRIMARY KEY AUTO_INCREMENT,
   assistida_id INT NOT NULL,
@@ -260,7 +271,7 @@ CREATE TABLE IF NOT EXISTS internacoes (
   INDEX idx_data_entrada (data_entrada)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 13. TABELA: caixa_movimentacoes (RF_F4, RF_F5)
+-- 14. TABELA: caixa_movimentacoes (RF_F4, RF_F5)
 CREATE TABLE IF NOT EXISTS caixa_movimentacoes (
   id INT PRIMARY KEY AUTO_INCREMENT,
   tipo ENUM('entrada', 'saida', 'ajuste') NOT NULL,
@@ -286,7 +297,7 @@ CREATE TABLE IF NOT EXISTS caixa_movimentacoes (
   INDEX idx_categoria (categoria)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 14. TABELA: caixa_fechamentos (Para controle de fechamento diário)
+-- 15. TABELA: caixa_fechamentos (Para controle de fechamento diário)
 CREATE TABLE IF NOT EXISTS caixa_fechamentos (
   id INT PRIMARY KEY AUTO_INCREMENT,
   data_fechamento DATE NOT NULL,
@@ -305,12 +316,12 @@ CREATE TABLE IF NOT EXISTS caixa_fechamentos (
   INDEX idx_data_fechamento (data_fechamento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 15. TABELA: consultas (RF_F6, RF_F7, RF_F8, RF_F9) - Versão completa
+-- 16. TABELA: consultas (RF_F6, RF_F7, RF_F8, RF_F9) - Versão completa
 CREATE TABLE IF NOT EXISTS consultas (
   id INT PRIMARY KEY AUTO_INCREMENT,
   assistida_id INT NOT NULL,
+  medico_id INT DEFAULT NULL,
   data_consulta DATETIME NOT NULL,
-  profissional VARCHAR(200) NOT NULL,
   tipo_consulta VARCHAR(100) DEFAULT 'Geral',
   observacoes TEXT,
 
@@ -344,6 +355,7 @@ CREATE TABLE IF NOT EXISTS consultas (
   atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
   FOREIGN KEY (assistida_id) REFERENCES assistidas(id) ON DELETE CASCADE,
+  FOREIGN KEY (medico_id) REFERENCES medicos(id) ON DELETE SET NULL,
   FOREIGN KEY (usuario_prescricao_id) REFERENCES usuarios(id),
   FOREIGN KEY (usuario_historia_id) REFERENCES usuarios(id),
   FOREIGN KEY (usuario_pos_consulta_id) REFERENCES usuarios(id),
@@ -353,14 +365,14 @@ CREATE TABLE IF NOT EXISTS consultas (
   INDEX idx_assistida_consulta (assistida_id),
   INDEX idx_data_consulta (data_consulta),
   INDEX idx_status_consulta (status),
-  INDEX idx_profissional (profissional)
+  INDEX idx_medico_id (medico_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ========================================
 -- SEÇÃO 4: TABELAS DE CONTROLE E AUDITORIA
 -- ========================================
 
--- 16. Tabela password_reset_tokens (para recuperação de senha)
+-- 17. Tabela password_reset_tokens (para recuperação de senha)
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
   id int NOT NULL AUTO_INCREMENT,
   usuario_id int NOT NULL,
@@ -376,7 +388,7 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 17. Tabela usuarios_aprovacoes_log (para auditoria de aprovações)
+-- 18. Tabela usuarios_aprovacoes_log (para auditoria de aprovações)
 CREATE TABLE IF NOT EXISTS usuarios_aprovacoes_log (
   id int NOT NULL AUTO_INCREMENT,
   usuario_id int NOT NULL,
@@ -393,7 +405,7 @@ CREATE TABLE IF NOT EXISTS usuarios_aprovacoes_log (
   CONSTRAINT fk_log_executado_por FOREIGN KEY (executado_por) REFERENCES usuarios (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 17. Tabela usuarios_status_historico (histórico de mudanças de status)
+-- 19. Tabela usuarios_status_historico (histórico de mudanças de status)
 CREATE TABLE IF NOT EXISTS usuarios_status_historico (
   id int NOT NULL AUTO_INCREMENT,
   usuario_id int NOT NULL,
@@ -447,9 +459,11 @@ CREATE OR REPLACE VIEW vw_consultas_hoje AS
 SELECT
   c.*,
   a.nome as assistida_nome,
-  a.cpf as assistida_cpf
+  a.cpf as assistida_cpf,
+  m.nome as medico_nome
 FROM consultas c
 JOIN assistidas a ON c.assistida_id = a.id
+LEFT JOIN medicos m ON c.medico_id = m.id
 WHERE DATE(c.data_consulta) = CURDATE()
   AND c.status = 'agendada'
 ORDER BY c.data_consulta;
