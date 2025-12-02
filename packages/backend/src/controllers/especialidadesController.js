@@ -4,11 +4,11 @@ const db = require('../config/database');
 const listar = async (req, res) => {
   try {
     const query = `
-      SELECT DISTINCT tipo_consulta as nome
-      FROM consultas 
-      WHERE tipo_consulta IS NOT NULL 
-        AND tipo_consulta != ''
-      ORDER BY tipo_consulta
+      SELECT DISTINCT especialidade as nome
+      FROM medicos 
+      WHERE especialidade IS NOT NULL 
+        AND especialidade != ''
+      ORDER BY especialidade
     `;
     
     const [rows] = await db.query(query);
