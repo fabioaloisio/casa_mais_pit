@@ -5,6 +5,7 @@ import { ProdutoService } from '../services/produtoService';
 import Toast from '../components/common/Toast';
 import FormModal from '../components/common/FormModal';
 import ConfirmModal from '../components/common/ConfirmModal';
+import InfoTooltip from '../utils/tooltip';
 import { Form, Card, Row, Col } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash, FaDollarSign, FaChartLine, FaShoppingCart, FaSort, FaSortUp, FaSortDown, FaTimes } from 'react-icons/fa';
 import { formatCurrency } from '@casa-mais/shared';
@@ -368,8 +369,11 @@ const GerenciarVendas = () => {
       </Row>
 
       <div className="top-bar">
-        <button className="btn-cadastrar" onClick={() => abrirModal()}>
+        <button className="btn-cadastrar d-flex align-items-center gap-2" onClick={() => abrirModal()}>
           <FaPlus /> Registrar Venda
+          <InfoTooltip
+            texto="Registre uma nova venda de produtos. Selecione o produto, informe a quantidade vendida, valor unitário e data. As vendas reduzem automaticamente o estoque de produtos cadastrados."
+          />
         </button>
 
         <div className="filtros" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>

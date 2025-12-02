@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Form, Card, Row, Col, Modal, Alert, Badge, Nav } from 'react-bootstrap';
-import { 
-  FaPlus, 
-  FaSearch, 
-  FaCalendarAlt, 
-  FaStethoscope, 
-  FaUserMd, 
-  FaClipboardList, 
+import {
+  FaPlus,
+  FaSearch,
+  FaCalendarAlt,
+  FaStethoscope,
+  FaUserMd,
+  FaClipboardList,
   FaHistory,
   FaEye,
   FaEdit,
@@ -22,6 +22,7 @@ import {
 import consultasService from '../services/consultasService';
 import assistidasService from '../services/assistidasService';
 import Toast from '../components/common/Toast';
+import InfoTooltip from '../utils/tooltip';
 import './Doacoes.css';
 
 const Consultas = () => {
@@ -91,10 +92,10 @@ const Consultas = () => {
     try {
       setLoading(true);
       const [
-        consultasData, 
-        statsData, 
-        assistidasData, 
-        medicosData, 
+        consultasData,
+        statsData,
+        assistidasData,
+        medicosData,
         especialidadesData
       ] = await Promise.all([
         consultasService.getAll(),
@@ -103,7 +104,7 @@ const Consultas = () => {
         consultasService.getMedicos(),
         consultasService.getEspecialidades()
       ]);
-      
+
       setConsultas(consultasData.data || []);
       setStats(statsData.data || {
         totalAgendadas: 0,
@@ -136,7 +137,21 @@ const Consultas = () => {
         message: 'Consulta agendada com sucesso!',
         type: 'success'
       });
-      await loadData();
+      // Recarregar consultas e estatísticas
+      const [consultasData, statsData] = await Promise.all([
+        consultasService.getAll(),
+        consultasService.getEstatisticas()
+      ]);
+      setConsultas(consultasData.data || []);
+
+      // Processar estatísticas corretamente
+      const estatisticas = statsData?.data || statsData || {};
+      setStats({
+        totalAgendadas: Number(estatisticas.totalAgendadas) || 0,
+        totalRealizadas: Number(estatisticas.totalRealizadas) || 0,
+        totalCanceladas: Number(estatisticas.totalCanceladas) || 0,
+        proximasConsultas: Number(estatisticas.proximasConsultas) || 0
+      });
       setShowModalAgendar(false);
       setFormAgendar({
         assistida_id: '',
@@ -165,7 +180,21 @@ const Consultas = () => {
         message: 'Consulta realizada com sucesso!',
         type: 'success'
       });
-      await loadData();
+      // Recarregar consultas e estatísticas
+      const [consultasData, statsData] = await Promise.all([
+        consultasService.getAll(),
+        consultasService.getEstatisticas()
+      ]);
+      setConsultas(consultasData.data || []);
+
+      // Processar estatísticas corretamente
+      const estatisticas = statsData?.data || statsData || {};
+      setStats({
+        totalAgendadas: Number(estatisticas.totalAgendadas) || 0,
+        totalRealizadas: Number(estatisticas.totalRealizadas) || 0,
+        totalCanceladas: Number(estatisticas.totalCanceladas) || 0,
+        proximasConsultas: Number(estatisticas.proximasConsultas) || 0
+      });
       setShowModalRealizar(false);
     } catch (error) {
       setToast({
@@ -180,14 +209,53 @@ const Consultas = () => {
     const motivo = prompt('Informe o motivo do cancelamento:');
     if (motivo) {
       try {
-        await consultasService.cancelar(consulta.id, motivo);
+        const response = await consultasService.cancelar(consulta.id, motivo);
+        console.log('Resposta do cancelamento:', response);
+
+        // Atualizar estatísticas localmente imediatamente
+        setStats(prevStats => ({
+          ...prevStats,
+          totalAgendadas: Math.max(0, (prevStats.totalAgendadas || 0) - 1),
+          totalCanceladas: (prevStats.totalCanceladas || 0) + 1
+        }));
+
+        // Atualizar a consulta localmente
+        setConsultas(prevConsultas =>
+          prevConsultas.map(c =>
+            c.id === consulta.id
+              ? { ...c, status: 'cancelada', motivoCancelamento: motivo }
+              : c
+          )
+        );
+
         setToast({
           show: true,
           message: 'Consulta cancelada com sucesso!',
           type: 'success'
         });
-        await loadData();
+
+        // Recarregar dados do backend após um pequeno delay
+        setTimeout(async () => {
+          try {
+            const [consultasData, statsData] = await Promise.all([
+              consultasService.getAll(),
+              consultasService.getEstatisticas()
+            ]);
+
+            setConsultas(consultasData.data || []);
+            const estatisticas = statsData?.data || statsData || {};
+            setStats({
+              totalAgendadas: Number(estatisticas.totalAgendadas) || 0,
+              totalRealizadas: Number(estatisticas.totalRealizadas) || 0,
+              totalCanceladas: Number(estatisticas.totalCanceladas) || 0,
+              proximasConsultas: Number(estatisticas.proximasConsultas) || 0
+            });
+          } catch (error) {
+            console.error('Erro ao recarregar dados:', error);
+          }
+        }, 1000);
       } catch (error) {
+        console.error('Erro ao cancelar consulta:', error);
         setToast({
           show: true,
           message: error.message || 'Erro ao cancelar consulta.',
@@ -235,7 +303,7 @@ const Consultas = () => {
     e.preventDefault();
     try {
       await consultasService.atualizarHistoriaPatologica(
-        assistidaSelecionada.id, 
+        assistidaSelecionada.id,
         historiaPatologica
       );
       setToast({
@@ -302,8 +370,8 @@ const Consultas = () => {
     if (ordenacao.campo !== campo) {
       return <FaSort className="text-white ms-1" />;
     }
-    return ordenacao.direcao === 'asc' ? 
-      <FaSortUp className="text-warning ms-1" /> : 
+    return ordenacao.direcao === 'asc' ?
+      <FaSortUp className="text-warning ms-1" /> :
       <FaSortDown className="text-warning ms-1" />;
   };
 
@@ -315,11 +383,11 @@ const Consultas = () => {
         (consulta.medico?.nome || '').toLowerCase().includes(searchTerm) ||
         (consulta.especialidade || '').toLowerCase().includes(searchTerm)
       );
-      
-      const matchesStatus = 
+
+      const matchesStatus =
         filtroStatus === 'todas' ||
         consulta.status === filtroStatus;
-      
+
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
@@ -361,7 +429,7 @@ const Consultas = () => {
       <div className="topo">
         <h1>Gestão de Consultas Médicas</h1>
         <p>
-          Gerencie o atendimento médico das assistidas. Agende consultas, registre atendimentos, 
+          Gerencie o atendimento médico das assistidas. Agende consultas, registre atendimentos,
           crie prescrições e acompanhe o histórico de saúde.
         </p>
       </div>
@@ -425,8 +493,8 @@ const Consultas = () => {
       {/* Abas de Navegação */}
       <Nav variant="tabs" className="mb-4">
         <Nav.Item>
-          <Nav.Link 
-            active={activeTab === 'calendario'} 
+          <Nav.Link
+            active={activeTab === 'calendario'}
             onClick={() => setActiveTab('calendario')}
           >
             <FaCalendarAlt className="me-2" />
@@ -434,8 +502,8 @@ const Consultas = () => {
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link 
-            active={activeTab === 'historico'} 
+          <Nav.Link
+            active={activeTab === 'historico'}
             onClick={() => setActiveTab('historico')}
           >
             <FaHistory className="me-2" />
@@ -443,8 +511,8 @@ const Consultas = () => {
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link 
-            active={activeTab === 'historia-patologica'} 
+          <Nav.Link
+            active={activeTab === 'historia-patologica'}
             onClick={() => setActiveTab('historia-patologica')}
           >
             <FaClipboardList className="me-2" />
@@ -455,11 +523,14 @@ const Consultas = () => {
 
       {/* Barra de ações */}
       <div className="filtros mb-4">
-        <Button 
+        <Button
           className="azul d-flex align-items-center gap-2"
           onClick={() => setShowModalAgendar(true)}
         >
           <FaPlus /> Agendar Consulta
+          <InfoTooltip
+            texto="Agende uma nova consulta médica para uma assistida. Informe a assistida, médico, especialidade, data, horário e motivo da consulta. Consultas ajudam no acompanhamento da saúde das assistidas."
+          />
         </Button>
 
         <div className="d-flex align-items-center gap-2">
@@ -491,28 +562,28 @@ const Consultas = () => {
           <Table className="tabela-assistidas" hover responsive>
             <thead>
               <tr>
-                <th 
+                <th
                   className="cursor-pointer user-select-none"
                   onClick={() => handleOrdenar('dataConsulta')}
                   title="Clique para ordenar por data"
                 >
                   Data/Hora {getSortIcon('dataConsulta')}
                 </th>
-                <th 
+                <th
                   className="cursor-pointer user-select-none"
                   onClick={() => handleOrdenar('assistida')}
                   title="Clique para ordenar por assistida"
                 >
                   Assistida {getSortIcon('assistida')}
                 </th>
-                <th 
+                <th
                   className="cursor-pointer user-select-none"
                   onClick={() => handleOrdenar('medico')}
                   title="Clique para ordenar por médico"
                 >
                   Médico {getSortIcon('medico')}
                 </th>
-                <th 
+                <th
                   className="cursor-pointer user-select-none"
                   onClick={() => handleOrdenar('especialidade')}
                   title="Clique para ordenar por especialidade"
@@ -574,7 +645,7 @@ const Consultas = () => {
                       <div className="d-flex gap-1">
                         {consulta.status === 'agendada' && (
                           <>
-                            <Button 
+                            <Button
                               size="sm"
                               className="btn-outline-custom"
                               onClick={() => {
@@ -584,7 +655,7 @@ const Consultas = () => {
                             >
                               <FaCheck /> Realizar
                             </Button>
-                            <Button 
+                            <Button
                               size="sm"
                               variant="outline-danger"
                               onClick={() => handleCancelarConsulta(consulta)}
@@ -594,7 +665,7 @@ const Consultas = () => {
                           </>
                         )}
                         {consulta.status === 'realizada' && (
-                          <Button 
+                          <Button
                             size="sm"
                             variant="outline-info"
                             onClick={() => {
@@ -680,8 +751,8 @@ const Consultas = () => {
                         <Card.Body className="text-center">
                           <h6>{assistida.nome}</h6>
                           <p className="text-muted small">CPF: {assistida.cpf}</p>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             className="azul"
                             onClick={() => handleCarregarHistoria(assistida)}
                           >
@@ -828,7 +899,7 @@ const Consultas = () => {
                 <strong>Data/Hora:</strong> {new Date(consultaSelecionada.dataConsulta).toLocaleDateString('pt-BR')} às {consultaSelecionada.horaConsulta}<br/>
                 <strong>Médico:</strong> {consultaSelecionada.medico?.nome}
               </Alert>
-              
+
               <Form.Group className="mb-3">
                 <Form.Label>Data de Realização *</Form.Label>
                 <Form.Control
@@ -838,7 +909,7 @@ const Consultas = () => {
                   required
                 />
               </Form.Group>
-              
+
               <Form.Group className="mb-3">
                 <Form.Label>Sintomas Apresentados</Form.Label>
                 <Form.Control
@@ -849,7 +920,7 @@ const Consultas = () => {
                   placeholder="Descreva os sintomas apresentados..."
                 />
               </Form.Group>
-              
+
               <Form.Group className="mb-3">
                 <Form.Label>Diagnóstico *</Form.Label>
                 <Form.Control
@@ -861,7 +932,7 @@ const Consultas = () => {
                   required
                 />
               </Form.Group>
-              
+
               <Form.Group className="mb-3">
                 <Form.Label>Tratamento Recomendado</Form.Label>
                 <Form.Control
@@ -872,7 +943,7 @@ const Consultas = () => {
                   placeholder="Tratamento e orientações..."
                 />
               </Form.Group>
-              
+
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
@@ -899,7 +970,7 @@ const Consultas = () => {
                   </Form.Group>
                 </Col>
               </Row>
-              
+
               <Form.Group className="mb-3">
                 <Form.Label>Observações</Form.Label>
                 <Form.Control
@@ -936,7 +1007,7 @@ const Consultas = () => {
                 <strong>Consulta:</strong> {new Date(consultaSelecionada.dataConsulta).toLocaleDateString('pt-BR')}
               </Alert>
             )}
-            
+
             <h6>Medicamentos Prescritos</h6>
             {formPrescricao.medicamentos.map((medicamento, index) => (
               <Card key={index} className="mb-3">
@@ -996,8 +1067,8 @@ const Consultas = () => {
                         <Form.Label>&nbsp;</Form.Label>
                         <div>
                           {formPrescricao.medicamentos.length > 1 && (
-                            <Button 
-                              variant="outline-danger" 
+                            <Button
+                              variant="outline-danger"
                               size="sm"
                               onClick={() => removeMedicamentoPrescricao(index)}
                             >
@@ -1011,9 +1082,9 @@ const Consultas = () => {
                 </Card.Body>
               </Card>
             ))}
-            
-            <Button 
-              variant="outline-primary" 
+
+            <Button
+              variant="outline-primary"
               onClick={addMedicamentoPrescricao}
               className="mb-3"
             >
@@ -1050,7 +1121,7 @@ const Consultas = () => {
                 placeholder="Alergias conhecidas..."
               />
             </Form.Group>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Medicamentos em Uso</Form.Label>
               <Form.Control
@@ -1061,7 +1132,7 @@ const Consultas = () => {
                 placeholder="Medicamentos em uso contínuo..."
               />
             </Form.Group>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Cirurgias Anteriores</Form.Label>
               <Form.Control
@@ -1072,7 +1143,7 @@ const Consultas = () => {
                 placeholder="Histórico de cirurgias..."
               />
             </Form.Group>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Doenças Crônicas</Form.Label>
               <Form.Control
@@ -1083,7 +1154,7 @@ const Consultas = () => {
                 placeholder="Doenças crônicas..."
               />
             </Form.Group>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Histórico Familiar</Form.Label>
               <Form.Control
@@ -1094,7 +1165,7 @@ const Consultas = () => {
                 placeholder="Histórico familiar de doenças..."
               />
             </Form.Group>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Observações</Form.Label>
               <Form.Control

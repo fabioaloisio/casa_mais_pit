@@ -12,6 +12,7 @@ import usuarioService from '../services/usuarioService'
 import apiService from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import { mapUserType } from '../utils/userTypes'
+import InfoTooltip from '../utils/tooltip'
 import './Usuarios.css'
 import './Doacoes.css'
 
@@ -139,7 +140,7 @@ function Usuarios() {
       }
     } catch (error) {
       console.error('Erro ao excluir usuário:', error)
-      
+
       if (error.status === 400) {
         toast.error('Você não pode excluir sua própria conta')
       } else {
@@ -164,14 +165,14 @@ function Usuarios() {
     try {
       const novoStatus = !usuarioParaBloquear.ativo
       const response = await usuarioService.alterarStatus(usuarioParaBloquear.id, novoStatus)
-      
+
       if (response.success) {
         toast.success(`Usuário ${novoStatus ? 'desbloqueado' : 'bloqueado'} com sucesso!`)
         await carregarUsuarios()
       }
     } catch (error) {
       console.error('Erro ao alterar status do usuário:', error)
-      
+
       if (error.status === 400) {
         toast.error('Você não pode bloquear sua própria conta')
       } else {
@@ -224,17 +225,20 @@ function Usuarios() {
       <div className="topo">
         <h1>Gestão de Usuários</h1>
         <p>
-          Gerencie os usuários do sistema, seus perfis de acesso e permissões. 
+          Gerencie os usuários do sistema, seus perfis de acesso e permissões.
           Aqui você pode adicionar, editar ou remover usuários.
         </p>
       </div>
 
       <div className="filtros mb-4">
-        <Button 
+        <Button
           className="azul d-flex align-items-center gap-2"
           onClick={() => handleShow()}
         >
           <FaPlus /> Novo Usuário
+          <InfoTooltip
+            texto="Crie um novo usuário no sistema. Informe nome, e-mail, senha e perfil de acesso (Administrador, Gestor, Operador, etc.). Cada perfil possui permissões específicas para acessar funcionalidades do sistema."
+          />
         </Button>
 
         <div className="d-flex align-items-center gap-2">
@@ -396,8 +400,8 @@ function Usuarios() {
         onConfirm={handleBlockConfirm}
         title={usuarioParaBloquear?.ativo !== false ? "Bloquear Usuário" : "Desbloquear Usuário"}
         message={
-          usuarioParaBloquear?.ativo !== false 
-            ? "Tem certeza que deseja bloquear este usuário? O usuário não poderá acessar o sistema." 
+          usuarioParaBloquear?.ativo !== false
+            ? "Tem certeza que deseja bloquear este usuário? O usuário não poderá acessar o sistema."
             : "Tem certeza que deseja desbloquear este usuário? O usuário voltará a ter acesso ao sistema."
         }
         variant={usuarioParaBloquear?.ativo !== false ? "warning" : "success"}

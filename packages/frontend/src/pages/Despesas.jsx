@@ -6,6 +6,7 @@ import { formatMoney } from '@casa-mais/shared';
 import DespesaFormModal from '../components/despesas/DespesaFormModal';
 import ConfirmDeleteModal from '../components/despesas/ConfirmDeleteModal';
 import Toast from '../components/common/Toast';
+import InfoTooltip from '../utils/tooltip';
 import './Doacoes.css';
 
 const Despesas = () => {
@@ -23,7 +24,7 @@ const Despesas = () => {
   const [deleting, setDeleting] = useState(false);
   const [ordenacao, setOrdenacao] = useState({ campo: 'data_despesa', direcao: 'desc' });
   const [tiposDespesas, setTiposDespesas] = useState([]);
-  
+
   const [stats, setStats] = useState({
     totalDespesas: 0,
     valorTotalMes: 0,
@@ -42,12 +43,12 @@ const Despesas = () => {
       setLoading(true);
       const allDespesas = await despesasService.getAll();
       setDespesas(allDespesas);
-      
+
       // Calcular estatísticas
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
-      
+
       const statsData = {
         totalDespesas: allDespesas.length,
         valorTotalMes: allDespesas
@@ -127,7 +128,7 @@ const Despesas = () => {
 
   const handleDeleteConfirm = async () => {
     if (!despesaToDelete) return;
-    
+
     try {
       setDeleting(true);
       await despesasService.delete(despesaToDelete.id);
@@ -176,7 +177,7 @@ const Despesas = () => {
 
   const getCategoriaBadge = (categoria) => {
     const colors = [
-      'bg-primary', 'bg-secondary', 'bg-success', 'bg-danger', 
+      'bg-primary', 'bg-secondary', 'bg-success', 'bg-danger',
       'bg-warning', 'bg-info', 'bg-dark', 'bg-light text-dark'
     ];
     const index = categoria ? categoria.length % colors.length : 0;
@@ -186,13 +187,13 @@ const Despesas = () => {
   // Filtrar e ordenar despesas
   const despesasFiltradas = despesas
     .filter(despesa => {
-      const matchFiltro = !filtro || 
+      const matchFiltro = !filtro ||
         despesa.descricao?.toLowerCase().includes(filtro.toLowerCase()) ||
         despesa.fornecedor?.toLowerCase().includes(filtro.toLowerCase());
-      
+
       const matchCategoria = !filtroCategoria || despesa.categoria === filtroCategoria;
       const matchStatus = !filtroStatus || despesa.status === filtroStatus;
-      
+
       let matchPeriodo = true;
       if (filtroPeriodo.inicio || filtroPeriodo.fim) {
         const dataDespesa = new Date(despesa.data_despesa);
@@ -203,29 +204,29 @@ const Despesas = () => {
           matchPeriodo = matchPeriodo && dataDespesa <= new Date(filtroPeriodo.fim);
         }
       }
-      
+
       return matchFiltro && matchCategoria && matchStatus && matchPeriodo;
     })
     .sort((a, b) => {
       const aValue = a[ordenacao.campo];
       const bValue = b[ordenacao.campo];
-      
+
       if (ordenacao.campo === 'valor') {
-        return ordenacao.direcao === 'asc' 
+        return ordenacao.direcao === 'asc'
           ? parseFloat(aValue) - parseFloat(bValue)
           : parseFloat(bValue) - parseFloat(aValue);
       }
-      
+
       if (ordenacao.campo === 'data_despesa') {
-        return ordenacao.direcao === 'asc' 
+        return ordenacao.direcao === 'asc'
           ? new Date(aValue) - new Date(bValue)
           : new Date(bValue) - new Date(aValue);
       }
-      
+
       const aStr = String(aValue || '').toLowerCase();
       const bStr = String(bValue || '').toLowerCase();
-      
-      return ordenacao.direcao === 'asc' 
+
+      return ordenacao.direcao === 'asc'
         ? aStr.localeCompare(bStr)
         : bStr.localeCompare(aStr);
     });
@@ -295,11 +296,14 @@ const Despesas = () => {
 
       {/* Barra de ações */}
       <div className="filtros mb-4">
-        <Button 
+        <Button
           className="azul d-flex align-items-center gap-2"
           onClick={() => handleShowModal()}
         >
           <FaPlus /> Cadastrar Despesa
+          <InfoTooltip
+            texto="Registre uma nova despesa no sistema. Informe a descrição, valor, data, categoria (tipo de despesa), fornecedor e status de pagamento. Isso ajuda no controle financeiro da instituição."
+          />
         </Button>
 
         <div className="d-flex align-items-center gap-2">
@@ -390,42 +394,42 @@ const Despesas = () => {
         <Table className="tabela-assistidas" hover responsive>
           <thead>
             <tr>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleSort('data_despesa')}
                 title="Clique para ordenar por data"
               >
                 Data {getSortIcon('data_despesa')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleSort('descricao')}
                 title="Clique para ordenar por descrição"
               >
                 Descrição {getSortIcon('descricao')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleSort('categoria')}
                 title="Clique para ordenar por categoria"
               >
                 Categoria {getSortIcon('categoria')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleSort('valor')}
                 title="Clique para ordenar por valor"
               >
                 Valor {getSortIcon('valor')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleSort('status')}
                 title="Clique para ordenar por status"
               >
                 Status {getSortIcon('status')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleSort('fornecedor')}
                 title="Clique para ordenar por fornecedor"
@@ -475,13 +479,13 @@ const Despesas = () => {
                   <td className="text-muted">{despesa.fornecedor || '-'}</td>
                   <td>
                     <div className="d-flex gap-1">
-                      <Button 
+                      <Button
                         className="d-flex align-items-center gap-1 btn-outline-custom btn-sm fs-7"
                         onClick={() => handleShowModal(despesa)}
                       >
                         <FaEdit /> Editar
                       </Button>
-                      <Button 
+                      <Button
                         className="d-flex align-items-center gap-1 btn-sm fs-7"
                         variant="outline-danger"
                         onClick={() => handleDeleteClick(despesa)}

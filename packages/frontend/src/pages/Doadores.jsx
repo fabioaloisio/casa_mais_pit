@@ -6,6 +6,7 @@ import { formatCPF, formatCNPJ } from '@casa-mais/shared';
 import DoadorFormModal from '../components/doacoes/DoadorFormModal';
 import ConfirmDeleteModal from '../components/doacoes/ConfirmDeleteModal';
 import Toast from '../components/common/Toast';
+import InfoTooltip from '../utils/tooltip';
 import './Doacoes.css';
 
 const Doadores = () => {
@@ -18,7 +19,7 @@ const Doadores = () => {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [loading, setLoading] = useState(false);
   const [ordenacao, setOrdenacao] = useState({ campo: 'nome', direcao: 'asc' });
-  
+
   const [stats, setStats] = useState({
     totalDoadores: 0,
     totalAtivos: 0,
@@ -36,7 +37,7 @@ const Doadores = () => {
       setLoading(true);
       const allDoadores = await doadoresService.getAll();
       setDoadores(allDoadores);
-      
+
       // Calcular estatísticas
       const statsData = {
         totalDoadores: allDoadores.length,
@@ -156,8 +157,8 @@ const Doadores = () => {
     if (ordenacao.campo !== campo) {
       return <FaSort className="text-white ms-1" />;
     }
-    return ordenacao.direcao === 'asc' ? 
-      <FaSortUp className="text-warning ms-1" /> : 
+    return ordenacao.direcao === 'asc' ?
+      <FaSortUp className="text-warning ms-1" /> :
       <FaSortDown className="text-warning ms-1" />;
   };
 
@@ -288,11 +289,14 @@ const Doadores = () => {
 
       {/* Barra de ações */}
       <div className="filtros mb-4">
-        <Button 
+        <Button
           className="azul d-flex align-items-center gap-2"
           onClick={() => handleShowModal()}
         >
           <FaPlus /> Cadastrar Doador
+          <InfoTooltip
+            texto="Cadastre um novo doador (pessoa física ou jurídica) no sistema. Informe nome ou razão social, CPF/CNPJ, contatos e endereço. Doadores podem fazer doações de itens ou valores para a instituição."
+          />
         </Button>
 
         <div className="d-flex align-items-center gap-2">
@@ -312,42 +316,42 @@ const Doadores = () => {
         <Table className="tabela-assistidas" hover responsive>
           <thead>
             <tr>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('nome')}
                 title="Clique para ordenar por nome"
               >
                 Nome {getSortIcon('nome')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('tipo')}
                 title="Clique para ordenar por tipo"
               >
                 Tipo {getSortIcon('tipo')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('documento')}
                 title="Clique para ordenar por documento"
               >
                 Documento {getSortIcon('documento')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('telefone')}
                 title="Clique para ordenar por telefone"
               >
                 Contato {getSortIcon('telefone')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('endereco')}
                 title="Clique para ordenar por endereço"
               >
                 Endereço {getSortIcon('endereco')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('ativo')}
                 title="Clique para ordenar por status"
@@ -415,13 +419,13 @@ const Doadores = () => {
                   </td>
                   <td>
                     <div className="d-flex gap-1">
-                      <Button 
+                      <Button
                         className="d-flex align-items-center gap-1 btn-outline-custom btn-sm fs-7"
                         onClick={() => handleShowModal(doador)}
                       >
                         <FaEdit /> Editar
                       </Button>
-                      <Button 
+                      <Button
                         className="d-flex align-items-center gap-1 btn-sm fs-7"
                         variant="outline-danger"
                         onClick={() => handleShowDeleteModal(doador)}

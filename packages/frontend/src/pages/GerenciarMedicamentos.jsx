@@ -5,6 +5,7 @@ import ModalEditarMedicamento from '../components/medicamentos/ModalEditarMedica
 import ModalExclusaoMedicamento from '../components/medicamentos/ModalExclusaoMedicamento';
 import { MedicamentoService } from '../services/MedicamentoService';
 import Toast from '../components/common/Toast';
+import InfoTooltip from '../utils/tooltip';
 import './GerenciarMedicamentos.css';
 import './Doacoes.css';
 import { FaPlus } from 'react-icons/fa';
@@ -133,8 +134,11 @@ const GerenciarMedicamentos = () => {
       </div>
 
       <div className="top-bar">
-        <button className="btn-cadastrar" onClick={() => setIsModalCadastroOpen(true)}>
+        <button className="btn-cadastrar d-flex align-items-center gap-2" onClick={() => setIsModalCadastroOpen(true)}>
           <FaPlus /> Cadastrar Medicamento
+          <InfoTooltip
+            texto="Cadastre um novo medicamento no estoque. Informe nome, princípio ativo, forma farmacêutica, concentração, unidade de medida, fabricante e lote. Isso mantém o controle do estoque de medicamentos da instituição."
+          />
         </button>
 
         <div className="filtros">

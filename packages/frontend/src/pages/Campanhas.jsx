@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 import campanhaService from '../services/campanhaService';
 import doadoresService from '../services/doadoresService';
+import InfoTooltip from '../utils/tooltip';
 
 const Campanhas = () => {
   const { user } = useAuth();
@@ -267,8 +268,11 @@ const Campanhas = () => {
         </Col>
         <Col xs="auto">
           {podeGerenciar && (
-            <Button variant="primary" onClick={() => setShowModalNova(true)}>
+            <Button variant="primary" className="d-flex align-items-center gap-2" onClick={() => setShowModalNova(true)}>
               <FaPlus /> Nova Campanha
+              <InfoTooltip
+                texto="Crie uma nova campanha de arrecadação. Informe nome, descrição, meta de valor, datas de início e fim, e tipo de campanha. Campanhas ajudam a organizar e acompanhar as arrecadações para objetivos específicos."
+              />
             </Button>
           )}
         </Col>

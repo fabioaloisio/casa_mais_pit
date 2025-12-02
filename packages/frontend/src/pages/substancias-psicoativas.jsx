@@ -7,6 +7,7 @@ import { FaPlus } from 'react-icons/fa';
 import ListaSubstancias from '../components/substancias-psicoativas/listaSubstancias';
 import FormularioSubstancia from '../components/substancias-psicoativas/formularioSubstancia';
 import ConfirmDeleteModal from '../components/substancias-psicoativas/confirmDeleteModalSubstancia';
+import InfoTooltip from '../utils/tooltip';
 import substanciasService from '../services/substanciasService'; // 🔹 certifique-se que esse service existe
 
 const Substancias = () => {
@@ -179,10 +180,13 @@ const Substancias = () => {
                     <div className="pai_filtros">
                         <Button
                             variant="primary"
-                            className="btn-cadastrar"
+                            className="btn-cadastrar d-flex align-items-center gap-2"
                             onClick={() => setShowModal(true)}
                         >
                             <FaPlus /> Cadastrar Substância
+                            <InfoTooltip
+                              texto="Cadastre uma nova substância psicoativa. Informe nome científico, nome popular, classificação e riscos associados. Essas informações ajudam no acompanhamento e tratamento das assistidas."
+                            />
                         </Button>
 
                         <div className="d-flex gap-3 align-items-center filtros">

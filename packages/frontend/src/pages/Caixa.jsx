@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Form, Card, Row, Col, Modal, Alert, Badge } from 'react-bootstrap';
-import { 
-  FaPlus, 
-  FaSearch, 
-  FaDollarSign, 
-  FaArrowUp, 
-  FaArrowDown, 
-  FaChartLine, 
+import {
+  FaPlus,
+  FaSearch,
+  FaDollarSign,
+  FaArrowUp,
+  FaArrowDown,
+  FaChartLine,
   FaCalendarAlt,
   FaMoneyBillWave as FaCash,
   FaExchangeAlt,
@@ -21,6 +21,7 @@ import caixaService from '../services/caixaService';
 import { formatCurrency } from '@casa-mais/shared';
 import Toast from '../components/common/Toast';
 import DoacoesNavegacao from '../components/common/DoacoesNavegacao';
+import InfoTooltip from '../utils/tooltip';
 import './Doacoes.css';
 
 const Caixa = () => {
@@ -33,7 +34,7 @@ const Caixa = () => {
     saldoMesAtual: 0,
     totalDoacoes: 0
   });
-  
+
   const [filtroData, setFiltroData] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('todos');
   const [showModalDoacao, setShowModalDoacao] = useState(false);
@@ -74,7 +75,7 @@ const Caixa = () => {
         caixaService.getMovimentacoesRecentes(),
         caixaService.getEstatisticas()
       ]);
-      
+
       setSaldo(saldoData.data?.saldo_atual || 0);
       setMovimentacoes(movimentacoesData.data || []);
       setMovimentacoesRecentes(recentesData.data || []);
@@ -98,7 +99,7 @@ const Caixa = () => {
         ...formDoacao,
         valor: parseFloat(formDoacao.valor.replace(/[^\d,.-]/g, '').replace(',', '.'))
       };
-      
+
       await caixaService.lancarDoacao(dadosDoacao);
       setToast({
         show: true,
@@ -146,18 +147,18 @@ const Caixa = () => {
 
   const prepararFechamento = () => {
     const hoje = new Date().toISOString().split('T')[0];
-    const movimentacoesHoje = movimentacoes.filter(mov => 
+    const movimentacoesHoje = movimentacoes.filter(mov =>
       mov.data_movimentacao === hoje
     );
-    
+
     const totalEntradas = movimentacoesHoje
       .filter(mov => mov.tipo === 'entrada')
       .reduce((acc, mov) => acc + parseFloat(mov.valor), 0);
-    
+
     const totalSaidas = movimentacoesHoje
       .filter(mov => mov.tipo === 'saida')
       .reduce((acc, mov) => acc + parseFloat(mov.valor), 0);
-    
+
     setFormFechamento({
       data_fechamento: hoje,
       saldo_inicial: (saldo - totalEntradas + totalSaidas).toFixed(2),
@@ -166,7 +167,7 @@ const Caixa = () => {
       saldo_final: saldo.toFixed(2),
       observacoes: ''
     });
-    
+
     setShowModalFechamento(true);
   };
 
@@ -217,7 +218,7 @@ const Caixa = () => {
       <div className="topo">
         <h1>Caixa Financeiro</h1>
         <p>
-          Controle financeiro da instituição. Gerencie doações, receitas, despesas 
+          Controle financeiro da instituição. Gerencie doações, receitas, despesas
           e realize o fechamento diário do caixa.
         </p>
       </div>
@@ -298,13 +299,16 @@ const Caixa = () => {
       <Row className="mb-4">
         <Col md={6}>
           <div className="d-flex gap-2">
-            <Button 
+            <Button
               className="azul d-flex align-items-center gap-2"
               onClick={() => setShowModalDoacao(true)}
             >
               <FaPlus /> Lançar Doação
+              <InfoTooltip
+                texto="Registre uma doação monetária recebida pela instituição. Informe o valor, dados do doador, forma de pagamento (dinheiro, PIX, transferência) e data. Isso aumenta o saldo do caixa e registra a entrada de recursos."
+              />
             </Button>
-            <Button 
+            <Button
               variant="success"
               className="d-flex align-items-center gap-2"
               onClick={prepararFechamento}
@@ -483,7 +487,7 @@ const Caixa = () => {
                       </span>
                     </td>
                     <td>
-                      <Button 
+                      <Button
                         size="sm"
                         variant="outline-info"
                         onClick={() => {
@@ -606,7 +610,7 @@ const Caixa = () => {
               <FaCalendarAlt className="me-2" />
               Realizando fechamento do caixa para o dia {new Date(formFechamento.data_fechamento).toLocaleDateString('pt-BR')}
             </Alert>
-            
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">

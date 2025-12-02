@@ -3,6 +3,7 @@ import { MateriaPrimaService } from '../services/materiaPrimaService';
 import Toast from '../components/common/Toast';
 import FormModal from '../components/common/FormModal';
 import ConfirmModal from '../components/common/ConfirmModal';
+import InfoTooltip from '../utils/tooltip';
 import { Form } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { formatCurrency } from '@casa-mais/shared';
@@ -175,8 +176,11 @@ const GerenciarMateriaPrima = () => {
       </div>
 
       <div className="top-bar">
-        <button className="btn-cadastrar" onClick={() => abrirModal()}>
+        <button className="btn-cadastrar d-flex align-items-center gap-2" onClick={() => abrirModal()}>
           <FaPlus /> Cadastrar Matéria-Prima
+          <InfoTooltip
+            texto="Cadastre uma nova matéria-prima utilizada na produção de produtos. Informe nome, descrição, unidade de medida, quantidade inicial em estoque e preço de compra. Matérias-primas são consumidas ao produzir produtos conforme as receitas."
+          />
         </button>
 
         <div style={{ fontSize: '14px', color: '#6c757d' }}>

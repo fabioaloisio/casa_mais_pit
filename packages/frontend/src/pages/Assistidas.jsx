@@ -5,6 +5,7 @@ import ListaAssistidas from '../components/assistidas/ListaAssistidas';
 import { assistidasService } from '../services/assistidasService';
 import Toast from '../components/common/Toast';
 import ConfirmDeleteModal from '../components/assistidas/ConfirmDeleteModal';
+import InfoTooltip from '../utils/tooltip';
 import '../components/assistidas/Assistidas.css';
 import '../pages/Doacoes.css';
 import {
@@ -279,10 +280,13 @@ const Assistidas = () => {
           <div className="pai_filtros">
             <Button
               variant="primary"
-              className="btn-cadastrar"
+              className="btn-cadastrar d-flex align-items-center gap-2"
               onClick={() => setShowModal(true)}
             >
               <FaPlus />Cadastrar Assistida
+              <InfoTooltip
+                texto="Cadastre uma nova assistida no sistema. Informe dados pessoais como nome, CPF, data de nascimento, endereço e contatos. As assistidas são mulheres em situação de vulnerabilidade atendidas pela instituição."
+              />
             </Button>
 
             <div className="d-flex gap-3 align-items-center filtros">

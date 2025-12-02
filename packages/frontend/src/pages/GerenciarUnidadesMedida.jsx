@@ -6,6 +6,7 @@ import ModalEditarUnidadeMedida from '../components/unidadesMedida/ModalEditarUn
 import ModalExclusaoUnidadeMedida from '../components/unidadesMedida/ModalExclusaoUnidadeMedida';
 import { UnidadeMedidaService } from '../services/unidadesMedidaService.js';
 import Toast from '../components/common/Toast';
+import InfoTooltip from '../utils/tooltip';
 import './GerenciarUnidadesMedida.css';
 import { FaPlus } from 'react-icons/fa';
 
@@ -153,10 +154,13 @@ const GerenciarUnidadesMedida = () => {
 
       <div className="top-bar">
         <button
-          className="btn-cadastrar"
+          className="btn-cadastrar d-flex align-items-center gap-2"
           onClick={() => setIsModalCadastroOpen(true)}
         >
           <FaPlus /> Cadastrar Unidade de Medida
+          <InfoTooltip
+            texto="Cadastre uma nova unidade de medida (ex: kg, litro, unidade, caixa). Unidades de medida são utilizadas para quantificar medicamentos, produtos, matérias-primas e outros itens do estoque."
+          />
         </button>
 
         <input

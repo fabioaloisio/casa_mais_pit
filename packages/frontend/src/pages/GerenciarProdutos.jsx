@@ -5,6 +5,7 @@ import { ReceitaService } from '../services/receitaService';
 import Toast from '../components/common/Toast';
 import FormModal from '../components/common/FormModal';
 import ConfirmModal from '../components/common/ConfirmModal';
+import InfoTooltip from '../utils/tooltip';
 import { Form } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { formatCurrency } from '@casa-mais/shared';
@@ -195,8 +196,11 @@ const GerenciarProdutos = () => {
       </div>
 
       <div className="top-bar">
-        <button className="btn-cadastrar" onClick={() => abrirModal()}>
+        <button className="btn-cadastrar d-flex align-items-center gap-2" onClick={() => abrirModal()}>
           <FaPlus /> Cadastrar Produto
+          <InfoTooltip
+            texto="Cadastre um novo produto no estoque. Informe nome, descrição, preço de venda, quantidade inicial em estoque e a receita utilizada para produzi-lo. Produtos são itens produzidos pela instituição para venda."
+          />
         </button>
 
         <div style={{ fontSize: '14px', color: '#6c757d' }}>

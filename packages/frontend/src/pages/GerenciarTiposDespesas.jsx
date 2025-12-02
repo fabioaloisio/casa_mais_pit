@@ -4,6 +4,7 @@ import { FaEdit, FaTrash, FaPlus, FaSearch, FaTags, FaCheckCircle, FaTimesCircle
 import TipoDespesaFormModal from '../components/despesas/TipoDespesaFormModal';
 import ConfirmDeleteModal from '../components/despesas/ConfirmDeleteTipoDespesaModal';
 import Toast from '../components/common/Toast';
+import InfoTooltip from '../utils/tooltip';
 import './Doacoes.css';
 
 const GerenciarTiposDespesas = () => {
@@ -18,7 +19,7 @@ const GerenciarTiposDespesas = () => {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [ordenacao, setOrdenacao] = useState({ campo: 'nome', direcao: 'asc' });
-  
+
   const [stats, setStats] = useState({
     totalTipos: 0,
     tiposAtivos: 0,
@@ -43,11 +44,11 @@ const GerenciarTiposDespesas = () => {
       });
       const data = await response.json();
       console.log('loadTiposDespesas - dados recebidos:', data);
-      
+
       if (data.success) {
         setTiposDespesas(data.data);
         console.log('Lista atualizada com:', data.data.length, 'itens');
-        
+
         // Calcular estatísticas
         const statsData = {
           totalTipos: data.data.length,
@@ -84,18 +85,18 @@ const GerenciarTiposDespesas = () => {
     console.log('GerenciarTiposDespesas - handleSaveTipoDespesa chamado');
     console.log('tipoDespesaEdit:', tipoDespesaEdit);
     console.log('tipoDespesaData:', tipoDespesaData);
-    
+
     try {
-      const url = tipoDespesaEdit 
+      const url = tipoDespesaEdit
         ? `http://localhost:3003/api/tipos-despesas/${tipoDespesaEdit.id}`
         : 'http://localhost:3003/api/tipos-despesas';
-      
+
       const method = tipoDespesaEdit ? 'PUT' : 'POST';
       const token = localStorage.getItem('token');
-      
+
       console.log('URL:', url);
       console.log('Method:', method);
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -137,7 +138,7 @@ const GerenciarTiposDespesas = () => {
 
   const handleDeleteConfirm = async () => {
     if (!tipoDespesaToDelete) return;
-    
+
     try {
       setDeleting(true);
       const token = localStorage.getItem('token');
@@ -196,30 +197,30 @@ const GerenciarTiposDespesas = () => {
   // Filtrar e ordenar tipos de despesas
   const tiposDespesasFiltrados = tiposDespesas
     .filter(tipo => {
-      const matchFiltro = !filtro || 
+      const matchFiltro = !filtro ||
         tipo.nome?.toLowerCase().includes(filtro.toLowerCase()) ||
         tipo.descricao?.toLowerCase().includes(filtro.toLowerCase());
-      
-      const matchStatus = !filtroStatus || 
+
+      const matchStatus = !filtroStatus ||
         (filtroStatus === 'ativo' && tipo.ativo) ||
         (filtroStatus === 'inativo' && !tipo.ativo);
-      
+
       return matchFiltro && matchStatus;
     })
     .sort((a, b) => {
       const aValue = a[ordenacao.campo];
       const bValue = b[ordenacao.campo];
-      
+
       if (ordenacao.campo === 'ativo') {
-        return ordenacao.direcao === 'asc' 
+        return ordenacao.direcao === 'asc'
           ? (aValue === bValue ? 0 : aValue ? -1 : 1)
           : (aValue === bValue ? 0 : aValue ? 1 : -1);
       }
-      
+
       const aStr = String(aValue || '').toLowerCase();
       const bStr = String(bValue || '').toLowerCase();
-      
-      return ordenacao.direcao === 'asc' 
+
+      return ordenacao.direcao === 'asc'
         ? aStr.localeCompare(bStr)
         : bStr.localeCompare(aStr);
     });
@@ -276,11 +277,14 @@ const GerenciarTiposDespesas = () => {
 
       {/* Barra de ações */}
       <div className="filtros mb-4">
-        <Button 
+        <Button
           className="azul d-flex align-items-center gap-2"
           onClick={() => handleShowModal()}
         >
           <FaPlus /> Cadastrar Tipo de Despesa
+          <InfoTooltip
+            texto="Crie uma nova categoria de despesa para organizar melhor os gastos da instituição. Exemplos: Alimentação, Manutenção, Utilidades, etc. Isso facilita a categorização ao registrar despesas."
+          />
         </Button>
 
         <div className="d-flex align-items-center gap-2">
@@ -333,21 +337,21 @@ const GerenciarTiposDespesas = () => {
         <Table className="tabela-assistidas" hover responsive>
           <thead>
             <tr>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleSort('nome')}
                 title="Clique para ordenar por nome"
               >
                 Nome {getSortIcon('nome')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleSort('descricao')}
                 title="Clique para ordenar por descrição"
               >
                 Descrição {getSortIcon('descricao')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleSort('ativo')}
                 title="Clique para ordenar por status"
@@ -390,13 +394,13 @@ const GerenciarTiposDespesas = () => {
                   </td>
                   <td>
                     <div className="d-flex gap-1">
-                      <Button 
+                      <Button
                         className="d-flex align-items-center gap-1 btn-outline-custom btn-sm fs-7"
                         onClick={() => handleShowModal(tipoDespesa)}
                       >
                         <FaEdit /> Editar
                       </Button>
-                      <Button 
+                      <Button
                         className="d-flex align-items-center gap-1 btn-sm fs-7"
                         variant="outline-danger"
                         onClick={() => handleDeleteClick(tipoDespesa)}

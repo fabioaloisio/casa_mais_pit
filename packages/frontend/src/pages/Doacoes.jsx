@@ -8,6 +8,7 @@ import ConfirmDeleteModal from '../components/doacoes/ConfirmDeleteModal';
 import HistoricoUnificado from '../components/doacoes/HistoricoUnificado';
 import Toast from '../components/common/Toast';
 import DoacoesNavegacao from '../components/common/DoacoesNavegacao';
+import InfoTooltip from '../utils/tooltip';
 import './Doacoes.css';
 
 const Doacoes = () => {
@@ -23,7 +24,7 @@ const Doacoes = () => {
   const [ordenacao, setOrdenacao] = useState({ campo: 'dataDoacao', direcao: 'desc' });
   const [showHistoricoUnificado, setShowHistoricoUnificado] = useState(false);
   const [doadorSelecionado, setDoadorSelecionado] = useState(null);
-  
+
   const [stats, setStats] = useState({
     totalDoacoes: 0,
     valorTotal: 0,
@@ -160,8 +161,8 @@ const Doacoes = () => {
     if (ordenacao.campo !== campo) {
       return <FaSort className="text-white ms-1" />;
     }
-    return ordenacao.direcao === 'asc' ? 
-      <FaSortUp className="text-warning ms-1" /> : 
+    return ordenacao.direcao === 'asc' ?
+      <FaSortUp className="text-warning ms-1" /> :
       <FaSortDown className="text-warning ms-1" />;
   };
 
@@ -287,11 +288,14 @@ const Doacoes = () => {
 
       {/* Barra de ações */}
       <div className="filtros mb-4">
-        <Button 
+        <Button
           className="azul d-flex align-items-center gap-2"
           onClick={() => handleShowModal()}
         >
           <FaPlus /> Cadastrar Doação
+          <InfoTooltip
+            texto="Registre uma nova doação de itens (medicamentos, materiais, produtos) recebida pela instituição. Informe o doador, itens doados, quantidade e data. Isso mantém o controle do estoque e histórico de contribuições."
+          />
         </Button>
 
         <div className="d-flex align-items-center gap-2">
@@ -311,21 +315,21 @@ const Doacoes = () => {
         <Table className="tabela-assistidas" hover responsive>
           <thead>
             <tr>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('doador')}
                 title="Clique para ordenar por doador"
               >
                 Doador {getSortIcon('doador')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('tipo')}
                 title="Clique para ordenar por tipo"
               >
                 Tipo {getSortIcon('tipo')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('documento')}
                 title="Clique para ordenar por documento"
@@ -333,21 +337,21 @@ const Doacoes = () => {
                 Documento {getSortIcon('documento')}
               </th>
               <th>Contato</th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('valor')}
                 title="Clique para ordenar por valor"
               >
                 Valor {getSortIcon('valor')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('dataDoacao')}
                 title="Clique para ordenar por data"
               >
                 Data {getSortIcon('dataDoacao')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('ativo')}
                 title="Clique para ordenar por status do doador"
@@ -407,13 +411,13 @@ const Doacoes = () => {
                   </td>
                   <td>
                     <div className="d-flex gap-1 flex-wrap">
-                      <Button 
+                      <Button
                         className="d-flex align-items-center gap-1 btn-outline-custom btn-sm fs-7"
                         onClick={() => handleShowModal(doacao)}
                       >
                         <FaEdit /> Editar
                       </Button>
-                      <Button 
+                      <Button
                         className="d-flex align-items-center gap-1 btn-sm fs-7"
                         variant="outline-info"
                         onClick={() => handleShowHistoricoUnificado(doacao)}
@@ -421,7 +425,7 @@ const Doacoes = () => {
                       >
                         <FaHistory /> Histórico
                       </Button>
-                      <Button 
+                      <Button
                         className="d-flex align-items-center gap-1 btn-sm fs-7"
                         variant="outline-danger"
                         onClick={() => handleShowDeleteModal(doacao)}

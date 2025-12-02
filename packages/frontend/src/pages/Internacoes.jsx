@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Form, Card, Row, Col, Modal, Alert } from 'react-bootstrap';
-import { 
-  FaEdit, 
-  FaTrash, 
-  FaPlus, 
-  FaSearch, 
-  FaBed, 
-  FaUsers, 
-  FaCalendarAlt, 
-  FaChartLine, 
-  FaSort, 
-  FaSortUp, 
+import {
+  FaEdit,
+  FaTrash,
+  FaPlus,
+  FaSearch,
+  FaBed,
+  FaUsers,
+  FaCalendarAlt,
+  FaChartLine,
+  FaSort,
+  FaSortUp,
   FaSortDown,
   FaSignInAlt,
   FaSignOutAlt,
@@ -20,6 +20,7 @@ import {
 import internacoesService from '../services/internacoesService';
 import assistidasService from '../services/assistidasService';
 import Toast from '../components/common/Toast';
+import InfoTooltip from '../utils/tooltip';
 import './Doacoes.css';
 
 const Internacoes = () => {
@@ -35,7 +36,7 @@ const Internacoes = () => {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [loading, setLoading] = useState(false);
   const [ordenacao, setOrdenacao] = useState({ campo: 'dataEntrada', direcao: 'desc' });
-  
+
   const [formEntrada, setFormEntrada] = useState({
     assistida_id: '',
     motivo: '',
@@ -48,7 +49,7 @@ const Internacoes = () => {
     motivoSaida: '',
     observacoesSaida: ''
   });
-  
+
   const [stats, setStats] = useState({
     totalAtivas: 0,
     totalHistorico: 0,
@@ -165,8 +166,8 @@ const Internacoes = () => {
     if (ordenacao.campo !== campo) {
       return <FaSort className="text-white ms-1" />;
     }
-    return ordenacao.direcao === 'asc' ? 
-      <FaSortUp className="text-warning ms-1" /> : 
+    return ordenacao.direcao === 'asc' ?
+      <FaSortUp className="text-warning ms-1" /> :
       <FaSortDown className="text-warning ms-1" />;
   };
 
@@ -185,12 +186,12 @@ const Internacoes = () => {
         (internacao.assistida?.nome || '').toLowerCase().includes(searchTerm) ||
         (internacao.motivo || '').toLowerCase().includes(searchTerm)
       );
-      
-      const matchesStatus = 
+
+      const matchesStatus =
         filtroStatus === 'todas' ||
         (filtroStatus === 'ativas' && !internacao.dataSaida) ||
         (filtroStatus === 'encerradas' && internacao.dataSaida);
-      
+
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
@@ -295,11 +296,14 @@ const Internacoes = () => {
 
       {/* Barra de ações */}
       <div className="filtros mb-4">
-        <Button 
+        <Button
           className="azul d-flex align-items-center gap-2"
           onClick={handleShowModalEntrada}
         >
           <FaSignInAlt /> Registrar Entrada
+          <InfoTooltip
+            texto="Registre a entrada de uma assistida na internação. Informe a assistida, data de entrada, motivo da internação e observações relevantes."
+          />
         </Button>
 
         <div className="d-flex align-items-center gap-2">
@@ -329,21 +333,21 @@ const Internacoes = () => {
         <Table className="tabela-assistidas" hover responsive>
           <thead>
             <tr>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('assistida')}
                 title="Clique para ordenar por assistida"
               >
                 Assistida {getSortIcon('assistida')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('motivo')}
                 title="Clique para ordenar por motivo"
               >
                 Motivo {getSortIcon('motivo')}
               </th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('dataEntrada')}
                 title="Clique para ordenar por data de entrada"
@@ -351,7 +355,7 @@ const Internacoes = () => {
                 Data de Entrada {getSortIcon('dataEntrada')}
               </th>
               <th>Data de Saída</th>
-              <th 
+              <th
                 className="cursor-pointer user-select-none"
                 onClick={() => handleOrdenar('dias')}
                 title="Clique para ordenar por dias"
@@ -394,8 +398,8 @@ const Internacoes = () => {
                     {new Date(internacao.dataEntrada).toLocaleDateString('pt-BR')}
                   </td>
                   <td>
-                    {internacao.dataSaida ? 
-                      new Date(internacao.dataSaida).toLocaleDateString('pt-BR') : 
+                    {internacao.dataSaida ?
+                      new Date(internacao.dataSaida).toLocaleDateString('pt-BR') :
                       '-'
                     }
                   </td>
@@ -412,14 +416,17 @@ const Internacoes = () => {
                   <td>
                     <div className="d-flex gap-1">
                       {!internacao.dataSaida && (
-                        <Button 
+                        <Button
                           className="d-flex align-items-center gap-1 btn-outline-custom btn-sm fs-7"
                           onClick={() => handleShowModalSaida(internacao)}
                         >
                           <FaSignOutAlt /> Registrar Saída
+                          <InfoTooltip
+                            texto="Registre a saída de uma assistida da internação. Informe a data de saída, motivo da saída e observações relevantes sobre o encerramento da internação."
+                          />
                         </Button>
                       )}
-                      <Button 
+                      <Button
                         className="d-flex align-items-center gap-1 btn-sm fs-7"
                         variant="outline-info"
                         onClick={() => {
@@ -521,7 +528,7 @@ const Internacoes = () => {
                 <strong>Data de Entrada:</strong> {new Date(internacaoSelecionada.dataEntrada).toLocaleDateString('pt-BR')}<br/>
                 <strong>Dias de Internação:</strong> {calcularDiasInternacao(internacaoSelecionada.dataEntrada)} dias
               </Alert>
-              
+
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
@@ -593,21 +600,21 @@ const Internacoes = () => {
               <hr />
               <h6><strong>Motivo da Internação</strong></h6>
               <p>{internacaoSelecionada.motivo}</p>
-              
+
               {internacaoSelecionada.observacoes && (
                 <>
                   <h6><strong>Observações da Entrada</strong></h6>
                   <p>{internacaoSelecionada.observacoes}</p>
                 </>
               )}
-              
+
               {internacaoSelecionada.motivoSaida && (
                 <>
                   <h6><strong>Motivo da Saída</strong></h6>
                   <p>{internacaoSelecionada.motivoSaida}</p>
                 </>
               )}
-              
+
               {internacaoSelecionada.observacoesSaida && (
                 <>
                   <h6><strong>Observações da Saída</strong></h6>
