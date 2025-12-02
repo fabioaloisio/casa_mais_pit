@@ -1,34 +1,27 @@
+import {
+  ROLES,
+  ROLE_ALIASES,
+  isAdmin,
+  isFinanceiro,
+  isColaborador,
+  normalizeRole
+} from '@casa-mais/shared';
+
 // Mapeamento entre tipos do banco e tipos de exibição
 export const mapUserType = (dbType) => {
-  const typeMap = {
-    'admin': 'Administrador',
-    'operador': 'Operador',
-    'usuario': 'Usuario',
-    // Manter compatibilidade com tipos antigos
-    'Administrador': 'Administrador',
-    'Operador': 'Operador'
-  };
-  
-  return typeMap[dbType] || dbType;
+  return normalizeRole(dbType) || dbType;
 };
 
 // Função inversa - do frontend para o banco
 export const mapUserTypeToDb = (displayType) => {
-  const typeMap = {
-    'Administrador': 'admin',
-    'Operador': 'operador',
-    'Usuario': 'usuario'
-  };
-  
-  return typeMap[displayType] || displayType;
+  // Sistema agora usa os mesmos valores no banco e frontend
+  return displayType;
 };
 
-// Verificar se é administrador
-export const isAdminType = (type) => {
-  return type === 'admin' || type === 'Administrador' || type === 'administrador';
-};
+// Re-exportar funções de verificação do shared
+export const isAdminType = isAdmin;
+export const isFinanceiroType = isFinanceiro;
+export const isColaboradorType = isColaborador;
 
-// Verificar se é operador
-export const isOperatorType = (type) => {
-  return type === 'operador' || type === 'Operador';
-};
+// Exportar constantes para compatibilidade
+export { ROLES, ROLE_ALIASES };

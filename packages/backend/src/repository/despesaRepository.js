@@ -1,7 +1,11 @@
 const db = require('../config/database');
+const BaseRepository = require('../../../shared/repository/BaseRepository');
 const Despesa = require('../models/despesa');
 
-class DespesaRepository {
+class DespesaRepository extends BaseRepository {
+  constructor() {
+    super('despesas', 'd');
+  }
   async findAll(filters = {}) {
     let query = `
       SELECT d.*, td.nome as tipo_despesa_nome, td.descricao as tipo_despesa_descricao

@@ -1,5 +1,6 @@
 const { Assistida } = require('../models/assistida');
 const assistidasRepository = require('../repository/assistidasRepository');
+const { ERROR_MESSAGES } = require('@casa-mais/shared');
 
 class AssistidaController {
     async getAll(req, res) {
@@ -34,9 +35,9 @@ class AssistidaController {
             const assistida = new Assistida(req.body)
             const errors = assistida.validate()
             if (errors.length > 0) {
-                return res.status(404).json({
+                return res.status(400).json({
                     success: false,
-                    message: 'dados inválidos',
+                    message: ERROR_MESSAGES.VALIDATION_ERROR,
                     errors
                 })
             }
@@ -50,7 +51,7 @@ class AssistidaController {
             })
         } catch (error) {
             res.status(500).json({
-                success: true,
+                success: false,
                 message: error.message
             })
         }
@@ -63,16 +64,16 @@ class AssistidaController {
             if (!assistidaExistente) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Assistida não encontrada'
+                    message: ERROR_MESSAGES.ASSISTIDA_NOT_FOUND
                 })
             }
 
             const assistida = new Assistida({ ...req.body, id })
             const errors = assistida.validate()
             if (errors.length > 0) {
-                return res.status(404).json({
+                return res.status(400).json({
                     success: false,
-                    message: 'dados inválidos',
+                    message: ERROR_MESSAGES.VALIDATION_ERROR,
                     errors
                 })
             }
@@ -85,19 +86,19 @@ class AssistidaController {
 
         } catch (error) {
             res.status(500).json({
-                success: true,
+                success: false,
                 message: error.message
             })
         }
     }
-    async detete(req, res) {
+    async delete(req, res) {
         try {
             const { id } = req.params
             const assistidaExistente = await assistidasRepository.findById(id)
             if (!assistidaExistente) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Assistida não encontrada'
+                    message: ERROR_MESSAGES.ASSISTIDA_NOT_FOUND
                 })
             }
 
@@ -110,14 +111,14 @@ class AssistidaController {
                 });
             } else {
                 res.status(500).json({
-                    success: true,
+                    success: false,
                     message: 'erro ao deletar'
                 })
             }
 
         } catch (error) {
             res.status(500).json({
-                success: true,
+                success: false,
                 message: error.message
             })
         }
@@ -130,18 +131,17 @@ class AssistidaController {
             if (!assistida) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Equipamento não encontrado'
+                    message: ERROR_MESSAGES.ASSISTIDA_NOT_FOUND
                 })
             }
 
-            res.status(201).json({
+            res.status(200).json({
                 success: true,
-                data: assistida.toJSON(),
-
+                data: assistida.toJSON()
             })
         } catch (error) {
             res.status(500).json({
-                success: true,
+                success: false,
                 message: error.message
             })
         }

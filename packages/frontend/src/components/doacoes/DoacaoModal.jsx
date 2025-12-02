@@ -87,9 +87,17 @@ const DoacaoModal = ({ show, onHide, onSave, doacao }) => {
   };
 
   const handleDoadorSelect = (doador) => {
+    console.log('[DOAÇÃO-MODAL] Doador selecionado:', doador);
+
     if (doador === 'NEW_DOADOR') {
+      console.log('[DOAÇÃO-MODAL] Abrindo modal para criar novo doador');
       setShowDoadorModal(true);
     } else {
+      console.log('[DOAÇÃO-MODAL] Doador existente selecionado:', {
+        id: doador.id,
+        nome: doador.nome,
+        documento: doador.documento
+      });
       setSelectedDoador(doador);
       // Limpar erro de doador se houver
       if (errors.doador) {
@@ -102,35 +110,43 @@ const DoacaoModal = ({ show, onHide, onSave, doacao }) => {
   };
 
   const handleDoadorSave = async (novoDoador) => {
+    console.log('[DOAÇÃO-MODAL] Salvando novo doador:', novoDoador);
+
     try {
       const doadorCriado = await doadoresService.create(novoDoador);
+      console.log('[DOAÇÃO-MODAL] Novo doador criado com sucesso:', doadorCriado);
       setSelectedDoador(doadorCriado);
       setShowDoadorModal(false);
     } catch (error) {
-      console.error('Erro ao criar doador:', error);
+      console.error('[DOAÇÃO-MODAL] Erro ao criar doador:', error);
       // O erro será tratado no próprio modal do doador
     }
   };
 
   const handleSubmit = async (e) => {
+    console.log('[DOAÇÃO-MODAL] Iniciando submissão do formulário');
     setIsSubmitting(true);
 
     // Validar se doador foi selecionado
     const validationErrors = {};
-    
+
     if (!selectedDoador) {
+      console.log('[DOAÇÃO-MODAL] ERRO: Doador não selecionado');
       validationErrors.doador = 'Selecione um doador';
     }
-    
+
     if (!formData.valor || parseCurrency(formData.valor) <= 0) {
+      console.log('[DOAÇÃO-MODAL] ERRO: Valor inválido:', formData.valor);
       validationErrors.valor = 'Valor deve ser maior que zero';
     }
-    
+
     if (!formData.dataDoacao) {
+      console.log('[DOAÇÃO-MODAL] ERRO: Data não informada');
       validationErrors.dataDoacao = 'Data da doação é obrigatória';
     }
-    
+
     if (Object.keys(validationErrors).length > 0) {
+      console.log('[DOAÇÃO-MODAL] Erros de validação:', validationErrors);
       setErrors(validationErrors);
       setIsSubmitting(false);
       return;
@@ -143,8 +159,13 @@ const DoacaoModal = ({ show, onHide, onSave, doacao }) => {
       observacoes: formData.observacoes || null
     };
 
+    console.log('[DOAÇÃO-MODAL] Dados a salvar:', dataToSave);
+    console.log('[DOAÇÃO-MODAL] Doador:', selectedDoador.nome);
+    console.log('[DOAÇÃO-MODAL] Valor: R$', parseCurrency(formData.valor));
+
     // Chamar onSave diretamente, sem try-catch
     await onSave(dataToSave);
+    console.log('[DOAÇÃO-MODAL] Doação salva com sucesso!');
     setIsSubmitting(false);
   };
 

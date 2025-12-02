@@ -1,12 +1,17 @@
 // Domain constants shared between frontend and backend
 
-export const STATUS_TYPES = {
+// Import modules
+const rolesModule = require('./roles.js');
+const errorMessagesModule = require('./errorMessages.js');
+const backendMessagesModule = require('./backendMessages.js');
+
+const STATUS_TYPES = {
   ACTIVE: 'ativo',
   INACTIVE: 'inativo',
   PENDING: 'pendente'
 };
 
-export const MEDICATION_UNITS = {
+const MEDICATION_UNITS = {
   MG: 'mg',
   ML: 'ml',
   COMPRIMIDO: 'comprimido',
@@ -14,16 +19,27 @@ export const MEDICATION_UNITS = {
   AMPOLA: 'ampola'
 };
 
-export const EXPENSE_TYPES = {
+const EXPENSE_TYPES = {
   MEDICATION: 'medicamentos',
   UTILITIES: 'utilidades',
   MAINTENANCE: 'manutenção',
   SUPPLIES: 'suprimentos'
 };
 
-export const DONATION_TYPES = {
+const DONATION_TYPES = {
   MONEY: 'dinheiro',
   MEDICATION: 'medicamentos',
   SUPPLIES: 'suprimentos',
   OTHER: 'outros'
+};
+
+// CommonJS exports - merge all modules
+module.exports = {
+  ...rolesModule,
+  ...errorMessagesModule,
+  ...backendMessagesModule,
+  STATUS_TYPES,
+  MEDICATION_UNITS,
+  EXPENSE_TYPES,
+  DONATION_TYPES
 };

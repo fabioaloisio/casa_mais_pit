@@ -10,7 +10,8 @@
     "db:populate": "node scripts/db-populate.js",
     "db:reset": "node scripts/db-reset.js",
     "db:setup": "npm run db:create && npm run db:populate",
-    "db:full-reset": "npm run db:reset && npm run db:setup"
+    "db:full-reset": "npm run db:reset && npm run db:setup",
+    "db:test-dashboard": "node scripts/test-dashboard.js"
   },
   "keywords": [
     "backend",
@@ -30,7 +31,9 @@
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.3",
     "nodemailer": "^7.0.5",
-    "uuid": "^11.1.0"
+    "pdfkit": "^0.17.2",
+    "uuid": "^11.1.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

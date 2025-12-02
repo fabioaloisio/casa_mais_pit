@@ -1,17 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const doadorController = require('../controllers/doadorController');
+const { verifyToken, requirePermission } = require('../middleware/authMiddleware');
 
-router.post('/', doadorController.create);
+// RF_B3 - Gerenciar Doadores (Apenas Administrador)
+router.post('/', verifyToken, requirePermission('RF_B3'), doadorController.create);
 
-router.get('/', doadorController.findAll);
+router.get('/', verifyToken, requirePermission('RF_B3'), doadorController.findAll);
 
-router.get('/:id', doadorController.findById);
+router.get('/:id', verifyToken, requirePermission('RF_B3'), doadorController.findById);
 
-router.put('/:id', doadorController.update);
+router.put('/:id', verifyToken, requirePermission('RF_B3'), doadorController.update);
 
-router.delete('/:id', doadorController.delete);
+router.delete('/:id', verifyToken, requirePermission('RF_B3'), doadorController.delete);
 
-router.get('/:id/doacoes', doadorController.findDoacoes);
+router.get('/:id/doacoes', verifyToken, requirePermission('RF_B3'), doadorController.findDoacoes);
+
+router.get('/:id/historico-unificado', verifyToken, requirePermission('RF_B3'), doadorController.findHistoricoUnificado);
+
+router.get('/:id/estatisticas-consolidadas', verifyToken, requirePermission('RF_B3'), doadorController.getEstatisticasConsolidadas);
 
 module.exports = router;

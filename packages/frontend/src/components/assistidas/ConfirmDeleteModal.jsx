@@ -1,7 +1,7 @@
 import ConfirmModal from '../common/ConfirmModal';
 import PropTypes from 'prop-types';
 import { formatCPF } from '@casa-mais/shared';
-import './style/Assistidas.css'
+import './Assistidas.css'
 
 const ConfirmDeleteModal = ({ show, onHide, onConfirm, assistida, loading }) => {
   if (!assistida) return null;

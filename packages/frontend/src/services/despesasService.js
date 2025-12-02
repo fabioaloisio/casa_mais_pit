@@ -1,4 +1,5 @@
 import apiService from './api';
+import { formatCurrency as formatMoney, parseCurrency as parseMoney } from '@casa-mais/shared';
 
 class DespesasService {
   // Obter todas as despesas
@@ -219,18 +220,13 @@ class DespesasService {
     }
   }
 
-  // Formatar valor monetário
+  // Métodos de formatação agora vêm do shared/utils
   formatMoney(value) {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
+    return formatMoney(value);
   }
 
-  // Converter valor de string para número
   parseMoney(value) {
-    if (typeof value === 'number') return value;
-    return parseFloat(value.toString().replace(/[^\d,.-]/g, '').replace(',', '.'));
+    return parseMoney(value);
   }
 }
 

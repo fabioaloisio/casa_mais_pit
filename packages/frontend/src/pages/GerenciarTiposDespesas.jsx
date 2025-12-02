@@ -34,7 +34,13 @@ const GerenciarTiposDespesas = () => {
     console.log('loadTiposDespesas chamado');
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3003/api/tipos-despesas');
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3003/api/tipos-despesas', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       const data = await response.json();
       console.log('loadTiposDespesas - dados recebidos:', data);
       
@@ -85,6 +91,7 @@ const GerenciarTiposDespesas = () => {
         : 'http://localhost:3003/api/tipos-despesas';
       
       const method = tipoDespesaEdit ? 'PUT' : 'POST';
+      const token = localStorage.getItem('token');
       
       console.log('URL:', url);
       console.log('Method:', method);
@@ -92,6 +99,7 @@ const GerenciarTiposDespesas = () => {
       const response = await fetch(url, {
         method,
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(tipoDespesaData),
@@ -132,8 +140,13 @@ const GerenciarTiposDespesas = () => {
     
     try {
       setDeleting(true);
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3003/api/tipos-despesas/${tipoDespesaToDelete.id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
       const data = await response.json();

@@ -26,10 +26,14 @@ const DoadorSelector = ({
   }, [searchTerm, tipoDoador]);
 
   const buscarDoadores = async () => {
+    console.log('[DOADOR-SELECTOR] Iniciando busca de doadores');
+    console.log('[DOADOR-SELECTOR] Termo de busca:', searchTerm);
+    console.log('[DOADOR-SELECTOR] Tipo:', tipoDoador);
+
     try {
       setLoading(true);
       setError('');
-      
+
       const filtros = {
         tipo_doador: tipoDoador,
         search: searchTerm,
@@ -37,10 +41,12 @@ const DoadorSelector = ({
       };
 
       const resultado = await doadoresService.search(filtros);
+      console.log(`[DOADOR-SELECTOR] ${resultado.length} doadores encontrados`);
+
       setDoadores(resultado);
       setShowSuggestions(true);
     } catch (error) {
-      console.error('Erro ao buscar doadores:', error);
+      console.error('[DOADOR-SELECTOR] Erro ao buscar doadores:', error);
       setError('Erro ao buscar doadores');
       setDoadores([]);
     } finally {
@@ -50,16 +56,24 @@ const DoadorSelector = ({
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
+    console.log('[DOADOR-SELECTOR] Campo de busca alterado:', value);
     setSearchTerm(value);
-    
+
     // Se limpar o campo, limpar seleção
     if (!value) {
+      console.log('[DOADOR-SELECTOR] Campo limpo, removendo seleção');
       onDoadorSelect(null);
       setShowSuggestions(false);
     }
   };
 
   const handleDoadorSelect = (doador) => {
+    console.log('[DOADOR-SELECTOR] Doador selecionado:', {
+      id: doador.id,
+      nome: doador.nome,
+      documento: doador.documento
+    });
+
     setSearchTerm(`${doador.nome} - ${formatarDocumento(doador.documento, doador.tipo_doador)}`);
     setShowSuggestions(false);
     onDoadorSelect(doador);
@@ -67,10 +81,12 @@ const DoadorSelector = ({
 
   const handleTipoChange = (e) => {
     const novoTipo = e.target.value;
+    console.log('[DOADOR-SELECTOR] Tipo de doador alterado:', novoTipo);
     onTipoChange(novoTipo);
-    
+
     // Limpar seleção atual se mudar o tipo
     if (selectedDoador && selectedDoador.tipo_doador !== novoTipo) {
+      console.log('[DOADOR-SELECTOR] Limpando seleção devido à mudança de tipo');
       onDoadorSelect(null);
       setSearchTerm('');
     }
@@ -85,6 +101,7 @@ const DoadorSelector = ({
   };
 
   const handleNewDoador = () => {
+    console.log('[DOADOR-SELECTOR] Botão "Cadastrar Novo Doador" clicado');
     // Sinal para abrir modal de novo doador
     onDoadorSelect('NEW_DOADOR');
     setShowSuggestions(false);

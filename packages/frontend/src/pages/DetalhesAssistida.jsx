@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Spinner, Alert, Table } from 'react-bootstrap';
-import { FaArrowLeft, FaUser, FaMapMarkerAlt, FaPhone, FaCalendarAlt, FaFileAlt, FaEdit, FaAcquisitionsIncorporated, FaDoorOpen } from 'react-icons/fa';
+import { Container, Row, Col, Card, Button, Spinner, Alert, Table, Modal, Form } from 'react-bootstrap';
+import { FaArrowLeft, FaUser, FaMapMarkerAlt, FaPhone, FaFileAlt, FaBan, FaTrash, FaSignOutAlt, FaTimesCircle, FaArrowCircleRight, FaRedoAlt, FaSignInAlt, FaDoorOpen } from 'react-icons/fa';
 import { assistidasService } from '../services/assistidasService';
 import { HprService } from '../services/hprService.js';
 import { formatCPF, formatTelefone } from '@casa-mais/shared';
@@ -10,57 +10,44 @@ import Toast from '../components/common/Toast';
 import '../components/assistidas/style/Assistidas.css';
 import LinhaDoTempo from './linhaTempo.jsx';
 
-// const hprList = [
-//   {
-//     data_atendimento: "2025-09-25",
-//     hora: "09:30",
-//     internacoes: [],
-//     motivacao_internacoes: "",
-//     drogas: [],
-//     tempo_sem_uso: "",
-//     medicamentos: [],
-//     historia_patologica: "Paciente sem histórico relevante.",
-//     fatos_marcantes: "",
-//     infancia: "Leve asma.",
-//     adolescencia: "Participava de esportes escolares."
-//   },
-//   {
-//     data_atendimento: "2025-08-10",
-//     hora: "14:00",
-//     internacoes: [
-//       { local: "Hospital São João", duracao: "3 dias", data: "2023-05-10" },
-//       { local: "Hospital Santa Maria", duracao: "1 semana", data: "2024-02-18" },
-//     ],
-//     motivacao_internacoes: "Cirurgia e recuperação",
-//     drogas: [
-//       { tipo: "Álcool", idade_inicio: 18, tempo_uso: "5 anos", intensidade: "Moderada" },
-//       { tipo: "Cigarro", idade_inicio: 20, tempo_uso: "2 anos", intensidade: "Leve" },
-//     ],
-//     tempo_sem_uso: "6 meses",
-//     medicamentos: [
-//       { nome: "Paracetamol", dosagem: "500mg", frequencia: "3x/dia" },
-//       { nome: "Ibuprofeno", dosagem: "400mg", frequencia: "2x/dia" },
-//     ],
-//     historia_patologica: "Paciente apresenta histórico de hipertensão.",
-//     fatos_marcantes: "Queda de bicicleta aos 15 anos.",
-//     infancia: "Sem complicações significativas.",
-//     adolescencia: "Atividade física regular."
-//   },
-// ];
+import { SaidaService } from '../services/saidaService.js';
+import { BsJournalMedical } from 'react-icons/bs';
+import internacoesService from '../services/internacoesService.js';
+
 
 const DetalhesAssistida = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [assistida, setAssistida] = useState(null);
   const [hprList, setHpr] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
+
   const [HPRParaEditar, setHPRParaEditar] = useState(null);
   const [modoEdicao, setModoEdicao] = useState(false);
   const [assistidas, setAssistidas] = useState([]);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [hprParaDeletar, setHprParaDeletar] = useState(null);
+
+  const [showModalSaida, setShowModalSaida] = useState(false);
+  const [assistidaInativa, setAssistidaInativa] = useState(false);
+  const [saida, setSaida] = useState(false);
+  const [saidaData, setSaidaData] = useState([]);
+  const [entradaData, setEntradaData] = useState([]);
+
+  const [internacoes, setInternacoes] = useState([]);
+  const internacoesFiltradas = entradaData.filter((internacao) => internacao.assistidaId === parseInt(id));
+  const dataEntrada = internacoesFiltradas.length > 0 ? internacoesFiltradas[0].dataEntrada : ' '
+
+
+  const hoje = new Date().toISOString().split("T")[0]; // AAAA-MM-DD
+
+  const [formSaida, setFormSaida] = useState({
+    dataSaida: "", // inicial vazio
+  });
+
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -68,9 +55,23 @@ const DetalhesAssistida = () => {
   };
 
   useEffect(() => {
+    const hash = window.location.hash;
+    console.log(hash)
+    if (hash) {
+      const element = document.querySelector(hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, []);
+
+
+  useEffect(() => {
     carregarAssistida();
     carregarHpr()
+    loadData()
   }, [id]);
+
 
   const carregarAssistida = async () => {
     try {
@@ -90,6 +91,7 @@ const DetalhesAssistida = () => {
     try {
       setLoading(true);
       const hprData = await HprService.obterPorId(id);
+
       setHpr(hprData)
     } catch (error) {
       console.error(error);
@@ -98,11 +100,60 @@ const DetalhesAssistida = () => {
     }
   };
 
-  const formatarData = (data) => {
-    if (!data) return '-';
-    return data.split('T')[0]; // pega só '2025-09-30'
+  const loadData = async () => {
+    try {
+      setLoading(true);
+
+      // Busca as internações da assistida
+      const response = await internacoesService.getAll();
+
+      if (response && response.data) {
+        const internacoesData = response.data;
+
+
+        // formatar Entradas do estado
+        const formatarEntrada = internacoesData.map(item => ({
+          id: item.id,
+          assistidaId: item.assistida_id,
+          dataEntrada: item.dataEntrada,
+          motivo: item.motivo,
+          observacoes: item.observacoes,
+          modoRetorno: item.modo_retorno
+        }));
+
+
+        // formatar saídas do estado
+        const formatarSaida = internacoesData.map(item => ({
+          id: item.id,
+          assistidaId: item.assistida_id,
+          dataSaida: item.dataSaida,
+          diasInternacao: item.dias_internada,
+          motivoSaida: item.motivoSaida,
+          observacoesSaida: item.observacoesSaida
+        }));
+
+
+        setEntradaData(formatarEntrada);
+        setSaidaData(formatarSaida);
+        setInternacoes(internacoesData);
+      }
+
+    } catch (error) {
+      console.error('Erro ao carregar internações:', error);
+      showToast('Erro ao carregar internações. Verifique sua conexão.', 'danger');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const formatarData = (data) => {
+  if (!data) return '-';
+
+  const soData = data.split('T')[0]; // "2025-09-30"
+  const [ano, mes, dia] = soData.split('-'); // separa
+
+  return `${dia}/${mes}/${ano}`; // inverte
+};
 
 
   const calcularIdade = (dataNascimento) => {
@@ -119,20 +170,25 @@ const DetalhesAssistida = () => {
   const adicionarHPR = async (HPR) => {
     try {
       let response;
-      if (modoEdicao && HPRParaEditar && HPR.data_atendimento == formatarData(HPRParaEditar.data_atendimento)) {
-          response = await HprService.update(HPRParaEditar.id, HPR);
+      if (modoEdicao && HPRParaEditar) {
+        response = await HprService.update(HPRParaEditar.id, HPR);
         if (response && response.id) {
           await carregarHpr();
+          await carregarAssistida();
           fecharModal();
-          showToast('História Patológica Regressa atualizada com sucesso!');
+          showToast('Edição da História Patológica Regressa realizada com sucesso!');
         } else showToast('Erro ao atualizar HPR: ' + response.message, 'error');
       } else {
-
         response = await HprService.create(HPR);
         if (response && response.id) {
           await carregarHpr();
+          await carregarAssistida();
           fecharModal();
-          showToast('História Patológica Regressa cadastrada com sucesso!');
+          if (hprList.length > 0) {
+            showToast('Atualização da História Patológica Regressa realizada com sucesso!');
+          } else {
+            showToast('História Patológica Regresa cadastrada com sucesso!');
+          }
         } else showToast('Erro ao cadastrar HPR: ' + response.message, 'error');
       }
     } catch (error) {
@@ -140,11 +196,20 @@ const DetalhesAssistida = () => {
     }
   };
 
+
+
   const handleEdit = (dado) => {
     setHPRParaEditar(dado);
     setModoEdicao(true);
     setShowModal(true);
   };
+
+  const handleDelete = (hpr) => {
+
+    setHprParaDeletar(hpr);
+    setShowConfirmDelete(true);
+  };
+
 
   const fecharModal = () => {
     setShowModal(false);
@@ -152,18 +217,94 @@ const DetalhesAssistida = () => {
     setHPRParaEditar(null);
   };
 
-  const handleDeleteHPR = async () => {
-    if (!hpr?.id) return;
+  const handleDeleteHPR = async (hprId) => {
+    if (!hprId) return;
     try {
-      const response = await HprService.excluir(hpr.id);
-      if (response.success) {
-        setHpr({});
+      const response = await HprService.delete(hprId);
+      if (response) {
         showToast('HPR deletada com sucesso');
+        carregarHpr()
       }
     } catch (error) {
       showToast('Erro ao deletar HPR: ' + error.message, 'error');
     }
   };
+
+  const obterFluxo = () => {
+    // 1) Se NÃO existe HPR → primeira ação sempre será "Registrar HPR"
+    if (!hprList || hprList.length === 0) {
+      return { texto: "Registrar História Patológica Regressa", Icone: BsJournalMedical };
+    }
+
+    // 2) Ordenar entradas e saídas por data
+    const entrada = entradaData
+      .filter(e => e.assistidaId === parseInt(id) && e.dataEntrada)
+      .sort((a, b) => new Date(b.dataEntrada) - new Date(a.dataEntrada))[0];
+
+    const saida = saidaData
+      .filter(s => s.assistidaId === parseInt(id) && s.dataSaida)
+      .sort((a, b) => new Date(b.dataSaida) - new Date(a.dataSaida))[0];
+
+    // 3) Pegar último evento entre Entrada e Saída
+    let ultimoEvento = null;
+    if (entrada && !saida) ultimoEvento = "entrada";
+    else if (!entrada && saida) ultimoEvento = "saida";
+    else if (entrada && saida) {
+      ultimoEvento = new Date(entrada.dataEntrada) > new Date(saida.dataSaida)
+        ? "entrada"
+        : "saida";
+    }
+
+    // 4) Fluxo baseado no último evento
+    switch (ultimoEvento) {
+
+      case "entrada":
+        return { texto: "Efetuar Saída da Instituição", Icone: FaSignOutAlt };
+
+      case "saida":
+        return { texto: "Registrar Retorno para a Instituição", Icone: FaRedoAlt };
+
+      default:
+        // Se por algum erro não achar nada → próxima é entrada
+        return { texto: "Registrar Entrada de Internação", Icone: FaDoorOpen };
+    }
+  };
+
+  const { texto, Icone } = obterFluxo();
+
+  const executarAcao = () => {
+    if (texto.includes("História Patológica Regressa")) {
+      // Abrir modal de HPR
+      setModoEdicao(false);
+      setHPRParaEditar(null);
+      setShowModal(true);
+    }
+    else if (texto.includes("Retorno")) {
+      // Navegar para Internações com modoRetorno
+      navigate(`/internacoes`, {
+        state: {
+          assistidaId: id,
+          modoRetorno: true
+        }
+      });
+    } else if (texto.includes("Saída")) {
+      navigate('/internacoes', {
+        state: {
+          openModalSaida: true,
+          saida: {
+            assistidaId: id,
+            dataEntrada: dataEntrada
+          }
+        }
+      });
+    } else {
+      navigate('/internacoes', {
+        state: { openModalEntrada: true, assistidaId: id }
+      });
+    }
+  };
+
+
 
   if (loading) {
     return (
@@ -205,9 +346,9 @@ const DetalhesAssistida = () => {
     );
   }
 
+
   return (
     <Container className="mt-4">
-
 
       {/* Dados da Assistida */}
       <Row className="mb-4">
@@ -219,8 +360,8 @@ const DetalhesAssistida = () => {
               </h2>
               <p className="text-muted mt-2">Dados completos e descrição detalhada da assistida</p>
             </div>
-            <Button variant="outline-primary" onClick={() => navigate('/assistidas')}>
-              <FaArrowLeft className="me-2" /> Voltar
+            <Button variant="primary" onClick={() => navigate('/assistidas')}>
+              <FaArrowLeft className="me-2" /> Voltar para Assistidas
             </Button>
           </div>
         </Col>
@@ -247,7 +388,7 @@ const DetalhesAssistida = () => {
                   <p><strong>Estado Civil:</strong> {assistida.estado_civil || '-'}</p>
                   <p><strong>Profissão:</strong> {assistida.profissao || '-'}</p>
                   <p><strong>Escolaridade:</strong> Ensino {assistida.escolaridade || '-'}</p>
-                  <p><strong>Status:</strong> <span className={`ms-2 badge status ${assistida.status?.toLowerCase()}`}>{assistida.status || '-'}</span></p>
+                  <p><strong>Status:</strong> <span className={`ms-2 badge status ${assistida.status?.toLowerCase().replaceAll(" ", "")}`}>{assistida.status || "-"}</span></p>
                 </Col>
               </Row>
             </Card.Body>
@@ -256,11 +397,11 @@ const DetalhesAssistida = () => {
       </Row>
 
       {/* Endereço e Contato */}
-      <Row className="mb-4">
+      <Row className="mb-4" >
         <Col md={6}>
           <Card>
             <Card.Header><FaMapMarkerAlt className="me-2" /> Endereço</Card.Header>
-            <Card.Body>
+            <Card.Body id="titulo-hpr">
               <p><strong>Logradouro:</strong> {assistida.logradouro || '-'}</p>
               <p><strong>Número:</strong> {assistida.numero || '-'}</p>
               <p><strong>Bairro:</strong> {assistida.bairro || '-'}</p>
@@ -279,49 +420,67 @@ const DetalhesAssistida = () => {
             </Card.Body>
           </Card>
 
-          {/* Botão de Registrar/Editar HPR */}
 
         </Col>
       </Row>
       <div className="d-flex justify-content-between align-items-center" style={{ marginTop: '5rem' }}>
         <div>
-          <h2 className="text-primary d-flex align-items-center gap-1">
+          <h2 id='hpr' className="text-primary d-flex align-items-center gap-1">
             <FaFileAlt />História Patológica Regressa
           </h2>
           <p className="text-muted mt-2">Evolução e progresso da assistida dentro da instituição</p>
         </div>
-
         <div className='add_history'>
           <Button
             variant="primary"
-            onClick={() => {
-              if (hprList.length > 0) handleEdit(hprList[hprList.length - 1]);
-              else {
-                setHPRParaEditar(null);
-                setModoEdicao(false);
-              }
-              setShowModal(true);
-            }}
+            onClick={executarAcao}
           >
-            {hprList.length > 0 ? <FaEdit /> : < FaDoorOpen />}{" "}
-            {hprList.length > 0 ? "Editar História Patológica Regressa" : "Registrar Entrada da Assistida"}
+            <Icone /> {texto}
           </Button>
-          {/* Botão de Excluir HPR */}
-          {/* {hpr.data_atendimento && (
-                <Button variant="danger" onClick={handleDeleteHPR} className="mb-3">
-                  Excluir HPR
-                </Button>
-              )} */}
+
         </div>
+
       </div>
 
-      {/* Detalhes de HPR */}
+      {
+        hprList.length > 0 && (
+          <>
+            <LinhaDoTempo
+              hprList={hprList}
+              saidaList={saidaData}
+              onEditHPR={handleEdit}
+              onDeleteHPR={handleDelete}
+              internacoesList={entradaData}
 
-      {hprList.length > 0 && (
-        <>
-          <LinhaDoTempo hprList={hprList} />
-        </>
-      )}
+            />
+
+            {/* <div className="d-flex justify-content-between align-items-center saida p-2">
+              <div>
+                <h4 className="d-flex align-items-center gap-2">
+                  <FaArrowCircleRight />Saída da Assistida da instituição
+                </h4>
+                <p className="mt-3" >
+                  Ao registrar a saída da assistida, todos os seus dados e históricos permanecem  armazenados, garantindo a possibilidade de seu retorno e continuidade do acompanhamento a qualquer momento.
+                </p>
+
+              </div>
+
+              <div className='add_history'>
+
+                <Button
+                  variant="danger"
+                  onClick={handleShowModalSaida}
+                  disabled={assistida.status === 'Inativa'}
+
+                >
+                  <FaSignOutAlt /> Efetuar Saída da instituição
+                </Button>
+
+              </div>
+            </div> */}
+          </>
+        )
+      }
 
       {/* Formulário HPR */}
       <FormularioHPR
@@ -340,7 +499,44 @@ const DetalhesAssistida = () => {
         type={toast.type}
         onClose={() => setToast({ ...toast, show: false })}
       />
-    </Container>
+
+
+      <Modal show={showConfirmDelete} onHide={() => setShowConfirmDelete(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmar Exclusão</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Você tem certeza que deseja excluir essa HPR? Essa operação não poderá ser desfeita.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowConfirmDelete(false)}>
+            <FaBan /> Cancelar
+          </Button>
+
+          <Button
+            variant="danger"
+            onClick={async () => {
+              if (hprParaDeletar) {
+                try {
+                  await handleDeleteHPR(hprParaDeletar);
+                  showToast('HPR deletada com sucesso');
+                  setHprParaDeletar(null);
+                } catch (error) {
+                  showToast('Erro ao deletar HPR: ' + error.message, 'error');
+                } finally {
+                  setShowConfirmDelete(false);
+                }
+              }
+            }}
+          >
+            <FaTrash /> Sim, excluir
+          </Button>
+
+        </Modal.Footer>
+      </Modal>
+
+
+    </Container >
   );
 };
 

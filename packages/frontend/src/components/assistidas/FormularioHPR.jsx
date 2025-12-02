@@ -530,7 +530,7 @@ const FormularioHRP = ({ showModal, setShowModal, onSubmit, HPRParaEditar, modoE
 
         <Modal.Header closeButton>
           <Modal.Title>
-            {modoEdicao ? 'Edição de História Patológica Regressa' : 'Entrevista de entrada da assistida na instituição'}
+            {modoEdicao ? 'Edição de História Patológica Regressa' : 'Registrar História Patológica Regressa'}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -1047,7 +1047,7 @@ const FormularioHRP = ({ showModal, setShowModal, onSubmit, HPRParaEditar, modoE
                 {isSubmitting
                   ? 'Salvando...'
                   : modoEdicao
-                    ? 'Atualizar HPR'
+                    ? 'Editar HPR'
                     : 'Finalizar Registro'}
               </Button>
             )}

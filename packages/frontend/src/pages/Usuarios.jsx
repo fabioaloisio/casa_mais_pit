@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Table, Button, Form } from 'react-bootstrap'
-import { FaEdit, FaTrash, FaPlus, FaSearch } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaPlus, FaSearch, FaLock, FaUnlock } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import UsuarioModal from '../components/usuarios/UsuarioModal'
+import StatusBadge from '../components/usuarios/StatusBadge'
+import StatusActions from '../components/usuarios/StatusActions'
+import StatusHistory from '../components/usuarios/StatusHistory'
 import ConfirmModal from '../components/common/ConfirmModal'
 import usuarioService from '../services/usuarioService'
+import apiService from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import { mapUserType } from '../utils/userTypes'
 import './Usuarios.css'
@@ -14,9 +18,13 @@ import './Doacoes.css'
 function Usuarios() {
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showBlockModal, setShowBlockModal] = useState(false)
+  const [showStatusHistory, setShowStatusHistory] = useState(false)
   const [filtro, setFiltro] = useState('')
   const [usuarioSelecionado, setUsuarioSelecionado] = useState(null)
   const [usuarioParaExcluir, setUsuarioParaExcluir] = useState(null)
+  const [usuarioParaBloquear, setUsuarioParaBloquear] = useState(null)
+  const [usuarioHistorico, setUsuarioHistorico] = useState(null)
   const [usuarios, setUsuarios] = useState([])
   const [loading, setLoading] = useState(true)
   const { user, isAdmin } = useAuth()
@@ -74,13 +82,18 @@ function Usuarios() {
         response = await usuarioService.criarUsuario(formData)
         toast.success('Usuário cadastrado com sucesso!')
       }
-      
+
       if (response.success) {
         await carregarUsuarios()
       }
     } catch (error) {
       console.error('Erro ao salvar usuário:', error)
-      
+
+      // Erro 409 será tratado pelo UsuarioModal (usuário inativo)
+      if (error.response?.status === 409) {
+        throw error // Propagar para o modal tratar
+      }
+
       // Verificar se o erro tem uma mensagem específica
       if (error.message) {
         toast.error(error.message)
@@ -91,6 +104,20 @@ function Usuarios() {
       } else {
         toast.error('Erro ao salvar usuário - tente novamente')
       }
+    }
+  }
+
+  const handleReactivate = async (userId, userData) => {
+    try {
+      const response = await usuarioService.reactivateAndUpdate(userId, userData)
+      toast.success('Usuário reativado com sucesso! Email de ativação enviado.')
+      if (response.success) {
+        await carregarUsuarios()
+      }
+    } catch (error) {
+      console.error('Erro ao reativar usuário:', error)
+      toast.error('Erro ao reativar usuário - tente novamente')
+      throw error
     }
   }
 
@@ -124,7 +151,59 @@ function Usuarios() {
     }
   }
 
-  const usuariosFiltrados = usuarios.filter(usuario => 
+  const handleBlockClick = (usuario) => {
+    if (!isAdmin()) {
+      toast.error('Apenas administradores podem bloquear/desbloquear usuários')
+      return
+    }
+    setUsuarioParaBloquear(usuario)
+    setShowBlockModal(true)
+  }
+
+  const handleBlockConfirm = async () => {
+    try {
+      const novoStatus = !usuarioParaBloquear.ativo
+      const response = await usuarioService.alterarStatus(usuarioParaBloquear.id, novoStatus)
+      
+      if (response.success) {
+        toast.success(`Usuário ${novoStatus ? 'desbloqueado' : 'bloqueado'} com sucesso!`)
+        await carregarUsuarios()
+      }
+    } catch (error) {
+      console.error('Erro ao alterar status do usuário:', error)
+      
+      if (error.status === 400) {
+        toast.error('Você não pode bloquear sua própria conta')
+      } else {
+        toast.error('Erro ao alterar status do usuário')
+      }
+    } finally {
+      setShowBlockModal(false)
+      setUsuarioParaBloquear(null)
+    }
+  }
+
+  // Nova função para lidar com mudanças de status
+  const handleStatusChange = async (usuarioId, action, payload = {}) => {
+    try {
+      const data = await apiService.post(`/usuarios/${usuarioId}/${action}`, payload)
+
+      toast.success(data.message || 'Status alterado com sucesso!')
+      await carregarUsuarios()
+    } catch (error) {
+      console.error('Erro ao alterar status:', error)
+      throw error
+    }
+  }
+
+  // Função para mostrar histórico de status
+  const handleShowHistory = (usuarioId) => {
+    const usuario = usuarios.find(u => u.id === usuarioId)
+    setUsuarioHistorico(usuario)
+    setShowStatusHistory(true)
+  }
+
+  const usuariosFiltrados = usuarios.filter(usuario =>
     usuario.nome.toLowerCase().includes(filtro.toLowerCase()) ||
     usuario.email.toLowerCase().includes(filtro.toLowerCase())
   )
@@ -178,19 +257,21 @@ function Usuarios() {
               <th>Nome</th>
               <th>E-mail</th>
               <th>Tipo</th>
+              <th>Status</th>
+              <th>Informações Adicionais</th>
               <th>Ações</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="5" className="text-center py-4">
+                <td colSpan="7" className="text-center py-4">
                   <div className="text-muted">Carregando...</div>
                 </td>
               </tr>
             ) : usuariosFiltrados.length === 0 ? (
               <tr>
-                <td colSpan="5" className="text-center py-4">
+                <td colSpan="7" className="text-center py-4">
                   <div className="text-muted">
                     <p className="mb-0">Nenhum usuário encontrado</p>
                     <small>Clique em "Novo Usuário" para começar</small>
@@ -204,19 +285,71 @@ function Usuarios() {
                   <td className="fw-medium">{usuario.nome}</td>
                   <td className="text-muted">{usuario.email}</td>
                   <td>
-                    <span className={`status ${mapUserType(usuario.tipo) === 'Administrador' ? 'ativa' : 'tratamento'}`}>
+                    <span className={`status ${
+                      mapUserType(usuario.tipo) === 'Administrador' ? 'ativa' :
+                      mapUserType(usuario.tipo) === 'Financeiro' ? 'inativa' :
+                      'tratamento'
+                    }`}>
                       {mapUserType(usuario.tipo)}
                     </span>
                   </td>
                   <td>
-                    <div className="d-flex gap-1">
-                      <Button 
+                    <StatusBadge status={usuario.status} />
+                  </td>
+                  <td>
+                    <div className="text-small text-muted">
+                      {usuario.status === 'pendente' && (
+                        <div>Aguardando aprovação</div>
+                      )}
+                      {usuario.status === 'aprovado' && (
+                        <div>
+                          Aprovado por: {usuario.aprovado_por_nome || 'N/A'}
+                          {usuario.data_aprovacao && (
+                            <div>Em: {new Date(usuario.data_aprovacao).toLocaleDateString('pt-BR')}</div>
+                          )}
+                        </div>
+                      )}
+                      {usuario.status === 'bloqueado' && (
+                        <div>
+                          {usuario.motivo_bloqueio && (
+                            <div>Motivo: {usuario.motivo_bloqueio}</div>
+                          )}
+                          {usuario.bloqueado_por_nome && (
+                            <div>Por: {usuario.bloqueado_por_nome}</div>
+                          )}
+                        </div>
+                      )}
+                      {usuario.status === 'suspenso' && (
+                        <div>
+                          {usuario.data_fim_suspensao && (
+                            <div>Até: {new Date(usuario.data_fim_suspensao).toLocaleDateString('pt-BR')}</div>
+                          )}
+                          {usuario.suspenso_por_nome && (
+                            <div>Por: {usuario.suspenso_por_nome}</div>
+                          )}
+                        </div>
+                      )}
+                      {usuario.data_ultimo_acesso && (
+                        <div>Último acesso: {new Date(usuario.data_ultimo_acesso).toLocaleDateString('pt-BR')}</div>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="d-flex gap-1 align-items-center">
+                      <Button
                         className="d-flex align-items-center gap-1 btn-outline-custom btn-sm fs-7"
                         onClick={() => handleShow(usuario)}
                       >
                         <FaEdit /> Editar
                       </Button>
-                      <Button 
+
+                      <StatusActions
+                        usuario={usuario}
+                        onStatusChange={handleStatusChange}
+                        onShowHistory={handleShowHistory}
+                      />
+
+                      <Button
                         className="d-flex align-items-center gap-1 btn-sm fs-7"
                         variant="outline-danger"
                         onClick={() => handleDeleteClick(usuario)}
@@ -236,6 +369,7 @@ function Usuarios() {
         show={showModal}
         onHide={handleClose}
         onSave={handleSave}
+        onReactivate={handleReactivate}
         usuario={usuarioSelecionado}
       />
 
@@ -254,6 +388,38 @@ function Usuarios() {
             <p className="mb-0"><strong>Tipo:</strong> {mapUserType(usuarioParaExcluir.tipo)}</p>
           </>
         )}
+      />
+
+      <ConfirmModal
+        show={showBlockModal}
+        onHide={() => setShowBlockModal(false)}
+        onConfirm={handleBlockConfirm}
+        title={usuarioParaBloquear?.ativo !== false ? "Bloquear Usuário" : "Desbloquear Usuário"}
+        message={
+          usuarioParaBloquear?.ativo !== false 
+            ? "Tem certeza que deseja bloquear este usuário? O usuário não poderá acessar o sistema." 
+            : "Tem certeza que deseja desbloquear este usuário? O usuário voltará a ter acesso ao sistema."
+        }
+        variant={usuarioParaBloquear?.ativo !== false ? "warning" : "success"}
+        confirmLabel={usuarioParaBloquear?.ativo !== false ? "Bloquear" : "Desbloquear"}
+        details={usuarioParaBloquear && (
+          <>
+            <p className="mb-1"><strong>Nome:</strong> {usuarioParaBloquear.nome}</p>
+            <p className="mb-1"><strong>E-mail:</strong> {usuarioParaBloquear.email}</p>
+            <p className="mb-1"><strong>Tipo:</strong> {mapUserType(usuarioParaBloquear.tipo)}</p>
+            <p className="mb-0"><strong>Status Atual:</strong> {usuarioParaBloquear.ativo !== false ? 'Ativo' : 'Bloqueado'}</p>
+          </>
+        )}
+      />
+
+      <StatusHistory
+        show={showStatusHistory}
+        onHide={() => {
+          setShowStatusHistory(false)
+          setUsuarioHistorico(null)
+        }}
+        usuarioId={usuarioHistorico?.id}
+        usuarioNome={usuarioHistorico?.nome}
       />
     </div>
   )

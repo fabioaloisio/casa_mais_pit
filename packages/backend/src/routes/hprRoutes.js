@@ -6,6 +6,7 @@ const router = express.Router();
 
 // Rotas CRUD para HPR
 router.get('/', hprController.getAll);             // Listar todos os HPRs
+
 // Listar HPRs de uma assistida (também protegido)
 router.get('/:id', verifyToken, hprController.getById);
 // Criar uma nova HPR (somente usuários autenticados)

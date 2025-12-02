@@ -1,103 +1,95 @@
 // Shared validation functions - extracted from frontend utils
 
-// Validar CPF
-export const validateCPF = (cpf) => {
-  cpf = cpf.replace(/\D/g, '');
-  
-  if (cpf.length !== 11) return false;
-  
-  // Verifica se todos os dígitos são iguais
-  if (/^(\d)\1{10}$/.test(cpf)) return false;
-  
-  // Validação dos dígitos verificadores
+// Validar CPF - Implementação otimizada e testada
+const validateCPF = (cpf) => {
+  const cleanCPF = cpf.replace(/\D/g, '');
+
+  if (cleanCPF.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(cleanCPF)) return false;
+
   let sum = 0;
-  let remainder;
-  
-  for (let i = 1; i <= 9; i++) {
-    sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (10 - i);
   }
-  
-  remainder = (sum * 10) % 11;
+  let remainder = 11 - (sum % 11);
   if (remainder === 10 || remainder === 11) remainder = 0;
-  if (remainder !== parseInt(cpf.substring(9, 10))) return false;
-  
+  if (remainder !== parseInt(cleanCPF.charAt(9))) return false;
+
   sum = 0;
-  for (let i = 1; i <= 10; i++) {
-    sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (11 - i);
   }
-  
-  remainder = (sum * 10) % 11;
+  remainder = 11 - (sum % 11);
   if (remainder === 10 || remainder === 11) remainder = 0;
-  if (remainder !== parseInt(cpf.substring(10, 11))) return false;
-  
+  if (remainder !== parseInt(cleanCPF.charAt(10))) return false;
+
   return true;
 };
 
-// Validar CNPJ
-export const validateCNPJ = (cnpj) => {
-  cnpj = cnpj.replace(/\D/g, '');
-  
-  if (cnpj.length !== 14) return false;
-  
-  // Verifica se todos os dígitos são iguais
-  if (/^(\d)\1{13}$/.test(cnpj)) return false;
-  
-  // Validação dos dígitos verificadores
-  let length = cnpj.length - 2;
-  let numbers = cnpj.substring(0, length);
-  let digits = cnpj.substring(length);
+// Validar CNPJ - Implementação otimizada e testada
+const validateCNPJ = (cnpj) => {
+  const cleanCNPJ = cnpj.replace(/\D/g, '');
+
+  if (cleanCNPJ.length !== 14) return false;
+  if (/^(\d)\1{13}$/.test(cleanCNPJ)) return false;
+
+  const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
   let sum = 0;
-  let pos = length - 7;
-  
-  for (let i = length; i >= 1; i--) {
-    sum += numbers.charAt(length - i) * pos--;
-    if (pos < 2) pos = 9;
+  for (let i = 0; i < 12; i++) {
+    sum += parseInt(cleanCNPJ.charAt(i)) * weights1[i];
   }
-  
-  let result = sum % 11 < 2 ? 0 : 11 - sum % 11;
-  if (result !== parseInt(digits.charAt(0))) return false;
-  
-  length = length + 1;
-  numbers = cnpj.substring(0, length);
+  let remainder = sum % 11;
+  const firstDigit = remainder < 2 ? 0 : 11 - remainder;
+  if (firstDigit !== parseInt(cleanCNPJ.charAt(12))) return false;
+
   sum = 0;
-  pos = length - 7;
-  
-  for (let i = length; i >= 1; i--) {
-    sum += numbers.charAt(length - i) * pos--;
-    if (pos < 2) pos = 9;
+  for (let i = 0; i < 13; i++) {
+    sum += parseInt(cleanCNPJ.charAt(i)) * weights2[i];
   }
-  
-  result = sum % 11 < 2 ? 0 : 11 - sum % 11;
-  if (result !== parseInt(digits.charAt(1))) return false;
-  
+  remainder = sum % 11;
+  const secondDigit = remainder < 2 ? 0 : 11 - remainder;
+  if (secondDigit !== parseInt(cleanCNPJ.charAt(13))) return false;
+
   return true;
+};
+
+// Validar documento (CPF ou CNPJ)
+const validateDocumento = (documento, tipo) => {
+  if (tipo === 'PF') {
+    return validateCPF(documento);
+  } else if (tipo === 'PJ') {
+    return validateCNPJ(documento);
+  }
+  return false;
 };
 
 // Validar email
-export const validateEmail = (email) => {
+const validateEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
 // Validar telefone
-export const validatePhone = (phone) => {
+const validatePhone = (phone) => {
   const phoneRegex = /^\(\d{2}\)\s?\d{4,5}-?\d{4}$/;
   return phoneRegex.test(phone);
 };
 
 // Validar campos obrigatórios
-export const validateRequired = (value) => {
+const validateRequired = (value) => {
   return value && value.toString().trim().length > 0;
 };
 
 // Validar valor monetário
-export const validateCurrency = (value) => {
+const validateCurrency = (value) => {
   const numericValue = parseFloat(value.toString().replace(/[^\d,]/g, '').replace(',', '.'));
   return !isNaN(numericValue) && numericValue > 0;
 };
 
 // Validar formulário de doação
-export const validateDoacaoForm = (formData) => {
+const validateDoacaoForm = (formData) => {
   const errors = {};
 
   // Nome do doador
@@ -142,4 +134,16 @@ export const validateDoacaoForm = (formData) => {
   }
 
   return errors;
+};
+
+// CommonJS exports
+module.exports = {
+  validateCPF,
+  validateCNPJ,
+  validateDocumento,
+  validateEmail,
+  validatePhone,
+  validateRequired,
+  validateCurrency,
+  validateDoacaoForm
 };

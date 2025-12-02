@@ -96,6 +96,23 @@ class UsuarioService {
       throw error;
     }
   }
+
+  async reactivateAndUpdate(id, dadosUsuario) {
+    try {
+      const response = await apiService.request(`/usuarios/${id}/reactivate-and-update`, {
+        method: 'POST',
+        body: JSON.stringify(dadosUsuario),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      return response;
+    } catch (error) {
+      console.error('Erro ao reativar e atualizar usuário:', error);
+      throw error;
+    }
+  }
 }
 
 const usuarioService = new UsuarioService();

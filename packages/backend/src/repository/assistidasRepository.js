@@ -1,3 +1,4 @@
+
 const db = require('../config/database');
 const { Assistida } = require('../models/assistida');
 
@@ -164,10 +165,10 @@ class AssistidaRepository {
     const [totalRows] = await db.execute(`SELECT COUNT(*) as total ${queryBase}`, valores);
     const [statusRows] = await db.execute(`SELECT status, COUNT(*) as quantidade ${queryBase} GROUP BY status`, valores);
 
-    const stats = { total: totalRows[0].total, ativas: 0, emTratamento: 0, inativas: 0 };
+    const stats = { total: totalRows[0].total, ativas: 0, HprCadastrada: 0, inativas: 0 };
     for (const row of statusRows) {
       if (row.status === 'Ativa') stats.ativas = row.quantidade;
-      if (row.status === 'Em Tratamento') stats.emTratamento = row.quantidade;
+      if (row.status === 'Hpr Cadastrada') stats.HprCadastrada = row.quantidade;
       if (row.status === 'Inativa') stats.inativas = row.quantidade;
     }
 

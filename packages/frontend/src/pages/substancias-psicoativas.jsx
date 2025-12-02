@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Form, Row, Col } from 'react-bootstrap';
 import Toast from '../components/common/Toast';
-import '../components/assistidas/style/Assistidas.css';
+import '../components/assistidas/Assistidas.css';
 import '../pages/Doacoes.css';
 import { FaPlus } from 'react-icons/fa';
 import ListaSubstancias from '../components/substancias-psicoativas/listaSubstancias';

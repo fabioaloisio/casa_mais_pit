@@ -1,3 +1,65 @@
+
+const { validateCPF } = require('../../../shared/src/validators');
+
+// Classes relacionadas
+class DrogaUtilizada {
+  constructor(data = {}) {
+    this.id = data.id || null;
+    this.nome = data.nome || null;
+    this.frequencia = data.frequencia || null;
+    this.quantidade = data.quantidade || null;
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      nome: this.nome,
+      frequencia: this.frequencia,
+      quantidade: this.quantidade
+    };
+  }
+}
+
+class Internacao {
+  constructor(data = {}) {
+    this.id = data.id || null;
+    this.data_entrada = data.data_entrada || null;
+    this.data_saida = data.data_saida || null;
+    this.motivo = data.motivo || null;
+    this.observacoes = data.observacoes || null;
+    this.status = data.status || null;
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      data_entrada: this.data_entrada,
+      data_saida: this.data_saida,
+      motivo: this.motivo,
+      observacoes: this.observacoes,
+      status: this.status
+    };
+  }
+}
+
+class MedicamentoUtilizado {
+  constructor(data = {}) {
+    this.id = data.id || null;
+    this.nome = data.nome || null;
+    this.dosagem = data.dosagem || null;
+    this.frequencia = data.frequencia || null;
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      nome: this.nome,
+      dosagem: this.dosagem,
+      frequencia: this.frequencia
+    };
+  }
+}
+
 // Classe principal
 class Assistida {
   constructor(data = {}) {
@@ -24,13 +86,18 @@ class Assistida {
     this.cidade = data.cidade || null;
     this.telefone = data.telefone || null;
     this.telefone_contato = data.telefone_contato || null;
-
   }
 
   validate() {
     const errors = [];
+
+    // Regras básicas
     if (!this.nome || this.nome.trim() === '') errors.push('Nome é obrigatório');
-    if (!this.cpf || this.cpf.trim() === '') errors.push('CPF é obrigatório');
+    if (!this.cpf || this.cpf.trim() === '') {
+      errors.push('CPF é obrigatório');
+    } else if (!validateCPF(this.cpf)) {
+      errors.push('CPF inválido');
+    }
     if (!this.data_nascimento) errors.push('Data de nascimento é obrigatória');
     if (!this.estado || this.estado.trim().length !== 2) errors.push('Estado deve ter 2 letras');
     if (!this.telefone || this.telefone.trim() === '') errors.push('Telefone é obrigatório');
@@ -40,6 +107,7 @@ class Assistida {
   toJSON() {
     return {
       id: this.id,
+
       nome: this.nome,
       cpf: this.cpf,
       rg: this.rg,
@@ -50,6 +118,7 @@ class Assistida {
       profissao: this.profissao,
       escolaridade: this.escolaridade,
       status: this.status,
+
       logradouro: this.logradouro,
       bairro: this.bairro,
       numero: this.numero,
@@ -58,12 +127,9 @@ class Assistida {
       cidade: this.cidade,
       telefone: this.telefone,
       telefone_contato: this.telefone_contato,
-      drogas: this.drogas,
-      internacoes: this.internacoes,
-      medicamentos: this.medicamentos,
     };
   }
 }
 
 
-module.exports = { Assistida};
+module.exports = { Assistida, DrogaUtilizada, Internacao, MedicamentoUtilizado };

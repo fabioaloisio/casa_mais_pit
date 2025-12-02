@@ -1,0 +1,91 @@
+/* Estilos específicos para a página de Relatórios */
+.relatorio-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.relatorio-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.relatorio-card .card-title {
+  color: #1c1c1c;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Estilos para as abas */
+.nav-tabs .nav-link {
+  color: #666;
+  font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: #003366;
+  color: white;
+  border-color: #003366 #003366 #fff;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+  border-color: #dee2e6 #dee2e6 #003366;
+  color: #003366;
+}
+
+/* Dashboard tendências */
+.stats-card small {
+  font-size: 0.75rem;
+}
+
+.stats-card .text-success,
+.stats-card .text-danger {
+  font-weight: 600;
+}
+
+/* Botões de período predefinido */
+.d-flex.gap-2.flex-wrap .btn-outline-secondary {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+}
+
+.d-flex.gap-2.flex-wrap .btn-outline-secondary:hover {
+  background-color: #003366;
+  border-color: #003366;
+  color: white;
+}
+
+/* Modal de gráficos */
+.modal-xl {
+  max-width: 1200px;
+}
+
+/* Responsividade para cards de relatórios */
+@media (max-width: 768px) {
+  .relatorio-card {
+    margin-bottom: 1rem;
+  }
+  
+  .relatorio-card .card-body {
+    padding: 1.25rem;
+  }
+  
+  .d-grid.gap-2 .btn {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .nav-tabs .nav-link {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .stats-card h4 {
+    font-size: 1.25rem;
+  }
+  
+  .stats-card h6 {
+    font-size: 0.75rem;
+  }
+}

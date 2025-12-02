@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import PropTypes from "prop-types";
-import '../../components/assistidas/style/Assistidas.css';
+import { ERROR_MESSAGES } from "@casa-mais/shared";
+import '../../components/assistidas/Assistidas.css';
 
 const FormularioSubstancia = ({ showModal, setShowModal, onSubmit, substanciaParaEditar, modoEdicao }) => {
   const [formData, setFormData] = useState({});
@@ -42,8 +43,8 @@ const FormularioSubstancia = ({ showModal, setShowModal, onSubmit, substanciaPar
 
   const validateForm = () => {
     const errors = {};
-    if (!formData.nome) errors.nome = "Campo obrigatório";
-    if (!formData.categoria) errors.categoria = "Campo obrigatório";
+    if (!formData.nome) errors.nome = ERROR_MESSAGES.REQUIRED_FIELD;
+    if (!formData.categoria) errors.categoria = ERROR_MESSAGES.REQUIRED_FIELD;
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -130,7 +131,7 @@ const FormularioSubstancia = ({ showModal, setShowModal, onSubmit, substanciaPar
           variant="primary"
           disabled={isSubmitting}
           onClick={handleSubmit}
-
+          
         >
           {isSubmitting
             ? "Salvando..."

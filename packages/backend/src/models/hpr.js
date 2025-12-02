@@ -92,6 +92,7 @@ class HPR {
     this.fatos_marcantes = data.fatos_marcantes || null;
     this.infancia = data.infancia || null;
     this.adolescencia = data.adolescencia || null;
+    this.deleted_flag = data.deleted_flag || false;
 
     // Arrays de entidades aninhadas
     this.drogas = (data.drogas || []).map(d => new DrogaUtilizada(d));
@@ -134,6 +135,7 @@ class HPR {
       fatos_marcantes: this.fatos_marcantes,
       infancia: this.infancia,
       adolescencia: this.adolescencia,
+      deleted_flag: this.deleted_flag,
       drogas: this.drogas.map(d => d.toJSON()),
       medicamentos: this.medicamentos.map(m => m.toJSON()),
       internacoes: this.internacoes.map(i => i.toJSON())

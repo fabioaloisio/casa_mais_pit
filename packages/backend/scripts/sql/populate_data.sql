@@ -49,40 +49,49 @@ VALUES
   ('PJ', 'Padaria do Bairro ME', '98765432000187', 'contato@padariadobairro.com.br', '1199998888', 'Rua do Comércio, 700', 'São Paulo', 'SP', '03040000', 0),
   ('PJ', 'Mercado Central EIRELI', '87654321000176', 'vendas@mercadocentral.com.br', '1177776666', 'Av. Celso Garcia, 800', 'São Paulo', 'SP', '03059000', 0);
 
--- 3. Popular despesas (usando tipo_despesa_id)
+-- 3. Popular despesas (usando tipo_despesa_id) - Com datas dinâmicas do mês atual
 INSERT INTO despesas
   (tipo_despesa_id, descricao, categoria, valor, data_despesa, forma_pagamento, fornecedor, observacoes, status)
 VALUES
-  (2, 'Compra de medicamentos básicos', 'Medicamentos', 450.75, '2025-01-05', 'pix', 'Farmácia Popular', 'Medicamentos para estoque básico', 'paga'),
-  (5, 'Conta de energia elétrica', 'Utilidades', 235.50, '2025-01-10', 'boleto', 'CPFL Energia', 'Conta de janeiro/2025', 'paga'),
-  (1, 'Compra de alimentos para cozinha', 'Alimentação', 890.30, '2025-01-12', 'cartao_debito', 'Supermercado Extra', 'Compras mensais', 'paga'),
-  (4, 'Manutenção do ar condicionado', 'Manutenção', 180.00, '2025-01-15', 'dinheiro', 'Refrigeração Silva', 'Limpeza e manutenção preventiva', 'paga'),
-  (3, 'Material de limpeza', 'Limpeza e Higiene', 125.90, '2025-01-18', 'pix', 'Distribuidora Limpeza Total', 'Produtos para higienização', 'paga'),
-  (6, 'Combustível para veículo institucional', 'Transporte', 150.00, '2025-01-20', 'cartao_credito', 'Posto Ipiranga', 'Abastecimento van', 'paga'),
-  (7, 'Papelaria e material de escritório', 'Material de Escritório', 89.75, '2025-01-22', 'pix', 'Papelaria Central', 'Canetas, papel, grampos', 'paga'),
-  (4, 'Serviços de jardinagem', 'Manutenção', 200.00, '2025-01-25', 'transferencia', 'João Jardineiro', 'Manutenção do jardim', 'pendente'),
-  (2, 'Medicamentos especiais', 'Medicamentos', 680.40, '2025-01-28', 'boleto', 'Farmácia Hospitalar', 'Medicamentos controlados', 'pendente'),
-  (5, 'Internet banda larga', 'Utilidades', 99.90, '2025-01-30', 'cartao_credito', 'Vivo Fibra', 'Mensalidade internet', 'pendente');
+  (2, 'Compra de medicamentos básicos', 'Medicamentos', 450.75, DATE_SUB(CURDATE(), INTERVAL 10 DAY), 'pix', 'Farmácia Popular', 'Medicamentos para estoque básico', 'paga'),
+  (5, 'Conta de energia elétrica', 'Utilidades', 235.50, DATE_SUB(CURDATE(), INTERVAL 9 DAY), 'boleto', 'CPFL Energia', 'Conta do mês atual', 'paga'),
+  (1, 'Compra de alimentos para cozinha', 'Alimentação', 890.30, DATE_SUB(CURDATE(), INTERVAL 8 DAY), 'cartao_debito', 'Supermercado Extra', 'Compras mensais', 'paga'),
+  (4, 'Manutenção do ar condicionado', 'Manutenção', 180.00, DATE_SUB(CURDATE(), INTERVAL 7 DAY), 'dinheiro', 'Refrigeração Silva', 'Limpeza e manutenção preventiva', 'paga'),
+  (3, 'Material de limpeza', 'Limpeza e Higiene', 125.90, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 'pix', 'Distribuidora Limpeza Total', 'Produtos para higienização', 'paga'),
+  (6, 'Combustível para veículo institucional', 'Transporte', 150.00, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 'cartao_credito', 'Posto Ipiranga', 'Abastecimento van', 'paga'),
+  (7, 'Papelaria e material de escritório', 'Material de Escritório', 89.75, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 'pix', 'Papelaria Central', 'Canetas, papel, grampos', 'paga'),
+  (4, 'Serviços de jardinagem', 'Manutenção', 200.00, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 'transferencia', 'João Jardineiro', 'Manutenção do jardim', 'paga'),
+  (2, 'Medicamentos especiais', 'Medicamentos', 680.40, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 'boleto', 'Farmácia Hospitalar', 'Medicamentos controlados', 'paga'),
+  (5, 'Internet banda larga', 'Utilidades', 99.90, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 'cartao_credito', 'Vivo Fibra', 'Mensalidade internet', 'paga');
 
--- 4. Popular doacoes (usando doador_id)
+-- 4. Popular doacoes (usando doador_id) - Com datas dinâmicas
 -- Apenas doadores ATIVOS (IDs 1-8) têm doações
 INSERT INTO doacoes
   (doador_id, valor, data_doacao, observacoes)
 VALUES
   -- DOAÇÕES DE DOADORES ATIVOS (IDs 1-8)
-  (1, 150.00, '2025-01-05', 'Doação mensal - Maria Silva'),
-  (1, 100.00, '2024-12-05', 'Doação anterior - Maria Silva'),
-  (2, 200.00, '2025-01-04', 'Doação - João Pedro'),
-  (3, 300.00, '2025-01-02', 'Doação especial - Carlos Eduardo'),
-  (4, 500.00, '2024-12-31', 'Doação de fim de ano - Roberto Alves'),
-  (5, 120.00, '2024-12-30', 'Doação recorrente - Fernanda'),
-  (6, 180.00, '2024-12-29', 'Doação - Mariana Gomes'),
-  (7, 1000.00, '2025-01-05', 'Doação corporativa mensal - Supermercado'),
-  (7, 800.00, '2024-12-05', 'Doação anterior - Supermercado'),
-  (8, 750.00, '2025-01-04', 'Parceria solidária - Farmácia');
+  (1, 150.00, DATE_SUB(CURDATE(), INTERVAL 10 DAY), 'Doação mensal - Maria Silva'),
+  (1, 100.00, DATE_SUB(CURDATE(), INTERVAL 30 DAY), 'Doação anterior - Maria Silva'),
+  (2, 200.00, DATE_SUB(CURDATE(), INTERVAL 9 DAY), 'Doação - João Pedro'),
+  (3, 300.00, DATE_SUB(CURDATE(), INTERVAL 8 DAY), 'Doação especial - Carlos Eduardo'),
+  (4, 500.00, DATE_SUB(CURDATE(), INTERVAL 7 DAY), 'Doação de fim de mês - Roberto Alves'),
+  (5, 120.00, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 'Doação recorrente - Fernanda'),
+  (6, 180.00, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 'Doação - Mariana Gomes'),
+  (7, 1000.00, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 'Doação corporativa mensal - Supermercado'),
+  (7, 800.00, DATE_SUB(CURDATE(), INTERVAL 20 DAY), 'Doação anterior - Supermercado'),
+  (8, 750.00, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 'Parceria solidária - Farmácia');
 
 -- Doadores com IDs 13-20 NÃO têm doações e PODEM ser excluídos
 
+-- 5. Popular caixa_movimentacoes (doações monetárias para aparecerem no dashboard)
+INSERT INTO caixa_movimentacoes
+  (tipo, categoria, valor, data_movimentacao, descricao, doador_id)
+VALUES
+  ('entrada', 'doacao_monetaria', 500.00, DATE_SUB(CURDATE(), INTERVAL 10 DAY), 'Doação monetária - Maria Silva', 1),
+  ('entrada', 'doacao_monetaria', 700.00, DATE_SUB(CURDATE(), INTERVAL 8 DAY), 'Doação monetária - João Pedro', 2),
+  ('entrada', 'doacao_monetaria', 900.00, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 'Doação monetária - Carlos Eduardo', 3),
+  ('entrada', 'doacao_monetaria', 600.00, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 'Doação monetária - Roberto Alves', 4),
+  ('entrada', 'doacao_monetaria', 800.00, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 'Doação monetária - Supermercado', 7);
 
 INSERT INTO unidades_medida
   (nome, sigla)
@@ -120,25 +129,311 @@ VALUES
   ('Lactulose 667mg/ml', 'Xarope', 'Tratamento da constipação intestinal.', 4);
 
 
--- 7. Popular assistidas
+-- 7. Popular assistidas (com status 'ativo' padronizado)
 INSERT INTO assistidas (
   nome, cpf, rg, idade, data_nascimento, nacionalidade, estado_civil, profissao, escolaridade, status,
   logradouro, bairro, numero, cep, estado, cidade, telefone, telefone_contato
 ) VALUES
 ('Maria das Dores', '12345678900', 'MG-12345678', 42, '1983-09-15', 'Brasileira', 'Solteira', 'Cozinheira', 'Fundamental Completo', 'Ativa',
  'Rua das Flores', 'Centro', '120', '30100-000', 'MG', 'Belo Horizonte', '31999998888', '31988887777'),
-('Ana Paula Lima', '98765432199', 'SP-98765432', 36, '1988-02-20', 'Brasileira', 'Casada', 'Auxiliar de Limpeza', 'Médio Incompleto', 'Em Tratamento',
+('Ana Paula Lima', '98765432199', 'SP-98765432', 36, '1988-02-20', 'Brasileira', 'Casada', 'Auxiliar de Limpeza', 'Médio Incompleto', 'Hpr Cadastrada',
  'Avenida Central', 'Jardim das Palmeiras', '500', '04000-200', 'SP', 'São Paulo', '11912345678', '11934567890'),
 ('Jéssica Andrade', '11223344556', 'RJ-33445566', 29, '1995-03-10', 'Brasileira', 'Solteira', 'Manicure', 'Médio Completo', 'Ativa',
  'Rua das Acácias', 'Lapa', '88', '20220-330', 'RJ', 'Rio de Janeiro', '21999887766', '21988776655'),
-('Carla Menezes', '22334455667', 'BA-44556677', 40, '1984-07-12', 'Brasileira', 'Divorciada', 'Doméstica', 'Fundamental Completo', 'Inativa',
+('Carla Menezes', '22334455667', 'BA-44556677', 40, '1984-07-12', 'Brasileira', 'Divorciada', 'Doméstica', 'Fundamental Completo', 'Hpr Cadastrada',
  'Rua do Sossego', 'São Caetano', '22', '40200-000', 'BA', 'Salvador', '71987654321', '71996543210'),
-('Renata Oliveira', '33445566778', 'RS-55667788', 33, '1991-01-25', 'Brasileira', 'Casada', 'Atendente', 'Médio Completo', 'Em Tratamento',
+('Renata Oliveira', '33445566778', 'RS-55667788', 33, '1991-01-25', 'Brasileira', 'Casada', 'Atendente', 'Médio Completo', 'Inativa',
  'Avenida Brasil', 'Centro', '305', '90010-000', 'RS', 'Porto Alegre', '51991234567', '51993456789'),
-('Tatiane Soares', '44556677889', 'PE-66778899', 27, '1997-11-04', 'Brasileira', 'Solteira', 'Vendedora', 'Médio Incompleto', 'Ativa',
+('Tatiane Soares', '44556677889', 'PE-66778899', 27, '1997-11-04', 'Brasileira', 'Solteira', 'Vendedora', 'Médio Incompleto', 'Hpr Cadastrada',
  'Rua da Aurora', 'Boa Vista', '112', '50050-100', 'PE', 'Recife', '81999887766', '81988776655'),
-('Eliane Costa', '55667788990', 'CE-77889900', 50, '1974-08-08', 'Brasileira', 'Viúva', 'Artesã', 'Fundamental Incompleto', 'Ativa',
+('Eliane Costa', '55667788990', 'CE-77889900', 50, '1974-08-08', 'Brasileira', 'Viúva', 'Artesã', 'Fundamental Incompleto', 'Inativa',
  'Travessa das Palmeiras', 'Mucuripe', '55', '60165-000', 'CE', 'Fortaleza', '85991234567', '85993456789');
+
+-- 8. popular hpr
+INSERT INTO hpr (
+  assistida_id,
+  data_atendimento,
+  hora,
+  historia_patologica,
+  tempo_sem_uso,
+  motivacao_internacoes,
+  fatos_marcantes,
+  infancia,
+  adolescencia,
+  created_by,
+  updated_by
+) VALUES (
+  1,
+  '2025-01-10',
+  '09:30:00',
+  'Histórico de uso abusivo de álcool e crack há 5 anos.',
+  '2 meses',
+  'Crises de abstinência e recaídas frequentes.',
+  'Perda de familiares, traumas emocionais e instabilidade financeira.',
+  'Infância marcada por dificuldades familiares e pouca supervisão.',
+  'Adolescência com envolvimento em grupos de risco e abandono escolar.',
+  NULL,
+  NULL
+);
+
+INSERT INTO internacoes_anteriores (
+  hpr_id,
+  local,
+  duracao,
+  data
+) VALUES
+(1, 'Clínica Vida Nova', '15 dias', '2023-06-15'),
+(1, 'Casa de Recuperação Esperança', '30 dias', '2024-02-10'),
+(1, 'Centro Luz da Vida', '45 dias', '2024-09-01');
+INSERT INTO saidas (
+  assistidaId,
+  dataSaida,
+  diasInternacao,
+  motivoSaida,
+  observacoesSaida
+) VALUES (
+  1,
+  '2025-01-20 14:00:00',
+  10,
+  'Alta médica',
+  'Assistida apresentou boa evolução e recebeu alta.'
+);
+
+INSERT INTO internacoes (
+  assistida_id,
+  data_entrada,
+  data_saida,
+  motivo,
+  observacoes,
+  motivo_saida,
+  observacoes_saida,
+  status,
+  usuario_entrada_id,
+  usuario_saida_id
+) VALUES (
+  1,
+  '2025-01-10 09:30:00',
+  '2025-01-20 14:00:00',
+  'Crise de abstinência',
+  'Evolução positiva durante o processo.',
+  'Alta médica',
+  'Recebeu alta após estabilização.',
+  'finalizada',
+  null,
+  null
+);
+INSERT INTO internacoes (
+  assistida_id,
+  data_entrada,
+  motivo,
+  observacoes,
+  modo_retorno,
+  status,
+  usuario_entrada_id
+) VALUES (
+  1,
+  '2025-02-05 10:20:00',
+  'Retorno após recaída',
+  'Assistida relatou novo episódio de uso após 15 dias da alta.',
+  TRUE,
+  'ativa',
+  null
+);
+
+-- POPULAR TABELA drogas_utilizadas (para HPR id = 1)
+INSERT INTO drogas_utilizadas (
+  hpr_id, tipo, idade_inicio, tempo_uso, intensidade, observacoes
+) VALUES
+(1, 'Álcool', 17, '5 anos', 'diária', 'Relata consumo forte principalmente nos finais de semana.'),
+(1, 'Crack', 20, '3 anos', 'diária', 'Relata fissura intensa e episódios de crise.'),
+(1, 'Maconha', 15, '10 anos', 'semanal', 'Uso esporádico após introdução de outras drogas.'),
+(1, 'Cocaína', 18, '7 anos', 'semanal', 'Usava principalmente em festas.'),
+(1, 'Benzodiazepínicos', 25, '2 anos', 'diária', 'Uso misturado com álcool. Recomendado acompanhamento.');
+
+-- POPULAR TABELA medicamentos_utilizados (para HPR id = 1)
+INSERT INTO medicamentos_utilizados (
+  hpr_id, nome, dosagem, frequencia
+) VALUES
+(1, 'Paracetamol 750mg', '750mg', '3x ao dia'),
+(1, 'Diazepam 10mg', '10mg', '1x ao dia (à noite)'),
+(1, 'Omeprazol 20mg', '20mg', '1x ao dia (em jejum)'),
+(1, 'Dipirona 500mg', '500mg', 'De 6 em 6 horas se houver dor'),
+(1, 'Sertralina 50mg', '50mg', '1x ao dia pela manhã');
+
+
+INSERT INTO hpr (
+  assistida_id, data_atendimento, hora,
+  historia_patologica, tempo_sem_uso, motivacao_internacoes,
+  fatos_marcantes, infancia, adolescencia,
+  created_by, updated_by
+) VALUES (
+  3,
+  '2025-01-12',
+  '10:15:00',
+  'Uso abusivo de maconha e cocaína há 8 anos.',
+  '1 mês',
+  'Recaídas constantes após tentativas de abandono.',
+  'Histórico de conflitos familiares e relacionamentos abusivos.',
+  'Infância com presença instável dos pais.',
+  'Adolescência com forte influência de amigos usuários.',
+  NULL,
+  NULL
+);
+
+INSERT INTO internacoes_anteriores (hpr_id, local, duracao, data) VALUES
+(2, 'Clínica Esperança', '20 dias', '2023-03-10'),
+(2, 'Centro Reviver', '35 dias', '2024-01-15');
+
+INSERT INTO internacoes (
+  assistida_id, data_entrada, motivo, observacoes,
+  status, usuario_entrada_id
+) VALUES (
+  3,
+  '2025-01-12 10:15:00',
+  'Crise emocional e recaída',
+  'Chegou abalada emocionalmente e desnutrida.',
+  'ativa',
+  NULL
+);
+
+INSERT INTO drogas_utilizadas (
+  hpr_id, tipo, idade_inicio, tempo_uso, intensidade, observacoes
+) VALUES
+(2, 'Maconha', 14, '8 anos', 'diária', 'Relata dificuldade em parar.'),
+(2, 'Cocaína', 17, '6 anos', 'semanal', 'Usada principalmente em festas e crises.'),
+(2, 'Álcool', 13, '10 anos', 'diária', 'Uso iniciado na adolescência.');
+
+INSERT INTO medicamentos_utilizados (
+  hpr_id, nome, dosagem, frequencia
+) VALUES
+(2, 'Sertralina 50mg', '50mg', '1x ao dia'),
+(2, 'Diazepam 10mg', '10mg', 'À noite'),
+(2, 'Omeprazol 20mg', '20mg', '1x ao dia');
+
+INSERT INTO hpr (
+  assistida_id, data_atendimento, hora,
+  historia_patologica, tempo_sem_uso, motivacao_internacoes,
+  fatos_marcantes, infancia, adolescencia,
+  created_by, updated_by
+) VALUES (
+  5,
+  '2025-01-14',
+  '14:40:00',
+  'Uso de benzodiazepínicos e álcool por 6 anos.',
+  '3 meses',
+  'Dependência química e abandono familiar.',
+  'Perda recente de familiar próximo.',
+  'Infância tranquila, porém com problemas financeiros.',
+  'Adolescência marcada por isolamento social.',
+  NULL,
+  NULL
+);
+INSERT INTO internacoes_anteriores (hpr_id, local, duracao, data) VALUES
+(3, 'Clínica Renovar', '18 dias', '2022-11-01'),
+(3, 'Instituto Vida Feliz', '40 dias', '2023-08-20');
+
+INSERT INTO internacoes (
+  assistida_id, data_entrada, data_saida,
+  motivo, observacoes, motivo_saida, observacoes_saida,
+  status, usuario_entrada_id, usuario_saida_id
+) VALUES (
+  5,
+  '2025-01-14 14:40:00',
+  '2025-01-25 11:00:00',
+  'Abuso combinado de álcool e remédios',
+  'Evoluiu bem com suporte psicológico.',
+  'Alta médica',
+  'Recebeu alta e seguirá acompanhamento externo.',
+  'finalizada',
+  NULL,
+  NULL
+);
+
+INSERT INTO drogas_utilizadas (
+  hpr_id, tipo, idade_inicio, tempo_uso, intensidade, observacoes
+) VALUES
+(3, 'Álcool', 18, '6 anos', 'diária', 'Relata uso para lidar com ansiedade.'),
+(3, 'Benzodiazepínicos', 23, '3 anos', 'diária', 'Uso sem orientação médica.');
+
+INSERT INTO medicamentos_utilizados (
+  hpr_id, nome, dosagem, frequencia
+) VALUES
+(3, 'Fluoxetina 20mg', '20mg', '1x ao dia'),
+(3, 'Dipirona 500mg', '500mg', 'Se necessário'),
+(3, 'Ranitidina 150mg', '150mg', '2x ao dia');
+
+INSERT INTO hpr (
+  assistida_id, data_atendimento, hora,
+  historia_patologica, tempo_sem_uso, motivacao_internacoes,
+  fatos_marcantes, infancia, adolescencia,
+  created_by, updated_by
+) VALUES (
+  2,
+  '2025-01-11',
+  '13:00:00',
+  'Relata início de uso recreativo, sem histórico de internações.',
+  '6 meses',
+  'Busca ajuda voluntariamente.',
+  'Períodos de ansiedade e estresse.',
+  'Infância tranquila.',
+  'Adolescência com poucas amizades.',
+  NULL,
+  NULL
+);
+
+INSERT INTO hpr (
+  assistida_id, data_atendimento, hora,
+  historia_patologica, tempo_sem_uso, motivacao_internacoes,
+  fatos_marcantes, infancia, adolescencia,
+  created_by, updated_by
+) VALUES (
+  4,
+  '2025-01-13',
+  '11:50:00',
+  'Uso de drogas leves por curto período.',
+  '5 meses',
+  'Dificuldades emocionais.',
+  'Perdeu emprego recentemente.',
+  'Infância difícil, marcada por pobreza.',
+  'Adolescência trabalhava informalmente.',
+  NULL,
+  NULL
+);
+
+INSERT INTO hpr (
+  assistida_id, data_atendimento, hora,
+  historia_patologica, tempo_sem_uso, motivacao_internacoes,
+  fatos_marcantes, infancia, adolescencia,
+  created_by, updated_by
+) VALUES (
+  6,
+  '2025-01-16',
+  '16:20:00',
+  'Relata uso esporádico de álcool e cigarro.',
+  '1 ano',
+  'Deseja ajuda psicológica.',
+  'Estresse no trabalho.',
+  'Infância sem grandes problemas.',
+  'Adolescência tranquila e sem conflitos.',
+  NULL,
+  NULL
+);
+
+
+
+-- 8. Popular consultas (com datas do mês atual)
+INSERT INTO consultas (assistida_id, data_consulta, profissional, tipo_consulta, status, observacoes) VALUES
+(1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), 'Dr. Silva', 'Clínico Geral', 'realizada', 'Consulta de rotina'),
+(2, DATE_SUB(CURDATE(), INTERVAL 9 DAY), 'Dr. Santos', 'Psiquiatria', 'realizada', 'Acompanhamento psiquiátrico'),
+(3, DATE_SUB(CURDATE(), INTERVAL 8 DAY), 'Dr. Silva', 'Clínico Geral', 'realizada', 'Avaliação clínica'),
+(4, DATE_SUB(CURDATE(), INTERVAL 7 DAY), 'Dr. Santos', 'Psiquiatria', 'realizada', 'Consulta inicial'),
+(5, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 'Dr. Silva', 'Clínico Geral', 'realizada', 'Retorno médico'),
+(1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 'Dr. Santos', 'Psiquiatria', 'realizada', 'Acompanhamento'),
+(2, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 'Dr. Silva', 'Clínico Geral', 'realizada', 'Consulta de rotina'),
+(3, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 'Dr. Santos', 'Psiquiatria', 'realizada', 'Avaliação psicológica'),
+(4, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 'Dr. Silva', 'Clínico Geral', 'realizada', 'Check-up'),
+(5, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 'Dr. Santos', 'Psiquiatria', 'realizada', 'Consulta de acompanhamento');
+
 
 INSERT INTO substancias (nome, categoria, descricao) VALUES
 ('Álcool', 'Depressor', 'Bebida alcoólica que reduz a atividade do sistema nervoso central.'),
@@ -154,14 +449,6 @@ INSERT INTO substancias (nome, categoria, descricao) VALUES
 ('Psilocibina', 'Perturbador', 'Alucinógeno encontrado em cogumelos conhecidos como “cogumelos mágicos”.'),
 ('Tabaco', 'Estimulante', 'Fonte de nicotina, provoca dependência e efeitos estimulantes.'),
 ('Benzodiazepínicos', 'Depressor', 'Medicamentos ansiolíticos e sedativos.');
-
-
--- 14. Verificar dados inseridos
-SELECT 'Internações:', COUNT(*) AS total FROM internacoes;
-SELECT 'Medicamentos utilizados:', COUNT(*) AS total FROM medicamentos_utilizados;
-SELECT 'Drogas utilizadas:', COUNT(*) AS total FROM drogas_utilizadas;
-SELECT 'HPRs:', COUNT(*) AS total FROM hpr;
-
 
 -- 8. Verificar dados inseridos
 SELECT 'Dados inseridos com sucesso!' as status;

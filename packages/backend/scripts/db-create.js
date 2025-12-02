@@ -4,7 +4,7 @@ const SQLExecutor = require('./utils/sql-executor');
 
 async function createDatabase() {
   let connection;
-  
+
   try {
     console.log('📡 Conectando ao MySQL...');
     // Conectar ao MySQL sem especificar database
@@ -15,12 +15,12 @@ async function createDatabase() {
       password: process.env.DB_PASSWORD || '3511',
       port: process.env.DB_PORT || 3306
     });
-    
+
     // Criar banco se não existir
     await tempConnection.execute('CREATE DATABASE IF NOT EXISTS casamais_db');
     console.log('🏗️ Banco casamais_db criado/verificado');
     await tempConnection.end();
-    
+
     // Conectar ao banco específico
     console.log('🔗 Conectando ao banco casamais_db...');
     connection = await db.getConnection();
@@ -29,17 +29,22 @@ async function createDatabase() {
     // Usar SQLExecutor para executar arquivo SQL
     const sqlExecutor = new SQLExecutor(connection);
     const sqlFilePath = path.join(__dirname, 'sql', 'create_tables.sql');
-    
+    const campanhasFilePath = path.join(__dirname, 'sql', 'create_campanhas_tables.sql');
+
     console.log('\n📋 Criando estrutura das tabelas...');
     await sqlExecutor.executeFile(sqlFilePath);
 
+    // Criar tabelas de campanhas (relacionamento N:N)
+    console.log('\n🎯 Criando estrutura das campanhas (N:N)...');
+    await sqlExecutor.executeFile(campanhasFilePath);
+
     // Mostrar estatísticas
     const tables = [
-      'tipos_despesas', 'doadores', 'unidades_medida', 'assistidas', 
+      'tipos_despesas', 'doadores', 'unidades_medida', 'assistidas',
       'usuarios', 'despesas', 'doacoes', 'medicamentos', 'consultas',
-      'internacoes', 'medicamentos_utilizados'
+      'internacoes', 'medicamentos_utilizados', 'campanhas', 'doadores_campanhas'
     ];
-    
+
     await sqlExecutor.showTableStats(tables);
     await sqlExecutor.showForeignKeys();
 

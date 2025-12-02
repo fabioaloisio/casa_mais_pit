@@ -36,6 +36,11 @@ class HPRRepository {
     try {
       await conn.beginTransaction();
 
+      await db.execute(
+      `UPDATE assistidas SET status = 'Hpr Cadastrada' WHERE id = ?`,
+      [assistida_id]
+    );
+
       const [result] = await conn.execute(`
       INSERT INTO HPR
       (assistida_id, data_atendimento, hora, historia_patologica, tempo_sem_uso, motivacao_internacoes,
@@ -59,7 +64,7 @@ class HPRRepository {
 
       for (const internacao of internacoes) {
         await conn.execute(`
-        INSERT INTO internacoes
+        INSERT INTO internacoes_anteriores
         (hpr_id, local, duracao, data)
         VALUES (?, ?, ?, ?)`,
           [hprId, internacao.local, internacao.duracao, internacao.data]
@@ -75,8 +80,9 @@ class HPRRepository {
         );
       }
 
+
       await conn.commit();
-      return await this.findById(assistida_id);
+      return await this.findByAssistidaId(assistida_id);
 
     } catch (error) {
       await conn.rollback();
@@ -112,7 +118,7 @@ class HPRRepository {
 
       // Limpar registros antigos
       await conn.execute('DELETE FROM drogas_utilizadas WHERE hpr_id = ?', [id]);
-      await conn.execute('DELETE FROM internacoes WHERE hpr_id = ?', [id]);
+      await conn.execute('DELETE FROM internacoes_anteriores WHERE hpr_id = ?', [id]);
       await conn.execute('DELETE FROM medicamentos_utilizados WHERE hpr_id = ?', [id]);
 
       // Inserir novamente
@@ -127,7 +133,7 @@ class HPRRepository {
 
       for (const internacao of internacoes) {
         await conn.execute(`
-        INSERT INTO internacoes (hpr_id, local, duracao, data)
+        INSERT INTO internacoes_anteriores (hpr_id, local, duracao, data)
         VALUES (?, ?, ?, ?)`,
           [id, internacao.local, internacao.duracao, internacao.data]
         );
@@ -142,7 +148,7 @@ class HPRRepository {
       }
 
       await conn.commit();
-      return await this.findById(assistida_id);
+      return await this.findHprById(id);
 
     } catch (error) {
       await conn.rollback();
@@ -180,8 +186,7 @@ class HPRRepository {
   }
 
 
-
-  async findById(assistidaId) {
+  async findByAssistidaId(assistidaId) {
     const [rows] = await db.execute(
       'SELECT * FROM HPR WHERE assistida_id = ?',
       [assistidaId]
@@ -192,6 +197,7 @@ class HPRRepository {
     // Para cada HPR encontrado, buscar drogas, internações e medicamentos
     const hprList = await Promise.all(
       rows.map(async (hprRow) => {
+
         const drogas = await this.findDrogasByHPRId(hprRow.id) || [];
         const internacoes = await this.findInternacoesByHPRId(hprRow.id) || [];
         const medicamentos = await this.findMedicamentosByHPRId(hprRow.id) || [];
@@ -203,6 +209,30 @@ class HPRRepository {
     return hprList; // retorna um array de HPRs
   }
 
+  async findHprById(id) {
+  const [rows] = await db.execute(
+    `SELECT * FROM HPR WHERE id = ?`,
+    [id]
+  );
+
+  if (rows.length === 0) return null; // retorna null se não existir
+
+  const hprRow = rows[0]; // pega apenas o primeiro (e único) registro
+
+  // Busca os relacionamentos
+
+  const drogas = await this.findDrogasByHPRId(hprRow.id) || [];
+  const internacoes = await this.findInternacoesByHPRId(hprRow.id) || [];
+  const medicamentos = await this.findMedicamentosByHPRId(hprRow.id) || [];
+
+  // Retorna uma única instância de HPR
+  return new HPR({
+    ...hprRow,
+    drogas,
+    internacoes,
+    medicamentos
+  });
+}
 
   async findDrogasByHPRId(hprId) {
     const [rows] = await db.execute(
@@ -214,7 +244,7 @@ class HPRRepository {
 
   async findInternacoesByHPRId(hprId) {
     const [rows] = await db.execute(
-      'SELECT local, duracao, data FROM internacoes WHERE hpr_id = ?',
+      'SELECT local, duracao, data FROM internacoes_anteriores WHERE hpr_id = ?',
       [hprId]
     );
     return rows.map(row => new Internacao(row));

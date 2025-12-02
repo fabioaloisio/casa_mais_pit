@@ -3,23 +3,33 @@ import apiService from './api';
 class DoacoesService {
   // Obter todas as doações
   async getAll(filtros = {}) {
+    console.log('%c[DOAÇÕES-SERVICE] LISTAGEM', 'color: blue; font-weight: bold');
+    console.log('Filtros:', filtros);
+
     try {
       const response = await apiService.get('/doacoes', filtros);
+      console.log('Resposta da API:', response);
+      console.log(`Total de doações retornadas: ${response.data?.length || 0}`);
       return response.success ? response.data : [];
     } catch (error) {
-      console.error('Erro ao buscar doações:', error);
+      console.error('ERRO ao buscar doações:', error);
       throw new Error('Erro ao carregar doações. Tente novamente.');
     }
   }
 
   // Obter doação por ID
   async getById(id) {
+    console.log('%c[DOAÇÕES-SERVICE] CONSULTA POR ID', 'color: blue; font-weight: bold');
+    console.log('ID solicitado:', id);
+
     try {
       const response = await apiService.get(`/doacoes/${id}`);
+      console.log('Doação encontrada:', response.data);
       return response.success ? response.data : null;
     } catch (error) {
-      console.error('Erro ao buscar doação:', error);
+      console.error('ERRO ao buscar doação:', error);
       if (error.message.includes('404')) {
+        console.log('Doação não encontrada (404)');
         return null;
       }
       throw new Error('Erro ao carregar doação. Tente novamente.');
@@ -39,16 +49,24 @@ class DoacoesService {
 
   // Criar nova doação
   async create(doacao) {
+    console.log('%c[DOAÇÕES-SERVICE] CADASTRO', 'color: green; font-weight: bold');
+    console.log('Dados enviados:', doacao);
+
     try {
       const response = await apiService.post('/doacoes', doacao);
+      console.log('Resposta da API:', response);
+
       if (response.success) {
+        console.log('%cDOAÇÃO CRIADA COM SUCESSO!', 'color: green; font-weight: bold');
+        console.log('ID gerado:', response.data?.id);
         return response.data;
       }
       throw new Error(response.message || 'Erro ao criar doação');
     } catch (error) {
-      console.error('Erro ao criar doação:', error);
+      console.error('ERRO ao criar doação:', error);
       // Se a resposta contém erros de validação, lançar com detalhes
       if (error.message.includes('Dados inválidos')) {
+        console.log('Erro de validação detectado');
         throw error;
       }
       throw new Error('Erro ao salvar doação. Verifique os dados e tente novamente.');
@@ -57,18 +75,27 @@ class DoacoesService {
 
   // Atualizar doação
   async update(id, doacaoData) {
+    console.log('%c[DOAÇÕES-SERVICE] ATUALIZAÇÃO', 'color: orange; font-weight: bold');
+    console.log('ID:', id);
+    console.log('Novos dados:', doacaoData);
+
     try {
       const response = await apiService.put(`/doacoes/${id}`, doacaoData);
+      console.log('Resposta da API:', response);
+
       if (response.success) {
+        console.log('%cDOAÇÃO ATUALIZADA COM SUCESSO!', 'color: orange; font-weight: bold');
         return response.data;
       }
       throw new Error(response.message || 'Erro ao atualizar doação');
     } catch (error) {
-      console.error('Erro ao atualizar doação:', error);
+      console.error('ERRO ao atualizar doação:', error);
       if (error.message.includes('404')) {
+        console.log('Doação não encontrada (404)');
         throw new Error('Doação não encontrada.');
       }
       if (error.message.includes('Dados inválidos')) {
+        console.log('Erro de validação detectado');
         throw error;
       }
       throw new Error('Erro ao atualizar doação. Tente novamente.');
@@ -77,15 +104,22 @@ class DoacoesService {
 
   // Deletar doação
   async delete(id) {
+    console.log('%c[DOAÇÕES-SERVICE] TENTATIVA DE EXCLUSÃO', 'color: red; font-weight: bold');
+    console.log('ID:', id);
+
     try {
       const response = await apiService.delete(`/doacoes/${id}`);
+      console.log('Resposta:', response);
       return response.success;
     } catch (error) {
-      console.error('Erro ao deletar doação:', error);
+      console.error('ERRO ao deletar doação:', error);
       if (error.status === 404 || error.message.includes('404')) {
+        console.log('Doação não encontrada (404)');
         throw new Error('Doação não encontrada.');
       }
       if (error.status === 403 || error.message.includes('403') || error.message.includes('não é permitido') || error.message.includes('Não é permitido')) {
+        console.log('%cEXCLUSÃO BLOQUEADA!', 'color: red; font-weight: bold');
+        console.log('Motivo: Integridade do histórico e auditoria');
         throw new Error('Não é permitido excluir doações. As doações devem ser mantidas para histórico e auditoria.');
       }
       throw new Error('Erro ao excluir doação. Tente novamente.');

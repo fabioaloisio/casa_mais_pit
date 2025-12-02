@@ -73,8 +73,8 @@ function ConfirmModal({
       }
     >
       <div className="text-center mb-3">
-        <Icon
-          size={64}
+        <Icon 
+          size={64} 
           className={`text-${alertVariant} mb-3`}
         />
       </div>
