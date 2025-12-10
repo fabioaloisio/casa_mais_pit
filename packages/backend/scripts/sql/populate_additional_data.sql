@@ -28,20 +28,20 @@ INSERT INTO internacoes (assistida_id, data_entrada, data_saida, motivo, observa
 -- ========================================
 -- 3. POPULAR TABELA CONSULTAS
 -- ========================================
-INSERT INTO consultas (assistida_id, data_consulta, profissional, tipo_consulta, observacoes, prescricao, status) VALUES
-(1, '2025-01-06 10:00:00', 'Dr. Carlos Médico', 'Clínica Geral', 'Avaliação inicial completa, sinais vitais normais, exames solicitados', 'Paracetamol 750mg 8/8h se dor | Omeprazol 20mg 1x ao dia', 'realizada'),
-(1, '2025-01-13 14:00:00', 'Dra. Ana Psiquiatra', 'Psiquiatria', 'Ansiedade moderada, iniciando tratamento medicamentoso', 'Clonazepam 0,5mg 1x ao dia à noite | Sertralina 50mg 1x manhã', 'realizada'),
-(2, '2025-01-07 09:00:00', 'Dr. João Psicólogo', 'Psicologia', 'Primeira sessão terapêutica, boa receptividade ao tratamento', NULL, 'realizada'),
-(3, '2025-01-11 15:00:00', 'Dr. Carlos Médico', 'Emergência', 'Crise de abstinência controlada com medicação', 'Diazepam 10mg IM aplicado | Manter observação 24h', 'realizada'),
-(3, '2025-01-12 10:00:00', 'Dr. Carlos Médico', 'Retorno', 'Melhora do quadro após medicação de emergência', 'Diazepam 5mg VO 12/12h por 3 dias', 'realizada'),
-(4, '2024-11-16 14:30:00', 'Dra. Ana Psiquiatra', 'Psiquiatria', 'Avaliação inicial, depressão moderada', 'Fluoxetina 20mg 1x ao dia', 'realizada'),
-(5, '2025-01-16 10:30:00', 'Dra. Maria Nutricionista', 'Nutrição', 'Avaliação nutricional completa, IMC adequado', 'Dieta balanceada 2000kcal/dia, suplementação vitamínica', 'realizada'),
-(6, '2025-01-19 09:00:00', 'Dr. Carlos Médico', 'Clínica Geral', 'Check-up inicial, hipertensão leve detectada', 'Losartana 50mg 1x ao dia | Dieta hipossódica', 'realizada'),
-(7, '2024-10-02 11:00:00', 'Dr. João Psicólogo', 'Psicologia', 'Sessão inicial de acolhimento', NULL, 'realizada'),
+INSERT INTO consultas (assistida_id, data_consulta, medico_id, tipo_consulta, observacoes, prescricao, status) VALUES
+(1, '2025-01-06 10:00:00', 1, 'Clínica Geral', 'Avaliação inicial completa, sinais vitais normais, exames solicitados', 'Paracetamol 750mg 8/8h se dor | Omeprazol 20mg 1x ao dia', 'realizada'),
+(1, '2025-01-13 14:00:00', 2, 'Psiquiatria', 'Ansiedade moderada, iniciando tratamento medicamentoso', 'Clonazepam 0,5mg 1x ao dia à noite | Sertralina 50mg 1x manhã', 'realizada'),
+(2, '2025-01-07 09:00:00', 3, 'Psicologia', 'Primeira sessão terapêutica, boa receptividade ao tratamento', NULL, 'realizada'),
+(3, '2025-01-11 15:00:00', 1, 'Emergência', 'Crise de abstinência controlada com medicação', 'Diazepam 10mg IM aplicado | Manter observação 24h', 'realizada'),
+(3, '2025-01-12 10:00:00', 1, 'Retorno', 'Melhora do quadro após medicação de emergência', 'Diazepam 5mg VO 12/12h por 3 dias', 'realizada'),
+(4, '2024-11-16 14:30:00', 2, 'Psiquiatria', 'Avaliação inicial, depressão moderada', 'Fluoxetina 20mg 1x ao dia', 'realizada'),
+(5, '2025-01-16 10:30:00', 4, 'Nutrição', 'Avaliação nutricional completa, IMC adequado', 'Dieta balanceada 2000kcal/dia, suplementação vitamínica', 'realizada'),
+(6, '2025-01-19 09:00:00', 1, 'Clínica Geral', 'Check-up inicial, hipertensão leve detectada', 'Losartana 50mg 1x ao dia | Dieta hipossódica', 'realizada'),
+(7, '2024-10-02 11:00:00', 3, 'Psicologia', 'Sessão inicial de acolhimento', NULL, 'realizada'),
 -- Consultas futuras (agendadas)
-(1, '2025-01-27 14:00:00', 'Dr. Carlos Médico', 'Retorno', 'Acompanhamento semanal programado', NULL, 'agendada'),
-(3, '2025-01-25 10:00:00', 'Dra. Ana Psiquiatra', 'Psiquiatria', 'Reavaliação psiquiátrica', NULL, 'agendada'),
-(5, '2025-01-30 15:00:00', 'Dr. João Psicólogo', 'Psicologia', 'Sessão terapêutica semanal', NULL, 'agendada');
+(1, '2025-01-27 14:00:00', 1, 'Retorno', 'Acompanhamento semanal programado', NULL, 'agendada'),
+(3, '2025-01-25 10:00:00', 2, 'Psiquiatria', 'Reavaliação psiquiátrica', NULL, 'agendada'),
+(5, '2025-01-30 15:00:00', 3, 'Psicologia', 'Sessão terapêutica semanal', NULL, 'agendada');
 
 -- ========================================
 -- 4. POPULAR TABELA DROGAS_UTILIZADAS

@@ -200,12 +200,12 @@ async function populateDashboardData(connection) {
       dataConsulta.setDate(dataConsulta.getDate() + (i * 2));
 
       await connection.execute(
-        `INSERT INTO consultas (assistida_id, data_consulta, profissional, tipo_consulta, status, observacoes)
+        `INSERT INTO consultas (assistida_id, data_consulta, medico_id, tipo_consulta, status, observacoes)
          VALUES (?, ?, ?, ?, ?, ?)`,
         [
           assistidas[i % assistidas.length].id,
           dataConsulta.toISOString().split('T')[0],
-          `Dr. ${i % 2 === 0 ? 'Silva' : 'Santos'}`,
+          i % 2 === 0 ? 1 : 2, // 1 para Dr. Silva, 2 para Dra. Santos
           i % 2 === 0 ? 'Clínico Geral' : 'Psiquiatria',
           'realizada',
           `Consulta de rotina`

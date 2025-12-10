@@ -151,7 +151,9 @@ INSERT INTO assistidas (
 
 INSERT INTO medicos (nome, crm, especialidade) VALUES
 ('Dr. Ricardo Silva', '123456/SP', 'Clínico Geral'),
-('Dra. Amanda Santos', '789012/RJ', 'Psiquiatria');
+('Dra. Amanda Santos', '789012/RJ', 'Psiquiatria'),
+('Dr. João Machado', 'CRP-06/12345', 'Psicologia'),
+('Dra. Maria Oliveira', 'CRN-3/54321', 'Nutrição');
 
 INSERT INTO consultas (assistida_id, medico_id, data_consulta, tipo_consulta, status, observacoes) VALUES
 (1, 1, DATE_SUB(CURDATE(), INTERVAL 10 DAY), 'Clínico Geral', 'realizada', 'Consulta de rotina'),
