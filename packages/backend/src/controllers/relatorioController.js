@@ -68,7 +68,7 @@ const relatorioConsultas = async (req, res) => {
       data_inicio, 
       data_fim,
       assistida_id,
-      profissional,
+      medico_id,
       status 
     } = req.query;
     
@@ -76,7 +76,7 @@ const relatorioConsultas = async (req, res) => {
       data_inicio,
       data_fim,
       assistida_id,
-      profissional,
+      medico_id,
       status
     });
 
@@ -697,14 +697,14 @@ const exportarDespesasPDF = async (req, res) => {
 
 const exportarConsultasPDF = async (req, res) => {
   try {
-    const { data_inicio, data_fim, assistida_id, profissional, status } = req.body;
+    const { data_inicio, data_fim, assistida_id, medico_id, status } = req.body;
     const relatorio = await relatorioRepository.relatorioConsultas({
-      data_inicio, data_fim, assistida_id, profissional, status
+      data_inicio, data_fim, assistida_id, medico_id, status
     });
 
     const colunas = [
       { header: 'Assistida', field: 'assistida_nome' },
-      { header: 'Profissional', field: 'profissional' },
+      { header: 'Profissional', field: 'medico_nome' },
       { header: 'Data', field: 'data_consulta' },
       { header: 'Tipo', field: 'tipo_consulta' },
       { header: 'Status', field: 'status' }
@@ -772,7 +772,7 @@ const exportarMedicamentosPDF = async (req, res) => {
 
     const colunas = [
       { header: 'Medicamento', field: 'nome' },
-      { header: 'Princípio Ativo', field: 'principio_ativo' },
+      { header: 'Descrição', field: 'descricao' },
       { header: 'Unidade', field: 'unidade_nome' },
       { header: 'Estoque Mínimo', field: 'estoque_minimo' },
       { header: 'Estoque Atual', field: 'estoque_atual' }
@@ -820,13 +820,14 @@ const exportarDoadoresPDF = async (req, res) => {
     
     const colunas = [
       { header: 'Nome', field: 'nome' },
-      { header: 'Tipo', field: 'tipo' },
+      { header: 'Tipo', field: 'tipo_doador' },
       { header: 'Documento', field: 'documento' },
-      { header: 'Contato', field: 'contato' },
+      { header: 'Contato', field: 'telefone' },
       { header: 'Ativo', field: 'ativo' }
     ];
     
-    gerarPDF(relatorio, 'Relatório de Doadores', colunas, res);
+    const doadoresArray = relatorio.doadores || [];
+    gerarPDF(doadoresArray, 'Relatório de Doadores', colunas, res);
   } catch (error) {
     console.error('Erro ao exportar doadores PDF:', error);
     return serverError(res, 'Erro ao exportar doadores PDF', [error.message]);
@@ -904,9 +905,9 @@ const exportarDespesasExcel = async (req, res) => {
     
     const colunas = [
       { header: 'Descrição', field: 'descricao' },
-      { header: 'Categoria', field: 'categoria' },
+      { header: 'Categoria', field: 'tipo_despesa_nome' },
       { header: 'Valor', field: 'valor' },
-      { header: 'Data', field: 'data' },
+      { header: 'Data', field: 'data_despesa' },
       { header: 'Status', field: 'status' }
     ];
     
@@ -935,16 +936,16 @@ const exportarDespesasExcel = async (req, res) => {
 
 const exportarConsultasExcel = async (req, res) => {
   try {
-    const { data_inicio, data_fim, assistida_id, profissional, status } = req.body;
+    const { data_inicio, data_fim, assistida_id, medico_id, status } = req.body;
     const relatorio = await relatorioRepository.relatorioConsultas({
-      data_inicio, data_fim, assistida_id, profissional, status
+      data_inicio, data_fim, assistida_id, medico_id, status
     });
     
     const colunas = [
-      { header: 'Assistida', field: 'assistida' },
-      { header: 'Profissional', field: 'profissional' },
-      { header: 'Data', field: 'data' },
-      { header: 'Tipo', field: 'tipo' },
+      { header: 'Assistida', field: 'assistida_nome' },
+      { header: 'Profissional', field: 'medico_nome' },
+      { header: 'Data', field: 'data_consulta' },
+      { header: 'Tipo', field: 'tipo_consulta' },
       { header: 'Status', field: 'status' }
     ];
     
@@ -1010,7 +1011,7 @@ const exportarMedicamentosExcel = async (req, res) => {
     
     const colunas = [
       { header: 'Medicamento', field: 'nome' },
-      { header: 'Princípio Ativo', field: 'principio_ativo' },
+      { header: 'Descrição', field: 'descricao' },
       { header: 'Unidade', field: 'unidade_nome' },
       { header: 'Estoque Mínimo', field: 'estoque_minimo' },
       { header: 'Estoque Atual', field: 'estoque_atual' }
@@ -1033,9 +1034,9 @@ const exportarInternacoesExcel = async (req, res) => {
     });
     
     const colunas = [
-      { header: 'Assistida', field: 'assistida' },
-      { header: 'Data Entrada', field: 'dataEntrada' },
-      { header: 'Data Saída', field: 'dataSaida' },
+      { header: 'Assistida', field: 'assistida_nome' },
+      { header: 'Data Entrada', field: 'data_entrada' },
+      { header: 'Data Saída', field: 'data_saida' },
       { header: 'Status', field: 'status' },
       { header: 'Observações', field: 'observacoes' }
     ];
@@ -1058,9 +1059,9 @@ const exportarDoadoresExcel = async (req, res) => {
     
     const colunas = [
       { header: 'Nome', field: 'nome' },
-      { header: 'Tipo', field: 'tipo' },
+      { header: 'Tipo', field: 'tipo_doador' },
       { header: 'Documento', field: 'documento' },
-      { header: 'Contato', field: 'contato' },
+      { header: 'Contato', field: 'telefone' },
       { header: 'Ativo', field: 'ativo' }
     ];
     

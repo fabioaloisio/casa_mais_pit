@@ -72,7 +72,7 @@ class RelatorioRepository extends BaseRepository {
     const params = [data_inicio, data_fim];
     
     if (categoria) {
-      query += ` AND td.categoria = ?`;
+      query += ` AND td.nome = ?`;
       params.push(categoria);
     }
     
@@ -113,15 +113,17 @@ class RelatorioRepository extends BaseRepository {
 
   // RF_S3 - Relatório de Consultas
   async relatorioConsultas(filtros = {}) {
-    const { data_inicio, data_fim, assistida_id, profissional, status } = filtros;
+    const { data_inicio, data_fim, assistida_id, medico_id, status } = filtros;
     
     let query = `
       SELECT 
         c.*,
         a.nome as assistida_nome,
-        a.cpf as assistida_cpf
+        a.cpf as assistida_cpf,
+        m.nome as medico_nome
       FROM consultas c
       LEFT JOIN assistidas a ON c.assistida_id = a.id
+      LEFT JOIN medicos m ON c.medico_id = m.id
       WHERE 1=1
     `;
     
@@ -137,9 +139,9 @@ class RelatorioRepository extends BaseRepository {
       params.push(assistida_id);
     }
     
-    if (profissional) {
-      query += ` AND c.profissional LIKE ?`;
-      params.push(`%${profissional}%`);
+    if (medico_id) {
+      query += ` AND c.medico_id = ?`;
+      params.push(medico_id);
     }
     
     if (status) {
@@ -156,7 +158,7 @@ class RelatorioRepository extends BaseRepository {
       SELECT 
         COUNT(*) as total_consultas,
         COUNT(DISTINCT assistida_id) as total_pacientes,
-        COUNT(DISTINCT profissional) as total_profissionais,
+        COUNT(DISTINCT medico_id) as total_profissionais,
         SUM(CASE WHEN status = 'realizada' THEN 1 ELSE 0 END) as realizadas,
         SUM(CASE WHEN status = 'cancelada' THEN 1 ELSE 0 END) as canceladas,
         SUM(CASE WHEN status = 'agendada' THEN 1 ELSE 0 END) as agendadas
@@ -214,7 +216,14 @@ class RelatorioRepository extends BaseRepository {
         AND DATE(cm.data_movimentacao) BETWEEN ? AND ?
     `;
     
-    const doacoesMonetarias = await this.executeQuery(monetariasQuery, [data_inicio, data_fim]);
+    const monetariasParams = [data_inicio, data_fim];
+    
+    if (doador_id) {
+      monetariasQuery += ` AND cm.doador_id = ?`;
+      monetariasParams.push(doador_id);
+    }
+
+    const doacoesMonetarias = await this.executeQuery(monetariasQuery, monetariasParams);
     
     // Totalizadores
     const totalItens = doacoes.reduce((sum, d) => sum + (d.quantidade || 0), 0);
