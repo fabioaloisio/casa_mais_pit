@@ -11,23 +11,23 @@ function askQuestion(rl, question, hideInput = false) {
     if (hideInput) {
       // Para senhas - implementação mais robusta
       rl.close(); // Fechar readline temporariamente
-      
+
       const stdin = process.stdin;
       const stdout = process.stdout;
-      
+
       stdout.write(question);
       stdin.setRawMode(true);
       stdin.resume();
       stdin.setEncoding('utf8');
-      
+
       let password = '';
-      
+
       const cleanup = () => {
         stdin.setRawMode(false);
         stdin.pause();
         stdin.removeAllListeners('data');
       };
-      
+
       const onKeypress = (char) => {
         switch (char) {
           case '\n':
@@ -42,12 +42,12 @@ function askQuestion(rl, question, hideInput = false) {
             });
             resolve({ password, rl: newRl });
             break;
-            
+
           case '\u0003': // Ctrl+C
             cleanup();
             process.exit();
             break;
-            
+
           case '\u007f': // Backspace (DEL)
           case '\b':     // Backspace
             if (password.length > 0) {
@@ -56,7 +56,7 @@ function askQuestion(rl, question, hideInput = false) {
               stdout.write('\b \b');
             }
             break;
-            
+
           default:
             // Apenas aceitar caracteres printáveis
             const code = char.charCodeAt(0);
@@ -67,9 +67,9 @@ function askQuestion(rl, question, hideInput = false) {
             break;
         }
       };
-      
+
       stdin.on('data', onKeypress);
-      
+
     } else {
       rl.question(question, (answer) => resolve({ password: answer.trim(), rl }));
     }
@@ -82,25 +82,25 @@ async function askAdminData(rl) {
   console.log('Para começar a desenvolver, vamos criar seu usuário administrador:\n');
 
   let email, nome, senha, currentRl = rl;
-  
+
   // Validar email
   while (true) {
     const emailResult = await askQuestion(currentRl, '📧 Digite seu email: ');
     email = emailResult.password;
     currentRl = emailResult.rl;
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
+
     if (!email) {
       console.log('❌ Email é obrigatório!');
       continue;
     }
-    
+
     if (!emailRegex.test(email)) {
       console.log('❌ Email inválido! Use um formato válido como exemplo@dominio.com');
       continue;
     }
-    
+
     break;
   }
 
@@ -109,12 +109,12 @@ async function askAdminData(rl) {
     const nomeResult = await askQuestion(currentRl, '👤 Digite seu nome completo: ');
     nome = nomeResult.password;
     currentRl = nomeResult.rl;
-    
+
     if (!nome || nome.trim().length < 2) {
       console.log('❌ Nome deve ter pelo menos 2 caracteres!');
       continue;
     }
-    
+
     nome = nome.trim();
     break;
   }
@@ -124,26 +124,26 @@ async function askAdminData(rl) {
     const senhaResult = await askQuestion(currentRl, '🔐 Digite uma senha segura: ', true);
     senha = senhaResult.password;
     currentRl = senhaResult.rl;
-    
+
     if (!senha) {
       console.log('❌ Senha é obrigatória!');
       continue;
     }
-    
+
     if (senha.length < 6) {
       console.log('❌ Senha deve ter pelo menos 6 caracteres!');
       continue;
     }
-    
+
     const confirmResult = await askQuestion(currentRl, '🔐 Confirme a senha: ', true);
     const confirmSenha = confirmResult.password;
     currentRl = confirmResult.rl;
-    
+
     if (senha !== confirmSenha) {
       console.log('❌ Senhas não conferem! Tente novamente.');
       continue;
     }
-    
+
     break;
   }
 
@@ -153,32 +153,32 @@ async function askAdminData(rl) {
 // Função para criar administrador interativo
 async function createInteractiveAdmin(connection, adminData) {
   const { email, nome, senha } = adminData;
-  
+
   // Verificar se email já existe
   const [existing] = await connection.execute(
-    'SELECT id FROM usuarios WHERE email = ?', 
+    'SELECT id FROM usuarios WHERE email = ?',
     [email]
   );
-  
+
   if (existing.length > 0) {
     throw new Error(`❌ Email ${email} já está cadastrado no sistema!`);
   }
-  
+
   // Gerar hash da senha
   const senhaHash = await bcrypt.hash(senha, 10);
-  
+
   // Inserir administrador
   const [result] = await connection.execute(`
-    INSERT INTO usuarios (nome, email, senha, tipo, status, ativo, data_cadastro) 
+    INSERT INTO usuarios (nome, email, senha, tipo, status, ativo, data_cadastro)
     VALUES (?, ?, ?, 'Administrador', 'ativo', 1, NOW())
   `, [nome, email, senhaHash]);
-  
+
   console.log(`\n✅ Administrador criado com sucesso!`);
   console.log(`   ID: ${result.insertId}`);
   console.log(`   Nome: ${nome}`);
   console.log(`   Email: ${email}`);
   console.log(`   Tipo: Administrador`);
-  
+
   return result.insertId;
 }
 
@@ -214,13 +214,13 @@ async function populateDashboardData(connection) {
     }
 
     // Criar internações ativas
-    console.log('  🏥 Criando internações ativas...');
-    for (let i = 0; i < Math.min(3, assistidas.length); i++) {
-      await connection.execute(
-        'INSERT INTO internacoes (assistida_id, data_entrada, status, observacoes) VALUES (?, DATE_SUB(NOW(), INTERVAL ? DAY), ?, ?)',
-        [assistidas[i].id, i * 2, 'ativa', `Internação para tratamento`]
-      );
-    }
+    // console.log('  🏥 Criando internações ativas...');
+    // for (let i = 0; i < Math.min(3, assistidas.length); i++) {
+    //   await connection.execute(
+    //     'INSERT INTO internacoes (assistida_id, data_entrada, status, observacoes) VALUES (?, DATE_SUB(NOW(), INTERVAL ? DAY), ?, ?)',
+    //     [assistidas[i].id, i * 2, 'ativa', `Internação para tratamento`]
+    //   );
+    // }
   }
 
   // Criar despesas do mês
@@ -358,9 +358,9 @@ async function populateDatabase() {
     // Mostrar estatísticas finais (expandida para incluir novas tabelas)
     console.log('\n📊 Dados inseridos:');
     const tables = [
-      'tipos_despesas', 'doadores', 'despesas', 'doacoes', 
+      'tipos_despesas', 'doadores', 'despesas', 'doacoes',
       'unidades_medida', 'medicamentos', 'assistidas',
-      'usuarios', 'internacoes', 'consultas', 
+      'usuarios', 'internacoes', 'consultas',
       'drogas_utilizadas', 'medicamentos_utilizados',
       'caixa_movimentacoes', 'caixa_fechamentos'
     ];

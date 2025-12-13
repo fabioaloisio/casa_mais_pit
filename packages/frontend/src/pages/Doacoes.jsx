@@ -295,6 +295,7 @@ const Doacoes = () => {
           <FaPlus /> Cadastrar Doação
           <InfoTooltip
             texto="Registre uma nova doação de itens (medicamentos, materiais, produtos) recebida pela instituição. Informe o doador, itens doados, quantidade e data. Isso mantém o controle do estoque e histórico de contribuições."
+
           />
         </Button>
 

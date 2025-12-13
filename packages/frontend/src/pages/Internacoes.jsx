@@ -1,3 +1,4 @@
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import { Button, Table, Form, Card, Row, Col, Modal, Alert } from 'react-bootstrap';
 import {
@@ -15,13 +16,18 @@ import {
   FaSignInAlt,
   FaSignOutAlt,
   FaHistory,
-  FaEye
+  FaEye,
+  FaDoorOpen
 } from 'react-icons/fa';
 import internacoesService from '../services/internacoesService';
 import assistidasService from '../services/assistidasService';
 import Toast from '../components/common/Toast';
-import InfoTooltip from '../utils/tooltip';
 import './Doacoes.css';
+import HprService from '../services/hprService';
+import { BsJournalMedical } from 'react-icons/bs';
+import { calcularDiasInternacao } from "../utils/calcularDiasDeInternacao";
+import InfoTooltip from "../utils/tooltip";
+
 
 const Internacoes = () => {
   const [internacoes, setInternacoes] = useState([]);
@@ -36,6 +42,10 @@ const Internacoes = () => {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [loading, setLoading] = useState(false);
   const [ordenacao, setOrdenacao] = useState({ campo: 'dataEntrada', direcao: 'desc' });
+  const [hprList, setHpr] = useState([]);
+  const [assistidaSelecionada, setAssistidaSelecionada] = useState(null);
+
+  const [modoRetorno, setModoRetorno] = useState(false);
 
   const [formEntrada, setFormEntrada] = useState({
     assistida_id: '',
@@ -43,6 +53,7 @@ const Internacoes = () => {
     observacoes: '',
     dataEntrada: new Date().toISOString().split('T')[0]
   });
+
 
   const [formSaida, setFormSaida] = useState({
     dataSaida: new Date().toISOString().split('T')[0],
@@ -59,7 +70,137 @@ const Internacoes = () => {
 
   useEffect(() => {
     loadData();
+    carregarHpr()
   }, []);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  {
+    assistidas.map(assistida => (
+      <option key={assistida.id} value={String(assistida.id)}>
+        {assistida.nome}
+      </option>
+    ))
+  }
+
+  // useEffect de entrada e saida
+  useEffect(() => {
+    const state = location?.state || {};
+
+    // Se não houver nada vindo da navegação, não faz nada
+    if (!state.openModalEntrada && !state.openModalSaida) return;
+
+    // Função genérica para limpar o state de navegação (previne reabertura)
+    const limparState = () =>
+      navigate(location.pathname, { replace: true, state: {} });
+
+    // -----------------------------------------------------
+    // 🟦 MODO EDIÇÃO DE ENTRADA
+    // -----------------------------------------------------
+    if (state.editMode && state.internacao) {
+      const dados = state.internacao;
+
+      setInternacaoSelecionada(dados);
+
+      setFormEntrada({
+        assistida_id: String(dados.assistida_id),
+        motivo: dados.motivo || '',
+        observacoes: dados.observacoes || '',
+        dataEntrada: dados.dataEntrada?.split('T')[0] || ''
+      });
+
+      setShowModalEntrada(true);
+      limparState();
+      return;
+    }
+
+    // -----------------------------------------------------
+    // 🟥 MODO EDIÇÃO DE SAÍDA
+    // -----------------------------------------------------
+    if (state.openModalSaida && state.editMode && state.saida) {
+      const s = state.saida;
+
+      setInternacaoSelecionada(s); // ← salva o que veio da TL
+
+      setFormSaida({
+        dataSaida: s.dataSaida?.split('T')[0] || '',
+        motivoSaida: s.motivoSaida || '',
+        observacoesSaida: s.observacoes || '',
+      });
+
+      setShowModalSaida(true);
+      limparState();
+      return;
+    }
+
+    // -----------------------------------------------------
+    // 🟩 MODO INTERNAR (novo registro de entrada)
+    // -----------------------------------------------------
+    if (state.openModalEntrada) {
+      if (state.assistidaId) {
+        setFormEntrada(prev => ({
+          ...prev,
+          assistida_id: String(state.assistidaId)
+        }));
+      }
+      setShowModalEntrada(true);
+      limparState();
+    }
+    // -----------------------------------------------------
+    // 🟧 MODO SAIR
+    // -----------------------------------------------------
+    if (state.openModalSaida) {
+
+      const s = state.saida;
+
+      setInternacaoSelecionada({
+        id: s.id ?? null,
+        assistida_id: s.assistidaId,
+        dataEntrada: s.dataEntrada
+      });
+
+      setFormSaida({
+        dataSaida: new Date().toISOString().split("T")[0],
+        motivoSaida: "",
+        observacoesSaida: ""
+      });
+
+      setShowModalSaida(true);
+      limparState();
+      return;
+    }
+
+  }, [location]);
+
+  // useEffect para buscar o nome da assistida
+
+  useEffect(() => {
+    if (!internacaoSelecionada || !internacaoSelecionada.assistida_id) {
+      setAssistidaSelecionada(null);
+      return;
+    }
+
+    const encontrada = assistidas.find(
+      a => Number(a.id) === Number(internacaoSelecionada.assistida_id)
+    );
+
+    setAssistidaSelecionada(encontrada || null);
+  }, [internacaoSelecionada, assistidas]);
+
+  // useEffect para retorno
+  useEffect(() => {
+    if (location.state?.modoRetorno) {
+      setModoRetorno(true);
+      setShowModalEntrada(true);
+
+      // Pré-preencher assistida_id
+      setFormEntrada(prev => ({
+        ...prev,
+        assistida_id: location.state.assistidaId
+      }));
+    }
+  }, [location.state]);
+
 
   const loadData = async () => {
     try {
@@ -114,45 +255,219 @@ const Internacoes = () => {
     setShowModalSaida(true);
   };
 
+
+  const formataDataComparacao = (dataStr) => {
+    const [ano, mes, dia] = dataStr.split("T")[0].split("-");
+    return Number(`${ano}${mes}${dia}`);
+  };
+
+  const limparData = (dataStr) => {
+    if (!dataStr) return null;
+    const date = new Date(dataStr);
+    const ano = date.getFullYear();
+    const mes = String(date.getMonth() + 1).padStart(2, "0");
+    const dia = String(date.getDate()).padStart(2, "0");
+    return `${ano}-${mes}-${dia}`; // sem horário, sem fuso
+  };
+
   const handleEfetuarEntrada = async (e) => {
     e.preventDefault();
     try {
-      const result = await internacoesService.efetuarEntrada(formEntrada);
-      setToast({
-        show: true,
-        message: result.message || 'Entrada registrada com sucesso!',
-        type: 'success'
-      });
+      // ==========================================================
+      // 0) LIMPAR A DATA (REMOVER HORÁRIO E TIMEZONE)
+      // ==========================================================
+      const dataEntradaLimpa = formataDataComparacao(formEntrada.dataEntrada);
+
+      // ==========================================================
+      // 1) Impedir internação sem HPR
+      // ==========================================================
+      const hprExistente = hprList.find(
+        hpr => hpr.assistida_id === Number(formEntrada.assistida_id)
+      );
+
+      if (!hprExistente) {
+        setToast({
+          show: true,
+          message: 'Esta assistida ainda não possui uma HPR cadastrada. Cadastre uma HPR antes de internar.',
+          type: 'warning'
+        });
+
+        setTimeout(() => {
+          window.location.href = `/assistidas/${formEntrada.assistida_id}/detalhes`;
+        }, 3400);
+        return;
+      }
+
+      let result;
+
+      // ==========================================================
+      // 2) EDIÇÃO de Entrada ou Retorno
+      // ==========================================================
+      if (internacaoSelecionada?.dataEntrada) {
+
+        // Edição de retorno
+        if (internacaoSelecionada.modo_retorno) {
+          result = await internacoesService.atualizarEntrada(
+            internacaoSelecionada.id,
+            { ...formEntrada, dataEntrada: dataEntradaLimpa, modo_retorno: true }
+          );
+
+          setToast({ show: true, message: "Retorno atualizado com sucesso!", type: "success" });
+          setTimeout(() => {
+            navigate(`/assistidas/${internacaoSelecionada.assistida_id}/detalhes/#retorno`);
+          }, 1400);
+
+        } else {
+          // Edição de entrada normal
+          result = await internacoesService.atualizarEntrada(
+            internacaoSelecionada.id,
+            { ...formEntrada, dataEntrada: dataEntradaLimpa }
+          );
+
+          setToast({ show: true, message: "Entrada atualizada com sucesso!", type: "success" });
+          setTimeout(() => {
+            navigate(`/assistidas/${internacaoSelecionada.assistida_id}/detalhes/#entrada`);
+          }, 1400);
+        }
+
+      }
+
+      // ==========================================================
+      // 3) REGISTRO DE RETORNO
+      // ==========================================================
+      else if (modoRetorno) {
+
+        const ultimaSaida = internacoes
+          .filter(i => Number(i.assistida_id) === Number(formEntrada.assistida_id) && i.dataSaida)
+          .sort((a, b) => new Date(b.dataSaida) - new Date(a.dataSaida))[0];
+
+        if (!ultimaSaida) {
+          return setToast({
+            show: true,
+            message: "Não é possível registrar retorno, pois não existe saída anterior.",
+            type: "danger"
+          });
+        }
+
+        const dataRetorno = new Date(dataEntradaLimpa);
+        const dataUltimaSaida = new Date(ultimaSaida.dataSaida);
+
+        // if (dataRetorno < dataUltimaSaida) {
+        //   return setToast({
+        //     show: true,
+        //     message: "A data de retorno não pode ser anterior à última saída.",
+        //     type: "danger"
+        //   });
+        // }
+
+        result = await internacoesService.efetuarEntrada({
+          ...formEntrada,
+          dataEntrada: dataEntradaLimpa,
+          modo_retorno: true
+        });
+
+        setToast({ show: true, message: "Retorno registrado com sucesso!", type: "success" });
+        setTimeout(() => {
+          navigate(`/assistidas/${formEntrada.assistida_id}/detalhes/#retorno`);
+        }, 1400);
+
+      }
+
+      // ==========================================================
+      // 4) REGISTRO DE ENTRADA NORMAL
+      // ==========================================================
+      else {
+
+        result = await internacoesService.efetuarEntrada({
+          ...formEntrada,
+          dataEntrada: dataEntradaLimpa
+        });
+
+        setToast({ show: true, message: "Entrada registrada com sucesso!", type: "success" });
+      }
+
       await loadData();
       setShowModalEntrada(false);
+
     } catch (error) {
-      setToast({
-        show: true,
-        message: error.message || 'Erro ao registrar entrada.',
-        type: 'danger'
-      });
+      setToast({ show: true, message: error.message || 'Erro ao registrar entrada.', type: 'danger' });
     }
   };
 
   const handleEfetuarSaida = async (e) => {
     e.preventDefault();
+
+    // ============================
+    // 1) PEGAR A DATA DE ENTRADA REAL DA INTERNAÇÃO
+    // ============================
+    const dataEntrada = formataDataComparacao(internacaoSelecionada.dataEntrada);
+    const dataSaida = formataDataComparacao(formSaida.dataSaida);
+
+
+    // ============================
+    // 2) VALIDAÇÃO
+    // ============================
+    if (isNaN(dataSaida)) {
+      return setToast({
+        show: true,
+        message: "Selecione uma data de saída válida.",
+        type: "danger",
+      });
+    }
+
+
+    if (dataSaida < dataEntrada) {
+      return setToast({
+        show: true,
+        message: "A data de saída não pode ser menor que a data de entrada.",
+        type: "danger",
+      });
+    }
+
+
+
+    // ============================
+    // 3) CONTINUA O PROCESSO NORMAL
+    // ============================
     try {
-      // O backend espera assistida_id que está diretamente na internação
-      const result = await internacoesService.efetuarSaida(internacaoSelecionada.assistida_id, formSaida);
+      let result;
+
+      // ➤ MODO EDIÇÃO
+      if (internacaoSelecionada.motivoSaida) {
+        result = await internacoesService.atualizarSaida(
+          internacaoSelecionada.id,
+          formSaida
+        );
+
+        setTimeout(() => {
+          navigate(`/assistidas/${internacaoSelecionada.assistida_id}/detalhes/#saida`);
+        }, 1400);
+
+      } else {
+        // ➤ MODO CRIAÇÃO
+        result = await internacoesService.efetuarSaida(
+          internacaoSelecionada.assistida_id,
+          formSaida
+        );
+      }
+
       setToast({
         show: true,
-        message: result.message || 'Saída registrada com sucesso!',
-        type: 'success'
+        message: result.message || "Saída registrada/atualizada com sucesso!",
+        type: "success",
       });
+
       await loadData();
       setShowModalSaida(false);
+
     } catch (error) {
       setToast({
         show: true,
-        message: error.message || 'Erro ao registrar saída.',
-        type: 'danger'
+        message: error.message || "Erro ao registrar/atualizar saída.",
+        type: "danger",
       });
     }
+    setInternacaoSelecionada(null);   // limpa modo edição
   };
 
   const handleOrdenar = (campo) => {
@@ -171,13 +486,65 @@ const Internacoes = () => {
       <FaSortDown className="text-warning ms-1" />;
   };
 
-  const calcularDiasInternacao = (dataEntrada, dataSaida = null) => {
-    const entrada = new Date(dataEntrada);
-    const saida = dataSaida ? new Date(dataSaida) : new Date();
-    const diffTime = saida - entrada;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+  const verificarModoRetorno = (assistidaId) => {
+    if (!assistidaId) return;
+
+    // FILTRA histórico real da assistida
+    const historicoInternacoes = internacoes.filter(
+      item => Number(item.assistida_id) === Number(assistidaId)
+    );
+
+    const historicoSaidas = internacoes
+      .filter(item => Number(item.assistida_id) === Number(assistidaId))
+      .filter(item => item.dataSaida);
+
+    // Nunca internou → primeira ação é ENTRADA
+    if (historicoInternacoes.length === 0) {
+      setModoRetorno(false);
+      setInternacaoSelecionada(null);
+      return;
+    }
+
+    // lista de eventos da linha do tempo
+
+    const eventos = [
+
+      // ENTRADAS e RETORNOS
+      ...historicoInternacoes.map(i => ({
+        id: i.id,
+        assistida_id: i.assistida_id,
+        tipo: i.modoRetorno ? "retorno" : "entrada",
+        data: new Date(i.dataEntrada),
+        original: i
+      })),
+
+      // SAÍDAS
+      ...historicoSaidas.map(s => ({
+        id: s.id,
+        assistida_id: s.assistida_id,
+        tipo: "saida",
+        data: new Date(s.dataSaida),
+        original: s
+      }))
+    ];
+
+    // Ordena cronologicamente → último evento primeiro
+
+    const eventosOrdenados = eventos.sort((a, b) => b.data - a.data);
+
+    const ultimo = eventosOrdenados[0];
+
+    //  Decisão do fluxo
+
+    if (ultimo.tipo === "entrada") {
+      setModoRetorno(false);
+    } else if (ultimo.tipo === "saida") {
+      setModoRetorno(true);
+    } else {
+      setModoRetorno(false);
+    }
   };
+
 
   const internacoesFiltradas = internacoes
     .filter(internacao => {
@@ -227,6 +594,50 @@ const Internacoes = () => {
       }
       return 0;
     });
+
+  const carregarHpr = async () => {
+    try {
+      setLoading(true);
+      const hprData = await HprService.obterTodos();
+      setHpr(hprData)
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // resetar campos de edição
+  const formSaidaVazio = {
+    motivoSaida: "",
+    observacoes: "",
+    dataSaida: ""
+  };
+
+  const formEntradaVazio = {
+    assistida_id: "",
+    motivo: "",
+    observacoes: "",
+    dataEntrada: ""
+  };
+
+  const handleCloseModalSaida = () => {
+    setShowModalSaida(false);
+    setInternacaoSelecionada(null);   // limpa modo edição
+    setFormSaida(formSaidaVazio);     // reseta formulário
+    setAssistidaSelecionada(null);
+  };
+
+  const handleCloseModalEntrada = () => {
+    setShowModalEntrada(false);
+    setShowModalHistorico(false)
+    setInternacaoSelecionada(null);
+    setFormEntrada(formEntradaVazio);
+
+    setModoRetorno(false);
+    setInternacaoSelecionada(null);
+  };
+
 
   return (
     <div className="conteudo">
@@ -300,9 +711,10 @@ const Internacoes = () => {
           className="azul d-flex align-items-center gap-2"
           onClick={handleShowModalEntrada}
         >
-          <FaSignInAlt /> Registrar Entrada
+          <FaDoorOpen /> Registrar Entrada
           <InfoTooltip
-            texto="Registre a entrada de uma assistida na internação. Informe a assistida, data de entrada, motivo da internação e observações relevantes."
+            texto="Registre a entrada da assistida na instituição. Esta etapa marca o início do acompanhamento, permitindo o controle do período de permanência, histórico clínico e evolução do tratamento."
+
           />
         </Button>
 
@@ -421,9 +833,6 @@ const Internacoes = () => {
                           onClick={() => handleShowModalSaida(internacao)}
                         >
                           <FaSignOutAlt /> Registrar Saída
-                          <InfoTooltip
-                            texto="Registre a saída de uma assistida da internação. Informe a data de saída, motivo da saída e observações relevantes sobre o encerramento da internação."
-                          />
                         </Button>
                       )}
                       <Button
@@ -445,11 +854,21 @@ const Internacoes = () => {
         </Table>
       </div>
 
+
       {/* Modal de Entrada */}
-      <Modal show={showModalEntrada} onHide={() => setShowModalEntrada(false)} size="lg">
+      <Modal show={showModalEntrada} onHide={handleCloseModalEntrada} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Registrar Entrada de Internação</Modal.Title>
+          <Modal.Title>
+            {internacaoSelecionada?.motivo
+              ? internacaoSelecionada?.modo_retorno || modoRetorno
+                ? "Edição de Retorno"
+                : "Edição de Entrada"
+              : internacaoSelecionada?.modo_retorno || modoRetorno
+                ? "Registrar Retorno da Assistida"
+                : "Registrar Entrada de Internação"}
+          </Modal.Title>
         </Modal.Header>
+
         <Form onSubmit={handleEfetuarEntrada}>
           <Modal.Body>
             <Row>
@@ -458,7 +877,10 @@ const Internacoes = () => {
                   <Form.Label>Assistida *</Form.Label>
                   <Form.Select
                     value={formEntrada.assistida_id}
-                    onChange={(e) => setFormEntrada({...formEntrada, assistida_id: e.target.value})}
+                    onChange={(e) => {
+                      setFormEntrada({ ...formEntrada, assistida_id: e.target.value });
+                      verificarModoRetorno(e.target.value);
+                    }}
                     required
                   >
                     <option value="">Selecione a assistida</option>
@@ -470,36 +892,69 @@ const Internacoes = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
+
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Data de Entrada *</Form.Label>
+                  <Form.Label>
+                    {internacaoSelecionada?.dataEntrada
+                      ? (
+                        internacaoSelecionada?.modo_retorno
+                          ? "Data de Retorno"
+                          : "Data de Entrada"
+                      )
+                      : (
+                        modoRetorno
+                          ? "Data de Retorno"
+                          : "Data de Entrada"
+                      )
+                    } *
+                  </Form.Label>
+
                   <Form.Control
                     type="date"
                     value={formEntrada.dataEntrada}
-                    onChange={(e) => setFormEntrada({...formEntrada, dataEntrada: e.target.value})}
+                    onChange={(e) => setFormEntrada({ ...formEntrada, dataEntrada: e.target.value })}
                     required
                   />
                 </Form.Group>
               </Col>
             </Row>
+
             <Form.Group className="mb-3">
-              <Form.Label>Motivo da Internação *</Form.Label>
+              <Form.Label>
+                {internacaoSelecionada?.dataEntrada
+                  ? (
+                    internacaoSelecionada?.modo_retorno
+                      ? "Motivo do Retorno"
+                      : "Motivo da Internação"
+                  )
+                  : (
+                    modoRetorno
+                      ? "Motivo do Retorno"
+                      : "Motivo da Internação"
+                  )
+                } *
+              </Form.Label>
+
               <Form.Control
                 as="textarea"
                 rows={3}
                 value={formEntrada.motivo}
-                onChange={(e) => setFormEntrada({...formEntrada, motivo: e.target.value})}
-                placeholder="Descreva o motivo da internação..."
+                onChange={(e) => setFormEntrada({ ...formEntrada, motivo: e.target.value })}
+                placeholder={internacaoSelecionada?.modo_retorno
+                  ? "Descreva o motivo do retorno..."
+                  : "Descreva o motivo da internação..."}
                 required
               />
             </Form.Group>
+
             <Form.Group className="mb-3">
               <Form.Label>Observações</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
                 value={formEntrada.observacoes}
-                onChange={(e) => setFormEntrada({...formEntrada, observacoes: e.target.value})}
+                onChange={(e) => setFormEntrada({ ...formEntrada, observacoes: e.target.value })}
                 placeholder="Observações adicionais..."
               />
             </Form.Group>
@@ -508,26 +963,53 @@ const Internacoes = () => {
             <Button variant="secondary" onClick={() => setShowModalEntrada(false)}>
               Cancelar
             </Button>
+
             <Button type="submit" className="azul">
-              Registrar Entrada
+              {internacaoSelecionada?.dataEntrada
+                ? (
+                  internacaoSelecionada?.modo_retorno
+                    ? "Editar Retorno"
+                    : "Editar Entrada"
+                )
+                : (
+                  modoRetorno
+                    ? "Registrar Retorno"
+                    : "Registrar Entrada"
+                )
+              }
             </Button>
+
           </Modal.Footer>
         </Form>
       </Modal>
 
+
+
       {/* Modal de Saída */}
-      <Modal show={showModalSaida} onHide={() => setShowModalSaida(false)} size="lg">
+      <Modal show={showModalSaida} onHide={handleCloseModalSaida} size="lg" >
         <Modal.Header closeButton>
-          <Modal.Title>Registrar Saída de Internação</Modal.Title>
+          <Modal.Title>
+            {internacaoSelecionada && internacaoSelecionada.motivoSaida
+              ? "Edição de Saída"
+              : "Registrar Saída de Internação"}
+          </Modal.Title>
+
         </Modal.Header>
         {internacaoSelecionada && (
           <Form onSubmit={handleEfetuarSaida}>
             <Modal.Body>
-              <Alert variant="info">
-                <strong>Assistida:</strong> {internacaoSelecionada.assistida?.nome}<br/>
-                <strong>Data de Entrada:</strong> {new Date(internacaoSelecionada.dataEntrada).toLocaleDateString('pt-BR')}<br/>
-                <strong>Dias de Internação:</strong> {calcularDiasInternacao(internacaoSelecionada.dataEntrada)} dias
-              </Alert>
+              {assistidaSelecionada && (
+                <Alert variant="info">
+                  <strong>Assistida:</strong> {assistidaSelecionada.nome}<br />
+
+                  <strong>Data de Entrada: </strong>
+                  {new Date(internacaoSelecionada.dataEntrada)
+                    .toLocaleDateString('pt-BR')}<br />
+
+                  <strong>Dias de Internação: </strong>
+                  {calcularDiasInternacao(internacaoSelecionada.dataEntrada)} dias
+                </Alert>
+              )}
 
               <Row>
                 <Col md={6}>
@@ -536,7 +1018,7 @@ const Internacoes = () => {
                     <Form.Control
                       type="date"
                       value={formSaida.dataSaida}
-                      onChange={(e) => setFormSaida({...formSaida, dataSaida: e.target.value})}
+                      onChange={(e) => setFormSaida({ ...formSaida, dataSaida: e.target.value })}
                       required
                     />
                   </Form.Group>
@@ -548,7 +1030,7 @@ const Internacoes = () => {
                   as="textarea"
                   rows={3}
                   value={formSaida.motivoSaida}
-                  onChange={(e) => setFormSaida({...formSaida, motivoSaida: e.target.value})}
+                  onChange={(e) => setFormSaida({ ...formSaida, motivoSaida: e.target.value })}
                   placeholder="Descreva o motivo da saída..."
                   required
                 />
@@ -559,7 +1041,7 @@ const Internacoes = () => {
                   as="textarea"
                   rows={3}
                   value={formSaida.observacoesSaida}
-                  onChange={(e) => setFormSaida({...formSaida, observacoesSaida: e.target.value})}
+                  onChange={(e) => setFormSaida({ ...formSaida, observacoesSaida: e.target.value })}
                   placeholder="Observações adicionais sobre a saída..."
                 />
               </Form.Group>
@@ -569,7 +1051,7 @@ const Internacoes = () => {
                 Cancelar
               </Button>
               <Button type="submit" variant="success">
-                Registrar Saída
+                {internacaoSelecionada.motivoSaida ? "Editar Saída" : "Registrar Saída"}
               </Button>
             </Modal.Footer>
           </Form>
@@ -577,7 +1059,7 @@ const Internacoes = () => {
       </Modal>
 
       {/* Modal de Detalhes/Histórico */}
-      <Modal show={showModalHistorico} onHide={() => setShowModalHistorico(false)} size="lg">
+      <Modal show={showModalHistorico} onHide={handleCloseModalEntrada} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Detalhes da Internação</Modal.Title>
         </Modal.Header>
@@ -595,32 +1077,47 @@ const Internacoes = () => {
                   <p><strong>Data de Entrada:</strong> {new Date(internacaoSelecionada.dataEntrada).toLocaleDateString('pt-BR')}</p>
                   <p><strong>Data de Saída:</strong> {internacaoSelecionada.dataSaida ? new Date(internacaoSelecionada.dataSaida).toLocaleDateString('pt-BR') : 'Em andamento'}</p>
                   <p><strong>Dias de Internação:</strong> {calcularDiasInternacao(internacaoSelecionada.dataEntrada, internacaoSelecionada.dataSaida)} dias</p>
+
                 </Col>
               </Row>
               <hr />
-              <h6><strong>Motivo da Internação</strong></h6>
-              <p>{internacaoSelecionada.motivo}</p>
+              <Row>
+                <Col md={6}>
+                  <h6><strong>Motivo da Internação</strong></h6>
+                  <p>{internacaoSelecionada.motivo}</p>
 
-              {internacaoSelecionada.observacoes && (
-                <>
-                  <h6><strong>Observações da Entrada</strong></h6>
-                  <p>{internacaoSelecionada.observacoes}</p>
-                </>
-              )}
+                  {internacaoSelecionada.observacoes && (
+                    <>
+                      <h6><strong>Observações da Entrada</strong></h6>
+                      <p>{internacaoSelecionada.observacoes}</p>
+                    </>
+                  )}
 
-              {internacaoSelecionada.motivoSaida && (
-                <>
-                  <h6><strong>Motivo da Saída</strong></h6>
-                  <p>{internacaoSelecionada.motivoSaida}</p>
-                </>
-              )}
+                  {internacaoSelecionada.motivoSaida && (
+                    <>
+                      <h6><strong>Motivo da Saída</strong></h6>
+                      <p>{internacaoSelecionada.motivoSaida}</p>
+                    </>
+                  )}
 
-              {internacaoSelecionada.observacoesSaida && (
-                <>
-                  <h6><strong>Observações da Saída</strong></h6>
-                  <p>{internacaoSelecionada.observacoesSaida}</p>
-                </>
-              )}
+                  {internacaoSelecionada.observacoesSaida && (
+                    <>
+                      <h6><strong>Observações da Saída</strong></h6>
+                      <p>{internacaoSelecionada.observacoesSaida}</p>
+                    </>
+                  )}
+                </Col>
+                <Col md={6} className='d-flex align-items-center justify-content-center'>
+
+                  <Button
+                    variant="primary"
+                    onClick={() => navigate(`/assistidas/${internacaoSelecionada.assistida_id}/detalhes/#hpr`)}
+                  >
+                    <BsJournalMedical /> Visualizar HPR da Assistida
+                  </Button>
+
+                </Col>
+              </Row>
             </div>
           )}
         </Modal.Body>

@@ -27,9 +27,11 @@ DROP TABLE IF EXISTS caixa_movimentacoes;
 -- Módulo Saúde
 DROP TABLE IF EXISTS drogas_utilizadas;
 DROP TABLE IF EXISTS medicamentos_utilizados;
+DROP TABLE IF EXISTS internacoes_anteriores;
 DROP TABLE IF EXISTS internacoes;
 DROP TABLE IF EXISTS consultas;
 DROP TABLE IF EXISTS medicamentos;
+DROP TABLE IF EXISTS medicos;
 
 -- Módulo Financeiro
 DROP TABLE IF EXISTS doacoes;
@@ -41,6 +43,7 @@ DROP TABLE IF EXISTS usuarios_aprovacoes_log;
 DROP TABLE IF EXISTS usuarios_status_historico;
 
 -- Drop tabelas base
+DROP TABLE IF EXISTS hpr;
 DROP TABLE IF EXISTS substancias;
 DROP TABLE IF EXISTS assistidas;
 DROP TABLE IF EXISTS usuarios;

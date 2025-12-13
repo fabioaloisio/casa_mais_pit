@@ -1,4 +1,4 @@
-const express = require('express');
+  const express = require('express');
 const cors = require('cors');
 const medicamentoRoutes = require('./routes/medicamentoRoutes');
 const doacaoRoutes = require('./routes/doacaoRoutes');
@@ -12,6 +12,7 @@ const approvalRoutes = require('./routes/approvalRoutes');
 const activationRoutes = require('./routes/activationRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const substanciasRoutes = require('./routes/substanciasRoutes');
+const hprRoutes = require('./routes/hprRoutes');
 
 // Novas rotas para requisitos funcionais
 const internacaoRoutes = require('./routes/internacaoRoutes');
@@ -47,6 +48,7 @@ app.use('/api/unidades_medida', unidadeMedidaRoutes);
 app.use('/api/tipos-despesas', tipoDespesaRoutes);
 app.use('/api/despesas', despesaRoutes);
 app.use('/api/substancias', substanciasRoutes);
+app.use('/api/hpr', hprRoutes);
 
 // Novas rotas dos requisitos funcionais
 app.use('/api/internacoes', internacaoRoutes);

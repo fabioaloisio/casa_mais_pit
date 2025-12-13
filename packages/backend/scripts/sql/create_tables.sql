@@ -11,6 +11,7 @@ USE casamais_db;
 -- SEÇÃO 1: TABELAS BASE (sem FK)
 -- ========================================
 
+
 -- 1. Tabela tipos_despesas (base para FK)
 CREATE TABLE IF NOT EXISTS tipos_despesas (
   id int NOT NULL AUTO_INCREMENT,
@@ -140,6 +141,49 @@ CREATE TABLE IF NOT EXISTS assistidas (
   KEY estado (estado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+CREATE TABLE IF NOT EXISTS hpr (
+  id INT NOT NULL AUTO_INCREMENT,
+  assistida_id INT NOT NULL COMMENT 'Referência à assistida (foreign key)',
+  data_atendimento DATE COMMENT 'Data do primeiro atendimento',
+  hora TIME COMMENT 'Hora do primeiro atendimento',
+  historia_patologica TEXT COMMENT 'História clínica da assistida',
+  tempo_sem_uso VARCHAR(100) COMMENT 'Tempo desde o último uso de substâncias',
+  motivacao_internacoes TEXT COMMENT 'Motivo(s) das internações anteriores',
+  fatos_marcantes TEXT COMMENT 'Fatos marcantes na vida da assistida',
+  infancia TEXT COMMENT 'Relato sobre a infância',
+  adolescencia TEXT COMMENT 'Relato sobre a adolescência',
+
+  -- Novas colunas de controle
+  created_by INT NULL COMMENT 'Usuário que criou o registro',
+  updated_by INT NULL COMMENT 'Usuário que atualizou o registro',
+  deleted_flag BOOLEAN DEFAULT FALSE COMMENT 'Indica se o registro foi marcado como deletado',
+  deleted_at DATETIME NULL COMMENT 'Data e hora da exclusão lógica',
+
+  -- Controle de criação/atualização
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de criação do registro',
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização',
+
+  PRIMARY KEY (id),
+  FOREIGN KEY (assistida_id) REFERENCES assistidas(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+  FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS internacoes_anteriores (
+  id INT NOT NULL AUTO_INCREMENT,
+  hpr_id INT NOT NULL COMMENT 'Referência à HPR (foreign key)',
+  local VARCHAR(255) COMMENT 'Local da internação',
+  duracao VARCHAR(100) COMMENT 'Duração da internação',
+  data DATE COMMENT 'Data da internação',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Data de criação',
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'Última atualização',
+  PRIMARY KEY (id),
+  KEY idx_internacoes_hpr_id (hpr_id),
+  KEY data (data),
+  CONSTRAINT fk_internacoes_hpr FOREIGN KEY (hpr_id) REFERENCES hpr (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 -- 7. Tabela substancias
 CREATE TABLE IF NOT EXISTS substancias (
   id INT NOT NULL AUTO_INCREMENT,
@@ -210,38 +254,37 @@ CREATE TABLE IF NOT EXISTS medicamentos (
   CONSTRAINT fk_medicamentos_unidade_medida FOREIGN KEY (unidade_medida_id) REFERENCES unidades_medida (id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 11. Tabela drogas_utilizadas (com FK para assistidas e substancias)
+-- 10. Tabela drogas_utilizadas (com FK para hpr)
 CREATE TABLE IF NOT EXISTS drogas_utilizadas (
   id INT NOT NULL AUTO_INCREMENT,
-  assistida_id INT NOT NULL COMMENT 'Referência à assistida',
-  substancia_id INT NOT NULL COMMENT 'Referência à substância',
+  hpr_id INT NOT NULL COMMENT 'Referência à HPR',
+  tipo VARCHAR(100) COMMENT 'Tipo de substância',
   idade_inicio INT COMMENT 'Idade aproximada de início do uso',
-  frequencia VARCHAR(100) COMMENT 'Ex.: diária, semanal, esporádica',
   tempo_uso VARCHAR(100) COMMENT 'Ex.: 2 anos, 6 meses',
+  intensidade VARCHAR(100) COMMENT 'Ex.: diária, semanal, esporádica',
   observacoes TEXT COMMENT 'Observações adicionais sobre o uso',
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
   PRIMARY KEY (id),
-  KEY idx_drogas_assistida (assistida_id),
-  KEY idx_drogas_substancia (substancia_id),
-  CONSTRAINT fk_drogas_assistida FOREIGN KEY (assistida_id) REFERENCES assistidas (id) ON DELETE CASCADE,
-  CONSTRAINT fk_drogas_substancia FOREIGN KEY (substancia_id) REFERENCES substancias (id) ON DELETE CASCADE
+  KEY idx_drogas_hpr (hpr_id),
+  CONSTRAINT fk_drogas_hpr FOREIGN KEY (hpr_id) REFERENCES hpr (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 12. Tabela medicamentos_utilizados (com FK para assistidas)
 CREATE TABLE IF NOT EXISTS medicamentos_utilizados (
-  id int NOT NULL AUTO_INCREMENT,
-  assistida_id int NOT NULL COMMENT 'Referência à assistida (foreign key)',
-  nome varchar(100) COMMENT 'Nome do medicamento',
-  dosagem varchar(50) COMMENT 'Dosagem do medicamento',
-  frequencia varchar(100) COMMENT 'Frequência de uso',
-  createdAt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Data de criação',
-  updatedAt timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'Última atualização',
+  id INT NOT NULL AUTO_INCREMENT,
+  hpr_id INT NOT NULL COMMENT 'Referência à HPR (foreign key)',
+  nome VARCHAR(100) COMMENT 'Nome do medicamento',
+  dosagem VARCHAR(50) COMMENT 'Dosagem do medicamento',
+  frequencia VARCHAR(100) COMMENT 'Frequência de uso',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Data de criação',
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'Última atualização',
   PRIMARY KEY (id),
-  KEY idx_medicamentos_utilizados_assistida_id (assistida_id),
+  KEY idx_medicamentos_hpr_id (hpr_id),
   KEY nome (nome),
-  CONSTRAINT fk_medicamentos_utilizados_assistida FOREIGN KEY (assistida_id) REFERENCES assistidas (id) ON DELETE CASCADE
+  CONSTRAINT fk_medicamentos_hpr FOREIGN KEY (hpr_id) REFERENCES hpr (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 -- ========================================
 -- SEÇÃO 3: TABELAS DE GESTÃO OPERACIONAL
@@ -255,16 +298,20 @@ CREATE TABLE IF NOT EXISTS internacoes (
   data_saida DATETIME DEFAULT NULL,
   motivo TEXT,
   observacoes TEXT,
+  motivo_saida TEXT,
   observacoes_saida TEXT,
+  modo_retorno BOOLEAN DEFAULT FALSE,
   status ENUM('ativa', 'finalizada') DEFAULT 'ativa',
   usuario_entrada_id INT,
   usuario_saida_id INT,
   criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+
   FOREIGN KEY (assistida_id) REFERENCES assistidas(id) ON DELETE CASCADE,
   FOREIGN KEY (usuario_entrada_id) REFERENCES usuarios(id),
   FOREIGN KEY (usuario_saida_id) REFERENCES usuarios(id),
+
 
   INDEX idx_assistida (assistida_id),
   INDEX idx_status (status),

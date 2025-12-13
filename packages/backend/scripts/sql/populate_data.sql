@@ -134,19 +134,19 @@ INSERT INTO assistidas (
   nome, cpf, rg, idade, data_nascimento, nacionalidade, estado_civil, profissao, escolaridade, status,
   logradouro, bairro, numero, cep, estado, cidade, telefone, telefone_contato
 ) VALUES
-('Maria das Dores', '12345678900', 'MG-12345678', 42, '1983-09-15', 'Brasileira', 'Solteira', 'Cozinheira', 'Fundamental Completo', 'ativo',
+('Maria das Dores', '12345678900', 'MG-12345678', 42, '1983-09-15', 'Brasileira', 'Solteira', 'Cozinheira', 'Fundamental Completo', 'Inativa',
  'Rua das Flores', 'Centro', '120', '30100-000', 'MG', 'Belo Horizonte', '31999998888', '31988887777'),
-('Ana Paula Lima', '98765432199', 'SP-98765432', 36, '1988-02-20', 'Brasileira', 'Casada', 'Auxiliar de Limpeza', 'Médio Incompleto', 'ativo',
+('Ana Paula Lima', '98765432199', 'SP-98765432', 36, '1988-02-20', 'Brasileira', 'Casada', 'Auxiliar de Limpeza', 'Médio Incompleto', 'Inativa',
  'Avenida Central', 'Jardim das Palmeiras', '500', '04000-200', 'SP', 'São Paulo', '11912345678', '11934567890'),
-('Jéssica Andrade', '11223344556', 'RJ-33445566', 29, '1995-03-10', 'Brasileira', 'Solteira', 'Manicure', 'Médio Completo', 'ativo',
+('Jéssica Andrade', '11223344556', 'RJ-33445566', 29, '1995-03-10', 'Brasileira', 'Solteira', 'Manicure', 'Médio Completo', 'Inativa',
  'Rua das Acácias', 'Lapa', '88', '20220-330', 'RJ', 'Rio de Janeiro', '21999887766', '21988776655'),
-('Carla Menezes', '22334455667', 'BA-44556677', 40, '1984-07-12', 'Brasileira', 'Divorciada', 'Doméstica', 'Fundamental Completo', 'ativo',
+('Carla Menezes', '22334455667', 'BA-44556677', 40, '1984-07-12', 'Brasileira', 'Divorciada', 'Doméstica', 'Fundamental Completo', 'Inativa',
  'Rua do Sossego', 'São Caetano', '22', '40200-000', 'BA', 'Salvador', '71987654321', '71996543210'),
-('Renata Oliveira', '33445566778', 'RS-55667788', 33, '1991-01-25', 'Brasileira', 'Casada', 'Atendente', 'Médio Completo', 'ativo',
+('Renata Oliveira', '33445566778', 'RS-55667788', 33, '1991-01-25', 'Brasileira', 'Casada', 'Atendente', 'Médio Completo', 'Inativa',
  'Avenida Brasil', 'Centro', '305', '90010-000', 'RS', 'Porto Alegre', '51991234567', '51993456789'),
-('Tatiane Soares', '44556677889', 'PE-66778899', 27, '1997-11-04', 'Brasileira', 'Solteira', 'Vendedora', 'Médio Incompleto', 'ativo',
+('Tatiane Soares', '44556677889', 'PE-66778899', 27, '1997-11-04', 'Brasileira', 'Solteira', 'Vendedora', 'Médio Incompleto', 'Inativa',
  'Rua da Aurora', 'Boa Vista', '112', '50050-100', 'PE', 'Recife', '81999887766', '81988776655'),
-('Eliane Costa', '55667788990', 'CE-77889900', 50, '1974-08-08', 'Brasileira', 'Viúva', 'Artesã', 'Fundamental Incompleto', 'ativo',
+('Eliane Costa', '55667788990', 'CE-77889900', 50, '1974-08-08', 'Brasileira', 'Viúva', 'Artesã', 'Fundamental Incompleto', 'Inativa',
  'Travessa das Palmeiras', 'Mucuripe', '55', '60165-000', 'CE', 'Fortaleza', '85991234567', '85993456789');
 
 INSERT INTO medicos (nome, crm, especialidade) VALUES
@@ -167,10 +167,7 @@ INSERT INTO consultas (assistida_id, medico_id, data_consulta, tipo_consulta, st
 (4, 1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 'Clínico Geral', 'realizada', 'Check-up'),
 (5, 2, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 'Psiquiatria', 'realizada', 'Consulta de acompanhamento');
 
-INSERT INTO internacoes (assistida_id, data_entrada, status, observacoes) VALUES
-(1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 'ativa', 'Internação para tratamento'),
-(2, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 'ativa', 'Tratamento intensivo'),
-(3, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 'ativa', 'Reabilitação');
+
 
 INSERT INTO substancias (nome, categoria, descricao) VALUES
 ('Álcool', 'Depressor', 'Bebida alcoólica que reduz a atividade do sistema nervoso central.'),

@@ -1,0 +1,655 @@
+/* Estilos para Gestão de Assistidas - baseado no padrão de Doações */
+
+/* Conteúdo principal */
+.topo h1 {
+  font-size: 24px;
+  color: #1c1c1c;
+  margin-bottom: 5px;
+}
+
+.topo p {
+  color: #666;
+  font-size: 14px;
+  margin-block: 20px;
+  max-width: 600px;
+  line-height: 160%;
+}
+
+/* Cards de estatísticas */
+.stats-card {
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+  border-radius: 12px;
+}
+
+.stats-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.stats-card h6 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.stats-card h3 {
+  font-weight: 700;
+  color: #1c1c1c;
+  font-size: 2rem;
+}
+
+.pai_filtros {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.limpFiltro {
+  width: 115px;
+  text-align: center;
+}
+
+.statusF {
+  width: 140px;
+}
+.idade {
+  width: 1rem;
+  margin-right: 5.2rem;
+}
+
+.filtros select,
+.filtros input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  font-size: 14px;
+}
+
+/* Botão cadastrar */
+.btn-cadastrar {
+  background-color: #2e5594;
+  color: white;
+  border: none;
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+
+.btn-cadastrar:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+/* Tabela */
+.tabela-container {
+  overflow-x: auto;
+  border-radius: 7px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabela-assistidas {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  margin-bottom: 0;
+  min-width: 800px;
+}
+
+.tabela-assistidas th,
+.tabela-assistidas td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.tabela-assistidas th {
+  background-color: #003366 !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-bottom: none;
+  white-space: nowrap;
+}
+
+.tabela-assistidas tr:hover {
+  background-color: #f1f5ff;
+}
+
+/* Status badges */
+.status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.status.ativa {
+  background-color: #c6f6d5;
+  color: #2f855a;
+}
+
+.status.inativa {
+  background-color: #fed7d7;
+  color: #c53030;
+}
+
+.status.pendente {
+  background-color: #bee3f8;
+  color: #2b6cb0;
+}
+
+/* Botões de ação */
+.btn-editar {
+  background-color: #0c4b8c !important;
+  color: white !important;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.2s;
+}
+
+.btn-editar:hover {
+  background-color: #09386a !important;
+}
+
+.btn-excluir {
+  background-color: #ffffff;
+  color: #c53030;
+  border: 1px solid #c53030;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.btn-excluir:hover {
+  background-color: #c53030;
+  border-color: #c53030;
+  color: #ffffff;
+}
+
+.nenhum-registro {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Responsividade - Tablet */
+@media (max-width: 1024px) {
+  .topo h1 {
+    font-size: 22px;
+  }
+
+  .filtros {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .filtros select,
+  .filtros input {
+    min-width: 120px;
+  }
+
+  .stats-card h3 {
+    font-size: 1.75rem;
+  }
+}
+
+/* Responsividade - Mobile */
+@media (max-width: 768px) {
+  .topo h1 {
+    font-size: 20px;
+  }
+
+  .topo p {
+    font-size: 13px;
+  }
+
+  /* Layout responsivo para filtros */
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Filtros em grid no mobile */
+  .filtros {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .filtros .form-group {
+    margin-bottom: 0;
+  }
+
+  .filtros label {
+    font-size: 0.875rem;
+    margin-bottom: 5px;
+  }
+
+  .filtros select,
+  .filtros input {
+    width: 100%;
+    min-width: unset;
+    padding: 0.5rem 0.75rem;
+    font-size: 14px;
+  }
+
+  /* Botão limpar filtros ocupa linha inteira */
+  .filtros .btn-limpar-container {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+
+  .btn-cadastrar {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  /* Stats cards responsivos */
+  .stats-card {
+    margin-bottom: 1rem;
+  }
+
+  .stats-card h6 {
+    font-size: 0.8rem;
+  }
+
+  .stats-card h3 {
+    font-size: 1.5rem;
+  }
+
+  /* Tabela com scroll horizontal */
+  .tabela-container {
+    margin: 0 -1rem;
+    padding: 0 1rem;
+    border-radius: 0;
+  }
+
+  .tabela-assistidas th,
+  .tabela-assistidas td {
+    padding: 10px 8px;
+    font-size: 0.875rem;
+  }
+
+  /* Botões menores no mobile */
+  .btn-editar,
+  .btn-excluir {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
+
+  /* Stack dos botões no mobile */
+  .d-flex.gap-2.justify-content-center {
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+}
+
+/* Mobile pequeno */
+@media (max-width: 576px) {
+  .topo h1 {
+    font-size: 18px;
+  }
+
+  .topo p {
+    font-size: 12px;
+    line-height: 150%;
+  }
+
+  /* Cards em coluna única */
+  .row {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .col-md-3 {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Tabela ainda menor */
+  .tabela-assistidas {
+    min-width: 600px;
+  }
+
+  .tabela-assistidas th,
+  .tabela-assistidas td {
+    padding: 8px 6px;
+    font-size: 0.8rem;
+  }
+
+  /* Indicador de scroll */
+  .tabela-container::after {
+    content: "→ Deslize para ver mais";
+    display: block;
+    text-align: center;
+    padding: 10px;
+    color: #666;
+    font-size: 0.75rem;
+    background-color: #f8f9fa;
+  }
+
+  .tabela-container::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .tabela-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .tabela-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+}
+
+/* Estilos para o formulário multi-etapas */
+.step-indicator {
+  margin-bottom: 2rem;
+}
+
+.step-indicator .step {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.step-indicator .circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #e9ecef;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+}
+
+.step-indicator .step.active .circle {
+  background-color: #003366;
+  color: white;
+  border-color: #003366;
+  transform: scale(1.1);
+}
+
+.step-indicator .step.completed .circle {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.step-indicator .step-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  display: block;
+  text-align: center;
+  margin-top: 5px;
+}
+
+.step-indicator .step.active .step-label {
+  color: #003366;
+  font-weight: 600;
+}
+
+.step-indicator .step.completed .step-label {
+  color: #28a745;
+}
+
+/* Campo de idade readonly */
+.form-control[readonly] {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+/* Fieldsets */
+fieldset.field {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #fff;
+}
+
+fieldset.field legend {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #003366;
+  padding: 0 10px;
+  width: auto;
+  margin-bottom: 15px;
+}
+
+/* Tabela de substâncias */
+.table-light {
+  background-color: #f8f9fa;
+}
+
+.table-light th {
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Alert customizado */
+.alert-info {
+  background-color: #e7f3ff;
+  border-color: #b3d9ff;
+  color: #004085;
+}
+
+/* Responsividade do formulário */
+@media (max-width: 768px) {
+  .step-indicator .circle {
+    width: 40px;
+    height: 40px;
+    font-size: 0.875rem;
+  }
+
+  .step-indicator .step-label {
+    font-size: 0.75rem;
+  }
+
+  fieldset.field {
+    padding: 15px;
+  }
+
+  fieldset.field legend {
+    font-size: 1rem;
+  }
+
+  /* Campos de formulário ocupam linha inteira no mobile */
+  .col-md-2,
+  .col-md-3,
+  .col-md-4,
+  .col-md-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* Modal footer responsivo */
+  .modal-footer {
+    flex-direction: column !important;
+    gap: 10px;
+  }
+
+  .modal-footer > div {
+    width: 100%;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+  }
+}
+
+.fade.modal.show {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.voltar {
+  position: fixed;
+  z-index: 10;
+  right: 3.5rem;
+}
+
+.add_history {
+  padding: 3.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.timeline-container {
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 50px;
+  margin-top: 3rem;
+  margin-left: 4rem;
+  background-color: #93adbc0c;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.timeline-line {
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background-color: #0c4b8c;
+  border-radius: 2px;
+}
+
+.timeline-date {
+  position: absolute;
+  left: -7rem;
+  text-align: right;
+  font-size: 0.85rem;
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+}
+.hpr-deleted {
+  opacity: 0.5;
+  filter: blur(1.5px);
+  pointer-events: none;
+}
+
+/* === BLOCO DE SAÍDA === */
+.saida {
+  border: 1px solid #f1aeb5;
+  border-radius: 7px;
+  /* background-color: #f8d7da; */
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.saida h4,
+.inativ h4 {
+  color: rgb(220, 53, 69);
+}
+
+.saida p {
+  color: #58151c;
+  font-size: 0.9rem;
+  line-height: 160%;
+  max-width: 700px;
+  margin-right: 2rem;
+}
+
+/* === BLOCO DE ENTRADA === */
+.entrada,
+.retorno {
+  border: 1px solid #9fc5f1;
+  border-radius: 7px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.entrada h4,
+.retorno h4 {
+  color: #0c4b8c;
+}
+
+.entrada p,
+.retorno p {
+  color: #072a4f;
+  font-size: 0.9rem;
+  line-height: 160%;
+  max-width: 700px;
+  margin-right: 2rem;
+}
+
+/* === BLOCO DE INATIVAÇÃO === */
+.inativ {
+  background-color: #f8d7da;
+  padding: 30px;
+  margin-bottom: 20px;
+  text-align: center;
+  border: 1px solid #f1aeb5;
+  border-radius: 7px;
+  color: rgb(220, 53, 69);
+}
+
+/* === ELEMENTOS INTERNOS === */
+.hpr .row {
+  padding: 0.5rem;
+}
+
+.button_hpr_internar {
+  font-size: 0.7rem !important;
+}
+
+.informacoes {
+  display: flex;
+  gap: 5rem;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+}
+
+.tabela-substancias th,
+.tabela-medicamentos th,
+.tabela-internacoes th {
+  background-color: #0a335c88 !important;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 12px;
+}
+.tabela-substancias td,
+.tabela-medicamentos td,
+.tabela-internacoes td {
+  font-size: 13px;
+}
+
+.text {
+  font-size: 13px;
+}
+.pen {
+  cursor: pointer;
+  width: 1.1rem;
+}

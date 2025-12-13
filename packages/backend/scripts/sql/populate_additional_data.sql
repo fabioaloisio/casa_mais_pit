@@ -16,14 +16,14 @@ USE casamais_db;
 -- ========================================
 -- 2. POPULAR TABELA INTERNACOES
 -- ========================================
-INSERT INTO internacoes (assistida_id, data_entrada, data_saida, motivo, observacoes, status, usuario_entrada_id) VALUES
-(1, '2025-01-05 14:00:00', NULL, 'Tratamento inicial - dependência química', 'Paciente cooperativa, bom estado geral', 'ativa', 1),
-(2, '2024-12-20 10:00:00', '2025-01-20 09:00:00', 'Reabilitação completa', 'Alta com sucesso após 30 dias de tratamento intensivo', 'finalizada', 1),
-(3, '2025-01-10 16:30:00', NULL, 'Desintoxicação alcoólica', 'Acompanhamento médico diário necessário, sinais vitais estáveis', 'ativa', 2),
-(4, '2024-11-15 09:00:00', '2024-12-15 10:00:00', 'Tratamento psicológico intensivo', 'Evolução positiva, alta com acompanhamento ambulatorial', 'finalizada', 2),
-(5, '2025-01-15 11:00:00', NULL, 'Reabilitação social e profissional', 'Participando ativamente das atividades terapêuticas', 'ativa', 3),
-(6, '2025-01-18 08:30:00', NULL, 'Tratamento voluntário - dependência múltipla', 'Histórico de recaídas, necessita acompanhamento intensivo', 'ativa', 3),
-(7, '2024-10-01 10:00:00', '2024-11-30 14:00:00', 'Desintoxicação e reabilitação', 'Completou tratamento com sucesso', 'finalizada', 1);
+-- INSERT INTO internacoes (assistida_id, data_entrada, data_saida, motivo, observacoes, status, usuario_entrada_id) VALUES
+-- (1, '2025-01-05 14:00:00', NULL, 'Tratamento inicial - dependência química', 'Paciente cooperativa, bom estado geral', 'ativa', 1),
+-- (2, '2024-12-20 10:00:00', '2025-01-20 09:00:00', 'Reabilitação completa', 'Alta com sucesso após 30 dias de tratamento intensivo', 'finalizada', 1),
+-- (3, '2025-01-10 16:30:00', NULL, 'Desintoxicação alcoólica', 'Acompanhamento médico diário necessário, sinais vitais estáveis', 'ativa', 2),
+-- (4, '2024-11-15 09:00:00', '2024-12-15 10:00:00', 'Tratamento psicológico intensivo', 'Evolução positiva, alta com acompanhamento ambulatorial', 'finalizada', 2),
+-- (5, '2025-01-15 11:00:00', NULL, 'Reabilitação social e profissional', 'Participando ativamente das atividades terapêuticas', 'ativa', 3),
+-- (6, '2025-01-18 08:30:00', NULL, 'Tratamento voluntário - dependência múltipla', 'Histórico de recaídas, necessita acompanhamento intensivo', 'ativa', 3),
+-- (7, '2024-10-01 10:00:00', '2024-11-30 14:00:00', 'Desintoxicação e reabilitação', 'Completou tratamento com sucesso', 'finalizada', 1);
 
 -- ========================================
 -- 3. POPULAR TABELA CONSULTAS
@@ -46,40 +46,40 @@ INSERT INTO consultas (assistida_id, data_consulta, medico_id, tipo_consulta, ob
 -- ========================================
 -- 4. POPULAR TABELA DROGAS_UTILIZADAS
 -- ========================================
-INSERT INTO drogas_utilizadas (assistida_id, substancia_id, idade_inicio, frequencia, tempo_uso, observacoes) VALUES
-(1, 1, 18, 'Diária', '10 anos', 'Uso social que evoluiu para dependência após problemas familiares'),
-(1, 3, 25, 'Esporádica', '3 anos', 'Uso recreativo em festas, período de maior consumo entre 2020-2023'),
-(2, 1, 16, 'Semanal', '15 anos', 'Histórico familiar de alcoolismo, pai e avô com mesma condição'),
-(2, 2, 20, 'Diária', '8 anos', 'Iniciou como automedicação para ansiedade, desenvolveu tolerância'),
-(3, 1, 14, 'Diária', '12 anos', 'Início muito precoce, ambiente familiar problemático'),
-(3, 3, 22, 'Semanal', '2 anos', 'Uso durante período de depressão profunda após perda familiar'),
-(4, 12, 30, 'Diária', '5 anos', 'Tabagismo pesado, consumo de 2 maços por dia'),
-(4, 1, 25, 'Social', '10 anos', 'Consumo aumentou após divórcio'),
-(5, 1, 20, 'Social', '10 anos', 'Uso controlado até perda de emprego em 2024'),
-(5, 13, 28, 'Diária', '2 anos', 'Prescrição médica inicial para ansiedade, desenvolveu dependência'),
-(6, 3, 19, 'Diária', '8 anos', 'Uso pesado com múltiplas tentativas de parar'),
-(6, 1, 17, 'Diária', '10 anos', 'Poliuso com álcool como droga principal'),
-(7, 2, 18, 'Ocasional', '5 anos', 'Uso recreativo que se intensificou nos últimos 2 anos');
+-- INSERT INTO drogas_utilizadas (hpr_id, substancia_id, idade_inicio, frequencia, tempo_uso, observacoes) VALUES
+-- (1, 1, 18, 'Diária', '10 anos', 'Uso social que evoluiu para dependência após problemas familiares'),
+-- (1, 3, 25, 'Esporádica', '3 anos', 'Uso recreativo em festas, período de maior consumo entre 2020-2023'),
+-- (2, 1, 16, 'Semanal', '15 anos', 'Histórico familiar de alcoolismo, pai e avô com mesma condição'),
+-- (2, 2, 20, 'Diária', '8 anos', 'Iniciou como automedicação para ansiedade, desenvolveu tolerância'),
+-- (3, 1, 14, 'Diária', '12 anos', 'Início muito precoce, ambiente familiar problemático'),
+-- (3, 3, 22, 'Semanal', '2 anos', 'Uso durante período de depressão profunda após perda familiar'),
+-- (4, 12, 30, 'Diária', '5 anos', 'Tabagismo pesado, consumo de 2 maços por dia'),
+-- (4, 1, 25, 'Social', '10 anos', 'Consumo aumentou após divórcio'),
+-- (5, 1, 20, 'Social', '10 anos', 'Uso controlado até perda de emprego em 2024'),
+-- (5, 13, 28, 'Diária', '2 anos', 'Prescrição médica inicial para ansiedade, desenvolveu dependência'),
+-- (6, 3, 19, 'Diária', '8 anos', 'Uso pesado com múltiplas tentativas de parar'),
+-- (6, 1, 17, 'Diária', '10 anos', 'Poliuso com álcool como droga principal'),
+-- (7, 2, 18, 'Ocasional', '5 anos', 'Uso recreativo que se intensificou nos últimos 2 anos');
 
 -- ========================================
 -- 5. POPULAR TABELA MEDICAMENTOS_UTILIZADOS
 -- ========================================
-INSERT INTO medicamentos_utilizados (assistida_id, nome, dosagem, frequencia) VALUES
-(1, 'Dipirona 500mg', '1 comprimido', '6/6 horas se dor'),
-(1, 'Omeprazol 20mg', '1 cápsula', '1x ao dia em jejum'),
-(1, 'Clonazepam 0,5mg', '1 comprimido', '1x ao dia à noite'),
-(2, 'Sertralina 50mg', '1 comprimido', '1x ao dia pela manhã'),
-(2, 'Vitamina C 500mg', '1 comprimido', '1x ao dia'),
-(3, 'Diazepam 10mg', '1 comprimido', '12/12 horas'),
-(3, 'Complexo B', '1 comprimido', '1x ao dia após almoço'),
-(3, 'Tiamina 300mg', '1 comprimido', '1x ao dia'),
-(4, 'Fluoxetina 20mg', '1 cápsula', '1x ao dia manhã'),
-(4, 'Metformina 850mg', '1 comprimido', '2x ao dia após refeições'),
-(5, 'Losartana 50mg', '1 comprimido', '1x ao dia'),
-(5, 'AAS 100mg', '1 comprimido', '1x ao dia após almoço'),
-(6, 'Diazepam 5mg', '1 comprimido', '8/8 horas'),
-(6, 'Losartana 50mg', '1 comprimido', '1x ao dia manhã'),
-(7, 'Vitaminas do Complexo B', '1 comprimido', '1x ao dia');
+-- INSERT INTO medicamentos_utilizados (assistida_id, nome, dosagem, frequencia) VALUES
+-- (1, 'Dipirona 500mg', '1 comprimido', '6/6 horas se dor'),
+-- (1, 'Omeprazol 20mg', '1 cápsula', '1x ao dia em jejum'),
+-- (1, 'Clonazepam 0,5mg', '1 comprimido', '1x ao dia à noite'),
+-- (2, 'Sertralina 50mg', '1 comprimido', '1x ao dia pela manhã'),
+-- (2, 'Vitamina C 500mg', '1 comprimido', '1x ao dia'),
+-- (3, 'Diazepam 10mg', '1 comprimido', '12/12 horas'),
+-- (3, 'Complexo B', '1 comprimido', '1x ao dia após almoço'),
+-- (3, 'Tiamina 300mg', '1 comprimido', '1x ao dia'),
+-- (4, 'Fluoxetina 20mg', '1 cápsula', '1x ao dia manhã'),
+-- (4, 'Metformina 850mg', '1 comprimido', '2x ao dia após refeições'),
+-- (5, 'Losartana 50mg', '1 comprimido', '1x ao dia'),
+-- (5, 'AAS 100mg', '1 comprimido', '1x ao dia após almoço'),
+-- (6, 'Diazepam 5mg', '1 comprimido', '8/8 horas'),
+-- (6, 'Losartana 50mg', '1 comprimido', '1x ao dia manhã'),
+-- (7, 'Vitaminas do Complexo B', '1 comprimido', '1x ao dia');
 
 -- ========================================
 -- 6. POPULAR TABELA CAIXA_MOVIMENTACOES

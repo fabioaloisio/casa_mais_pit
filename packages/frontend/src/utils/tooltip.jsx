@@ -1,138 +1,192 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaInfoCircle } from 'react-icons/fa';
 
-/**
- * Componente de Tooltip Informativo
- *
- * @param {string} texto - Texto explicativo que será exibido no tooltip
- * @param {string} posicao - Posição do tooltip: 'top', 'bottom', 'left', 'right' (padrão: 'bottom')
- * @returns {JSX.Element} Componente de tooltip com ícone de informação
- */
-const InfoTooltip = ({ texto, posicao = 'bottom' }) => {
-  const [mostrarTooltip, setMostrarTooltip] = useState(false);
+const InfoTooltip = ({
+  texto,
+  posicao = 'bottom',
 
-  const posicoesTooltip = {
-    top: {
-      bottom: '100%',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      marginBottom: '8px',
-      arrowBottom: '-6px',
-      arrowLeft: '50%',
-      arrowTransform: 'translateX(-50%) rotate(45deg)'
-    },
-    bottom: {
-      top: '100%',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      marginTop: '8px',
-      arrowTop: '-6px',
-      arrowLeft: '50%',
-      arrowTransform: 'translateX(-50%) rotate(45deg)'
-    },
-    left: {
-      top: '50%',
-      right: '100%',
-      transform: 'translateY(-50%)',
-      marginRight: '8px',
-      arrowRight: '-6px',
-      arrowTop: '50%',
-      arrowTransform: 'translateY(-50%) rotate(45deg)'
-    },
-    right: {
-      top: '50%',
-      left: '100%',
-      transform: 'translateY(-50%)',
-      marginLeft: '8px',
-      arrowLeft: '-6px',
-      arrowTop: '50%',
-      arrowTransform: 'translateY(-50%) rotate(45deg)'
-    }
+  // Layout
+  minLargura = '240px',
+  maxLargura = '420px',
+  tamanhoFonte = '13px',
+  padding = '15px 14px',
+
+  // Offset fino
+  offset = { x: 0, y: 0 },
+
+  // Aparência
+  iconeSize = 15,
+  corFundo = '#1a365d',
+  corTexto = '#ffffff'
+}) => {
+  const [visivel, setVisivel] = useState(false);
+  const [posicaoFinal, setPosicaoFinal] = useState(posicao);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  const triggerRef = useRef(null);
+  const tooltipRef = useRef(null);
+
+  const posicoesBase = {
+    top: { arrowBottom: '-6px' },
+    bottom: { arrowTop: '-6px' },
+    left: { arrowRight: '-6px' },
+    right: { arrowLeft: '-6px' }
   };
 
-  const estiloTooltip = posicoesTooltip[posicao] || posicoesTooltip.bottom;
+  const calcularPosicao = () => {
+    if (!triggerRef.current || !tooltipRef.current) return;
+
+    const trigger = triggerRef.current.getBoundingClientRect();
+    const tooltip = tooltipRef.current.getBoundingClientRect();
+    const margin = 25;
+
+    let novaPosicao = posicao;
+    let top = 0;
+    let left = 0;
+
+    const espacoAbaixo = window.innerHeight - trigger.bottom;
+    const espacoAcima = trigger.top;
+    const espacoDireita = window.innerWidth - trigger.right;
+    const espacoEsquerda = trigger.left;
+
+    if (posicao === 'bottom' && espacoAbaixo < tooltip.height + margin) {
+      novaPosicao = 'top';
+    } else if (posicao === 'top' && espacoAcima < tooltip.height + margin) {
+      novaPosicao = 'bottom';
+    } else if (posicao === 'right' && espacoDireita < tooltip.width + margin) {
+      novaPosicao = 'left';
+    } else if (posicao === 'left' && espacoEsquerda < tooltip.width + margin) {
+      novaPosicao = 'right';
+    }
+
+    switch (novaPosicao) {
+      case 'top':
+        top = trigger.top - tooltip.height - margin;
+        left = trigger.left + trigger.width / 2 - tooltip.width / 2;
+        break;
+
+      case 'bottom':
+        top = trigger.bottom + margin;
+        left = trigger.left + trigger.width / 2 - tooltip.width / 2;
+        break;
+
+      case 'left':
+        top = trigger.top + trigger.height / 2 - tooltip.height / 2;
+        left = trigger.left - tooltip.width - margin;
+        break;
+
+      case 'right':
+        top = trigger.top + trigger.height / 2 - tooltip.height / 2;
+        left = trigger.right + margin;
+        break;
+    }
+
+    setCoords({
+      top: top + offset.y,
+      left: left + offset.x
+    });
+
+    setPosicaoFinal(novaPosicao);
+  };
+
+  useEffect(() => {
+    if (!visivel) return;
+
+    calcularPosicao();
+    window.addEventListener('scroll', calcularPosicao, true);
+    window.addEventListener('resize', calcularPosicao);
+
+    return () => {
+      window.removeEventListener('scroll', calcularPosicao, true);
+      window.removeEventListener('resize', calcularPosicao);
+    };
+  }, [visivel, posicao, offset]);
+
+  const base = posicoesBase[posicaoFinal];
 
   return (
     <span
-      className="info-tooltip-container"
-      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}
+      style={{ position: 'relative', display: 'inline-flex' }}
+      onMouseEnter={() => setVisivel(true)}
+      onMouseLeave={() => setVisivel(false)}
+      onFocus={() => setVisivel(true)}
+      onBlur={() => setVisivel(false)}
     >
       <button
+        ref={triggerRef}
         type="button"
-        className="info-tooltip-trigger"
         aria-label={`Informação: ${texto}`}
-        onMouseEnter={() => setMostrarTooltip(true)}
-        onMouseLeave={() => setMostrarTooltip(false)}
-        onFocus={() => setMostrarTooltip(true)}
-        onBlur={() => setMostrarTooltip(false)}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') {
-            setMostrarTooltip(false);
-          }
-        }}
         style={{
           background: 'none',
           border: 'none',
-          padding: 0,
           cursor: 'help',
+          padding: 0,
+          margin: "5px 0 5px 0",
           display: 'inline-flex',
-          alignItems: 'center',
-          marginLeft: '6px'
+          alignItems: 'center'
         }}
       >
-        <FaInfoCircle
-          style={{ color: '#66b3ff' }}
-          size={15}
-        />
+        <FaInfoCircle size={iconeSize} color="#66b3ff" />
       </button>
-      {mostrarTooltip && (
+
+      {visivel && (
         <div
-          className="info-tooltip"
+          ref={tooltipRef}
           style={{
-            position: 'absolute',
-            ...estiloTooltip,
-            backgroundColor: '#1a365d',
-            color: '#fff',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            fontSize: '13px',
+            position: 'fixed',
+            top: coords.top,
+            left: coords.left,
+
+            backgroundColor: corFundo,
+            color: corTexto,
+            padding,
+            borderRadius: '10px',
+            fontSize: tamanhoFonte,
+
+            minWidth: minLargura,
+            maxWidth: "300px",
+            width: 'max-content',
+
             lineHeight: '1.5',
             whiteSpace: 'normal',
-            maxWidth: '280px',
+            wordBreak: 'break-word',
+            textAlign: 'left',
+
             zIndex: 10000,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
-            pointerEvents: 'none',
-            fontWeight: '400',
-            border: '1px solid rgba(255, 255, 255, 0.1)'
+            boxShadow: '0 8px 20px rgba(0,0,0,.35)',
+            pointerEvents: 'auto'
           }}
         >
           {texto}
+
+          {/* Setinha */}
           <span
             style={{
               position: 'absolute',
               width: '12px',
               height: '12px',
-              backgroundColor: '#1a365d',
-              ...(estiloTooltip.arrowBottom !== undefined && {
-                bottom: estiloTooltip.arrowBottom,
-                left: estiloTooltip.arrowLeft,
-                transform: estiloTooltip.arrowTransform
+              backgroundColor: corFundo,
+
+              ...(base.arrowTop && {
+                top: base.arrowTop,
+                left: '50%',
+                transform: 'translateX(-50%) rotate(45deg)'
               }),
-              ...(estiloTooltip.arrowTop !== undefined && {
-                top: estiloTooltip.arrowTop,
-                left: estiloTooltip.arrowLeft,
-                transform: estiloTooltip.arrowTransform
+              ...(base.arrowBottom && {
+                bottom: base.arrowBottom,
+                left: '50%',
+                transform: 'translateX(-50%) rotate(45deg)'
               }),
-              ...(estiloTooltip.arrowRight !== undefined && {
-                right: estiloTooltip.arrowRight,
-                top: estiloTooltip.arrowTop,
-                transform: estiloTooltip.arrowTransform
+              ...(base.arrowLeft && {
+                left: base.arrowLeft,
+                top: '50%',
+                transform: 'translateY(-50%) rotate(45deg)'
               }),
-              ...(estiloTooltip.arrowLeft !== undefined && {
-                left: estiloTooltip.arrowLeft,
-                top: estiloTooltip.arrowTop,
-                transform: estiloTooltip.arrowTransform
+              ...(base.arrowRight && {
+                right: base.arrowRight,
+                top: '50%',
+                transform: 'translateY(-50%) rotate(45deg)'
               })
             }}
           />
@@ -144,8 +198,18 @@ const InfoTooltip = ({ texto, posicao = 'bottom' }) => {
 
 InfoTooltip.propTypes = {
   texto: PropTypes.string.isRequired,
-  posicao: PropTypes.oneOf(['top', 'bottom', 'left', 'right'])
+  posicao: PropTypes.oneOf(['top', 'bottom', 'left', 'right']),
+  offset: PropTypes.shape({
+    x: PropTypes.number,
+    y: PropTypes.number
+  }),
+  minLargura: PropTypes.string,
+  maxLargura: PropTypes.string,
+  tamanhoFonte: PropTypes.string,
+  padding: PropTypes.string,
+  iconeSize: PropTypes.number,
+  corFundo: PropTypes.string,
+  corTexto: PropTypes.string
 };
 
 export default InfoTooltip;
-

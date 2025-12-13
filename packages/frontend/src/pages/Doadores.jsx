@@ -296,6 +296,7 @@ const Doadores = () => {
           <FaPlus /> Cadastrar Doador
           <InfoTooltip
             texto="Cadastre um novo doador (pessoa física ou jurídica) no sistema. Informe nome ou razão social, CPF/CNPJ, contatos e endereço. Doadores podem fazer doações de itens ou valores para a instituição."
+
           />
         </Button>
 

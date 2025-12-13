@@ -3,19 +3,13 @@ import { Button, Form, Row, Col, Card } from 'react-bootstrap';
 import Formulario from '../components/assistidas/Formulario';
 import ListaAssistidas from '../components/assistidas/ListaAssistidas';
 import { assistidasService } from '../services/assistidasService';
+import { HprService } from '../services/hprService';
 import Toast from '../components/common/Toast';
 import ConfirmDeleteModal from '../components/assistidas/ConfirmDeleteModal';
 import InfoTooltip from '../utils/tooltip';
 import '../components/assistidas/Assistidas.css';
 import '../pages/Doacoes.css';
-import {
-  FaPlus,
-  FaUsers,
-  FaUserCheck,
-  FaHospital,
-  FaUserTimes,
-  FaChartLine
-} from 'react-icons/fa';
+import { FaClipboardCheck, FaPlus, FaUserCheck, FaUsers, FaUserTimes } from 'react-icons/fa';
 
 const Assistidas = () => {
   const [assistidas, setAssistidas] = useState([]);
@@ -38,11 +32,12 @@ const Assistidas = () => {
   const [deleting, setDeleting] = useState(false);
 
   // Estado para Toast
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [toast, setToast] = useState({ show: false, message: '', ty: 'success' });
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
   };
+
 
   const carregarAssistidas = async () => {
     try {
@@ -152,6 +147,7 @@ const Assistidas = () => {
     return filtroStatusMatch && filtroNomeMatch && filtroCPFMatch && filtroIdadeMatch;
   });
 
+
   if (loading) {
     return (
       <div className="conteudo">
@@ -191,6 +187,7 @@ const Assistidas = () => {
       {/* Cards de Estatísticas */}
       {stats && (
         <Row className="mb-4">
+
           <Col md={3}>
             <Card className="stats-card h-100">
               <Card.Body className="d-flex align-items-center">
@@ -198,19 +195,13 @@ const Assistidas = () => {
                   <FaUsers size={30} className="text-primary" />
                 </div>
                 <div>
-                  <h6 className="mb-0 text-muted">
-                    Total{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}
-                  </h6>
-                  <h4 className="mb-0">
-                    {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
-                      ? assistidasFiltradas.length
-                      : stats.total
-                    }
-                  </h4>
+                  <h6 className="mb-0 text-muted">Total</h6>
+                  <h4 className="mb-0">{stats.total}</h4>
                 </div>
               </Card.Body>
             </Card>
           </Col>
+
           <Col md={3}>
             <Card className="stats-card h-100">
               <Card.Body className="d-flex align-items-center">
@@ -218,61 +209,45 @@ const Assistidas = () => {
                   <FaUserCheck size={30} className="text-success" />
                 </div>
                 <div>
-                  <h6 className="mb-0 text-muted">
-                    Ativas{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}
-                  </h6>
-                  <h4 className="mb-0">
-                    {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
-                      ? assistidasFiltradas.filter(a => a.status === 'Ativa').length
-                      : stats.ativas
-                    }
-                  </h4>
+                  <h6 className="mb-0 text-muted">Ativas</h6>
+                  <h4 className="mb-0">{stats.ativas}</h4>
                 </div>
               </Card.Body>
             </Card>
           </Col>
+
           <Col md={3}>
             <Card className="stats-card h-100">
               <Card.Body className="d-flex align-items-center">
                 <div className="me-3">
-                  <FaHospital size={30} className="text-info" />
+                  <FaUserTimes size={30} className="text-danger" />
                 </div>
                 <div>
-                  <h6 className="mb-0 text-muted">
-                    Em Tratamento{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}
-                  </h6>
-                  <h4 className="mb-0">
-                    {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
-                      ? assistidasFiltradas.filter(a => a.status === 'Em Tratamento').length
-                      : stats.emTratamento
-                    }
-                  </h4>
+                  <h6 className="mb-0 text-muted">Inativas</h6>
+                  <h4 className="mb-0">{stats.inativas}</h4>
                 </div>
               </Card.Body>
             </Card>
           </Col>
+
           <Col md={3}>
             <Card className="stats-card h-100">
               <Card.Body className="d-flex align-items-center">
                 <div className="me-3">
-                  <FaUserTimes size={30} className="text-warning" />
+                  <FaClipboardCheck size={30} className="text-info" />
                 </div>
                 <div>
-                  <h6 className="mb-0 text-muted">
-                    Inativas{(filtroNome || filtroCPF || filtroIdade || filtroStatus) ? ' (Filtrado)' : ''}
-                  </h6>
-                  <h4 className="mb-0">
-                    {(filtroNome || filtroCPF || filtroIdade || filtroStatus)
-                      ? assistidasFiltradas.filter(a => a.status === 'Inativa').length
-                      : stats.inativas
-                    }
-                  </h4>
+                  <h6 className="mb-0 text-muted">Pendente</h6>
+                  <h4 className="mb-0">{stats.Pendente}</h4>
                 </div>
               </Card.Body>
             </Card>
           </Col>
+
         </Row>
       )}
+
+
 
       {/* Controles de Filtro e Ações */}
       <Row className="mb-4">
@@ -284,9 +259,7 @@ const Assistidas = () => {
               onClick={() => setShowModal(true)}
             >
               <FaPlus />Cadastrar Assistida
-              <InfoTooltip
-                texto="Cadastre uma nova assistida no sistema. Informe dados pessoais como nome, CPF, data de nascimento, endereço e contatos. As assistidas são mulheres em situação de vulnerabilidade atendidas pela instituição."
-              />
+
             </Button>
 
             <div className="d-flex gap-3 align-items-center filtros">
@@ -334,7 +307,7 @@ const Assistidas = () => {
                   <option value="">Todos</option>
                   <option value="Ativa">Ativa</option>
                   <option value="Inativa">Inativa</option>
-                  <option value="Em Tratamento">Em Tratamento</option>
+                  <option value="Pendente">Pendente</option>
                 </Form.Select>
               </Form.Group>
 

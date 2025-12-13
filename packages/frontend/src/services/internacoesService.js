@@ -24,6 +24,7 @@ class InternacoesService {
   async efetuarSaida(assistidaId, data) {
     return apiService.post('/internacoes/saida', {
       assistida_id: assistidaId,
+      motivo_saida: data.motivoSaida || data.motivo_saida,
       observacoes_saida: data.observacoesSaida || data.observacoes_saida
     });
   }
@@ -39,6 +40,24 @@ class InternacoesService {
   async delete(id) {
     return apiService.delete(`/internacoes/${id}`);
   }
+
+  async atualizarEntrada(id, data) {
+    return apiService.put(`/internacoes/entrada/${id}`, {
+      data_entrada: data.dataEntrada,
+      motivo: data.motivo,
+      observacoes: data.observacoes
+    });
+  }
+
+  async atualizarSaida(id, data) {
+    return apiService.put(`/internacoes/saida/${id}`, {
+      data_saida: data.dataSaida,
+      motivo_saida: data.motivoSaida,
+      observacoes_saida: data.observacoesSaida
+    });
+  }
+
+
 }
 
 const internacoesService = new InternacoesService();
