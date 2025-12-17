@@ -23,6 +23,7 @@ import consultasService from '../services/consultasService';
 import assistidasService from '../services/assistidasService';
 import { getAllMedicos } from '../services/medicoService';
 import Toast from '../components/common/Toast';
+import SeletorMedicamento from '../components/medicamentos/SeletorMedicamento';
 import InfoTooltip from '../utils/tooltip';
 import './Doacoes.css';
 
@@ -73,7 +74,7 @@ const Consultas = () => {
   });
 
   const [formPrescricao, setFormPrescricao] = useState({
-    medicamentos: [{ medicamento: '', dosagem: '', posologia: '', duracao: '' }]
+    medicamentos: [{ medicamento_id: null, medicamento: '', forma_farmaceutica: '', unidade_medida_sigla: '', dosagem: '', posologia: '', duracao: '' }]
   });
 
   const [historiaPatologica, setHistoriaPatologica] = useState({
@@ -261,19 +262,59 @@ const Consultas = () => {
   const handleSalvarPrescricao = async (e) => {
     e.preventDefault();
     try {
-      await consultasService.criarPrescricao(consultaSelecionada.id, formPrescricao);
+      // Gerar texto da prescrição a partir dos medicamentos
+      const prescricaoTexto = formPrescricao.medicamentos
+        .filter(med => med.medicamento)
+        .map(med => {
+          const partes = [med.medicamento];
+          if (med.forma_farmaceutica) partes[0] += ` (${med.forma_farmaceutica})`;
+          if (med.dosagem) partes.push(med.dosagem);
+          if (med.posologia) partes.push(med.posologia);
+          if (med.duracao) partes.push(`por ${med.duracao}`);
+          return partes.join(' - ');
+        })
+        .join('\n');
+
+      const payload = {
+        prescricao: prescricaoTexto,
+        medicamentos: formPrescricao.medicamentos
+      };
+
+      await consultasService.criarPrescricao(consultaSelecionada.id, payload);
       setToast({
         show: true,
         message: 'Prescrição criada com sucesso!',
         type: 'success'
       });
       setShowModalPrescricao(false);
+      setFormPrescricao({
+        medicamentos: [{ medicamento_id: null, medicamento: '', forma_farmaceutica: '', unidade_medida_sigla: '', dosagem: '', posologia: '', duracao: '' }]
+      });
+      loadData();
     } catch (error) {
       setToast({
         show: true,
         message: error.message || 'Erro ao criar prescrição.',
         type: 'danger'
       });
+    }
+  };
+
+  const handleAbrirDetalhes = async (consulta) => {
+    try {
+      // Buscar dados completos da consulta
+      const response = await consultasService.getById(consulta.id);
+      if (response.success && response.data) {
+        setConsultaSelecionada(response.data);
+      } else {
+        // Fallback para dados da listagem
+        setConsultaSelecionada(consulta);
+      }
+      setShowModalDetalhes(true);
+    } catch (error) {
+      // Em caso de erro, usar dados da listagem
+      setConsultaSelecionada(consulta);
+      setShowModalDetalhes(true);
     }
   };
 
@@ -317,7 +358,7 @@ const Consultas = () => {
   const addMedicamentoPrescricao = () => {
     setFormPrescricao({
       ...formPrescricao,
-      medicamentos: [...formPrescricao.medicamentos, { medicamento: '', dosagem: '', posologia: '', duracao: '' }]
+      medicamentos: [...formPrescricao.medicamentos, { medicamento_id: null, medicamento: '', forma_farmaceutica: '', unidade_medida_sigla: '', dosagem: '', posologia: '', duracao: '' }]
     });
   };
 
@@ -329,6 +370,28 @@ const Consultas = () => {
   const updateMedicamentoPrescricao = (index, campo, valor) => {
     const novosMedicamentos = [...formPrescricao.medicamentos];
     novosMedicamentos[index][campo] = valor;
+    setFormPrescricao({ ...formPrescricao, medicamentos: novosMedicamentos });
+  };
+
+  const handleSelecionarMedicamento = (index, medicamentoSelecionado) => {
+    const novosMedicamentos = [...formPrescricao.medicamentos];
+    if (medicamentoSelecionado) {
+      novosMedicamentos[index] = {
+        ...novosMedicamentos[index],
+        medicamento_id: medicamentoSelecionado.id,
+        medicamento: medicamentoSelecionado.nome,
+        forma_farmaceutica: medicamentoSelecionado.forma_farmaceutica,
+        unidade_medida_sigla: medicamentoSelecionado.unidade_medida_sigla || ''
+      };
+    } else {
+      novosMedicamentos[index] = {
+        ...novosMedicamentos[index],
+        medicamento_id: null,
+        medicamento: '',
+        forma_farmaceutica: '',
+        unidade_medida_sigla: ''
+      };
+    }
     setFormPrescricao({ ...formPrescricao, medicamentos: novosMedicamentos });
   };
 
@@ -668,10 +731,7 @@ const Consultas = () => {
                         <Button
                           size="sm"
                           variant="outline-secondary"
-                          onClick={() => {
-                            setConsultaSelecionada(consulta);
-                            setShowModalDetalhes(true);
-                          }}
+                          onClick={() => handleAbrirDetalhes(consulta)}
                         >
                           <FaEye /> Detalhes
                         </Button>
@@ -713,7 +773,11 @@ const Consultas = () => {
                       <Badge bg="success">Realizada</Badge>
                     </td>
                     <td>
-                      <Button size="sm" variant="outline-info">
+                      <Button
+                        size="sm"
+                        variant="outline-info"
+                        onClick={() => handleAbrirDetalhes(consulta)}
+                      >
                         <FaEye /> Ver Detalhes
                       </Button>
                     </td>
@@ -1011,11 +1075,14 @@ const Consultas = () => {
                     <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label>Medicamento *</Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={medicamento.medicamento}
-                          onChange={(e) => updateMedicamentoPrescricao(index, 'medicamento', e.target.value)}
-                          placeholder="Nome do medicamento"
+                        <SeletorMedicamento
+                          value={medicamento.medicamento_id ? {
+                            id: medicamento.medicamento_id,
+                            nome: medicamento.medicamento,
+                            forma_farmaceutica: medicamento.forma_farmaceutica
+                          } : null}
+                          onChange={(med) => handleSelecionarMedicamento(index, med)}
+                          placeholder="Busque e selecione o medicamento"
                           required
                         />
                       </Form.Group>
@@ -1230,6 +1297,86 @@ const Consultas = () => {
                   {consultaSelecionada.tratamento && (
                     <p><strong>Tratamento:</strong> {consultaSelecionada.tratamento}</p>
                   )}
+                </>
+              )}
+              {(consultaSelecionada.prescricao || (consultaSelecionada.medicamentos && consultaSelecionada.medicamentos.length > 0)) && (
+                <>
+                  <hr />
+                  <h6><strong>Prescrições Médicas</strong></h6>
+                  {consultaSelecionada.medicamentos && consultaSelecionada.medicamentos.length > 0 ? (
+                    // Verificar se é estrutura nova (array de prescrições) ou antiga (array de medicamentos)
+                    consultaSelecionada.medicamentos[0]?.itens ? (
+                      // Estrutura nova: múltiplas prescrições
+                      consultaSelecionada.medicamentos.map((prescricao, pIdx) => (
+                        <Card key={pIdx} className="mb-3">
+                          <Card.Header className="py-2">
+                            <small className="text-muted">
+                              {new Date(prescricao.data).toLocaleString('pt-BR')}
+                            </small>
+                          </Card.Header>
+                          <Card.Body className="py-2">
+                            {prescricao.itens && prescricao.itens.length > 0 && (
+                              <Table striped bordered size="sm" className="mb-0">
+                                <thead>
+                                  <tr>
+                                    <th>Medicamento</th>
+                                    <th>Forma</th>
+                                    <th>Dosagem</th>
+                                    <th>Posologia</th>
+                                    <th>Duração</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {prescricao.itens.map((med, idx) => (
+                                    <tr key={idx}>
+                                      <td>{med.medicamento}</td>
+                                      <td>{med.forma_farmaceutica || '-'}</td>
+                                      <td>{med.dosagem || '-'}</td>
+                                      <td>{med.posologia || '-'}</td>
+                                      <td>{med.duracao || '-'}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </Table>
+                            )}
+                          </Card.Body>
+                        </Card>
+                      ))
+                    ) : (
+                      // Estrutura antiga: array simples de medicamentos
+                      <>
+                        {consultaSelecionada.dataPrescricao && (
+                          <p className="text-muted small">
+                            Prescrito em: {new Date(consultaSelecionada.dataPrescricao).toLocaleString('pt-BR')}
+                          </p>
+                        )}
+                        <Table striped bordered size="sm" className="mt-2">
+                          <thead>
+                            <tr>
+                              <th>Medicamento</th>
+                              <th>Forma</th>
+                              <th>Dosagem</th>
+                              <th>Posologia</th>
+                              <th>Duração</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {consultaSelecionada.medicamentos.map((med, idx) => (
+                              <tr key={idx}>
+                                <td>{med.medicamento}</td>
+                                <td>{med.forma_farmaceutica || '-'}</td>
+                                <td>{med.dosagem || '-'}</td>
+                                <td>{med.posologia || '-'}</td>
+                                <td>{med.duracao || '-'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </>
+                    )
+                  ) : consultaSelecionada.prescricao ? (
+                    <p style={{ whiteSpace: 'pre-wrap' }}>{consultaSelecionada.prescricao}</p>
+                  ) : null}
                 </>
               )}
               {consultaSelecionada.status === 'cancelada' && consultaSelecionada.motivoCancelamento && (
