@@ -1,0 +1,146 @@
+.seletor-medicamento {
+  position: relative;
+  width: 100%;
+}
+
+.seletor-medicamento-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.seletor-medicamento-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #6c757d;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.seletor-medicamento-input {
+  padding-left: 36px !important;
+}
+
+.seletor-medicamento-spinner {
+  position: absolute;
+  right: 12px;
+  color: #6c757d;
+}
+
+.seletor-medicamento-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.375rem 0.75rem;
+  background-color: #e7f5ff;
+  border: 1px solid #74c0fc;
+  border-radius: 0.375rem;
+  min-height: 38px;
+}
+
+.seletor-medicamento-value {
+  flex: 1;
+  color: #1971c2;
+  font-weight: 500;
+}
+
+.seletor-medicamento-forma {
+  color: #495057;
+  font-weight: 400;
+}
+
+.seletor-medicamento-clear {
+  background: none;
+  border: none;
+  color: #868e96;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.seletor-medicamento-clear:hover {
+  background-color: #dee2e6;
+  color: #495057;
+}
+
+.seletor-medicamento-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-top: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.seletor-medicamento-loading,
+.seletor-medicamento-empty {
+  padding: 12px 16px;
+  color: #6c757d;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.seletor-medicamento-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.seletor-medicamento-item {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.seletor-medicamento-item:last-child {
+  border-bottom: none;
+}
+
+.seletor-medicamento-item:hover,
+.seletor-medicamento-item.highlighted {
+  background-color: #e7f5ff;
+}
+
+.seletor-medicamento-item-nome {
+  font-weight: 500;
+  color: #212529;
+  margin-bottom: 2px;
+}
+
+.seletor-medicamento-item-forma {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+/* Scrollbar personalizada */
+.seletor-medicamento-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.seletor-medicamento-dropdown::-webkit-scrollbar-track {
+  background: #f1f3f4;
+  border-radius: 4px;
+}
+
+.seletor-medicamento-dropdown::-webkit-scrollbar-thumb {
+  background: #ced4da;
+  border-radius: 4px;
+}
+
+.seletor-medicamento-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
+}
