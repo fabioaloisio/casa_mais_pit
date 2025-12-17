@@ -69,12 +69,62 @@ class ConsultaRepository extends BaseRepository {
   async lancarPrescricao(data) {
     const { id, prescricao, medicamentos, usuario_id } = data;
 
+    console.log('[PRESCRICAO] Iniciando lançamento para consulta:', id);
+
+    // Buscar prescrições existentes
+    const consultaAtual = await this.buscarPorIdCompleto(id);
+    let prescricoesExistentes = [];
+
+    console.log('[PRESCRICAO] Consulta atual medicamentos:', consultaAtual?.medicamentos);
+
+    if (consultaAtual && consultaAtual.medicamentos) {
+      // Verificar se é estrutura nova (array de prescrições) ou antiga (array de medicamentos)
+      if (Array.isArray(consultaAtual.medicamentos) && consultaAtual.medicamentos.length > 0) {
+        if (consultaAtual.medicamentos[0].itens) {
+          // Estrutura nova: já é array de prescrições
+          console.log('[PRESCRICAO] Estrutura NOVA detectada, prescrições existentes:', consultaAtual.medicamentos.length);
+          prescricoesExistentes = consultaAtual.medicamentos;
+        } else {
+          // Estrutura antiga: converter para nova estrutura
+          console.log('[PRESCRICAO] Estrutura ANTIGA detectada, convertendo...');
+          prescricoesExistentes = [{
+            data: consultaAtual.dataPrescricao || new Date().toISOString(),
+            usuario_id: consultaAtual.usuarioPrescricaoId,
+            texto: consultaAtual.prescricao,
+            itens: consultaAtual.medicamentos
+          }];
+        }
+      }
+    } else {
+      console.log('[PRESCRICAO] Nenhuma prescrição existente');
+    }
+
+    // Criar nova prescrição
+    const novaPrescricao = {
+      data: new Date().toISOString(),
+      usuario_id: usuario_id,
+      texto: prescricao,
+      itens: medicamentos
+    };
+
+    // Adicionar nova prescrição no início (mais recente primeiro)
+    const todasPrescricoes = [novaPrescricao, ...prescricoesExistentes];
+
+    console.log('[PRESCRICAO] Total de prescrições após adicionar:', todasPrescricoes.length);
+
+    // Concatenar todos os textos das prescrições para o campo TEXT
+    const prescricaoTextoCompleto = todasPrescricoes
+      .map(p => `[${new Date(p.data).toLocaleDateString('pt-BR')}]\n${p.texto}`)
+      .join('\n\n---\n\n');
+
     await this.update(id, {
-      prescricao,
-      medicamentos: JSON.stringify(medicamentos),
+      prescricao: prescricaoTextoCompleto,
+      medicamentos: JSON.stringify(todasPrescricoes),
       usuario_prescricao_id: usuario_id,
       data_prescricao: new Date()
     });
+
+    console.log('[PRESCRICAO] Prescrição salva com sucesso');
 
     return this.buscarPorIdCompleto(id);
   }
@@ -161,7 +211,10 @@ class ConsultaRepository extends BaseRepository {
 
       if (row.medicamentos) {
         try {
-          mapped.medicamentos = JSON.parse(row.medicamentos);
+          // MySQL pode retornar como objeto ou string dependendo da versão
+          mapped.medicamentos = typeof row.medicamentos === 'string'
+            ? JSON.parse(row.medicamentos)
+            : row.medicamentos;
         } catch (e) {
           mapped.medicamentos = null;
         }
@@ -261,7 +314,10 @@ class ConsultaRepository extends BaseRepository {
 
       if (row.medicamentos) {
         try {
-          mapped.medicamentos = JSON.parse(row.medicamentos);
+          // MySQL pode retornar como objeto ou string dependendo da versão
+          mapped.medicamentos = typeof row.medicamentos === 'string'
+            ? JSON.parse(row.medicamentos)
+            : row.medicamentos;
         } catch (e) {
           mapped.medicamentos = null;
         }
