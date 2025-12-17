@@ -228,6 +228,7 @@ const Relatorios = () => {
       <Nav variant="tabs" className="mb-4">
         <Nav.Item>
           <Nav.Link
+            as="button"
             active={activeTab === 'dashboard'}
             onClick={() => setActiveTab('dashboard')}
           >
@@ -237,6 +238,7 @@ const Relatorios = () => {
         </Nav.Item>
         <Nav.Item>
           <Nav.Link
+            as="button"
             active={activeTab === 'relatorios'}
             onClick={() => setActiveTab('relatorios')}
           >
@@ -246,6 +248,7 @@ const Relatorios = () => {
         </Nav.Item>
         <Nav.Item>
           <Nav.Link
+            as="button"
             active={activeTab === 'graficos'}
             onClick={() => setActiveTab('graficos')}
           >
@@ -260,13 +263,13 @@ const Relatorios = () => {
         <>
           {/* Cards de Estatísticas Gerais */}
           <Row className="mb-4">
-            <Col md={3}>
+            <Col xs={12} sm={6} lg={3} className="mb-3 mb-lg-0">
               <Card className="stats-card h-100">
                 <Card.Body className="d-flex align-items-center">
-                  <div className="me-3">
+                  <div className="me-3 stats-icon">
                     <FaUsers size={30} className="text-primary" />
                   </div>
-                  <div>
+                  <div className="stats-content">
                     <h6 className="mb-0 text-muted">Total Assistidas</h6>
                     <h4 className="mb-0">{dashboardData.totalAssistidas || 0}</h4>
                     <small className={`d-flex align-items-center ${dashboardData.tendenciaAssistidas >= 0 ? 'text-success' : 'text-danger'}`}>
@@ -277,13 +280,13 @@ const Relatorios = () => {
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={3}>
+            <Col xs={12} sm={6} lg={3} className="mb-3 mb-lg-0">
               <Card className="stats-card h-100">
                 <Card.Body className="d-flex align-items-center">
-                  <div className="me-3">
+                  <div className="me-3 stats-icon">
                     <FaDollarSign size={30} className="text-success" />
                   </div>
-                  <div>
+                  <div className="stats-content">
                     <h6 className="mb-0 text-muted">Arrecadação Mensal</h6>
                     <h4 className="mb-0">{formatCurrency(dashboardData.arrecadacaoMensal || 0)}</h4>
                     <small className={`d-flex align-items-center ${dashboardData.tendenciaArrecadacao >= 0 ? 'text-success' : 'text-danger'}`}>
@@ -294,13 +297,13 @@ const Relatorios = () => {
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={3}>
+            <Col xs={12} sm={6} lg={3} className="mb-3 mb-lg-0">
               <Card className="stats-card h-100">
                 <Card.Body className="d-flex align-items-center">
-                  <div className="me-3">
+                  <div className="me-3 stats-icon">
                     <FaBed size={30} className="text-info" />
                   </div>
-                  <div>
+                  <div className="stats-content">
                     <h6 className="mb-0 text-muted">Internações Ativas</h6>
                     <h4 className="mb-0">{dashboardData.internacoesAtivas || 0}</h4>
                     <small className="text-muted">
@@ -310,13 +313,13 @@ const Relatorios = () => {
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={3}>
+            <Col xs={12} sm={6} lg={3}>
               <Card className="stats-card h-100">
                 <Card.Body className="d-flex align-items-center">
-                  <div className="me-3">
+                  <div className="me-3 stats-icon">
                     <FaStethoscope size={30} className="text-warning" />
                   </div>
-                  <div>
+                  <div className="stats-content">
                     <h6 className="mb-0 text-muted">Consultas do Mês</h6>
                     <h4 className="mb-0">{dashboardData.consultasMes || 0}</h4>
                     <small className={`d-flex align-items-center ${dashboardData.tendenciaConsultas >= 0 ? 'text-success' : 'text-danger'}`}>
@@ -331,21 +334,21 @@ const Relatorios = () => {
 
           {/* Resumo Financeiro */}
           <Row className="mb-4">
-            <Col md={6}>
-              <Card>
+            <Col xs={12} md={6} className="mb-3 mb-md-0">
+              <Card className="h-100">
                 <Card.Header>
                   <h5 className="mb-0">Resumo Financeiro - Este Mês</h5>
                 </Card.Header>
                 <Card.Body>
                   <Row>
-                    <Col sm={6}>
+                    <Col xs={6}>
                       <div className="text-center mb-3">
                         <FaGift size={30} className="text-success mb-2" />
                         <h6>Doações Recebidas</h6>
                         <h4 className="text-success">{formatCurrency(dashboardData.doacoesMes || 0)}</h4>
                       </div>
                     </Col>
-                    <Col sm={6}>
+                    <Col xs={6}>
                       <div className="text-center mb-3">
                         <FaDollarSign size={30} className="text-danger mb-2" />
                         <h6>Despesas</h6>
@@ -363,26 +366,26 @@ const Relatorios = () => {
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={6}>
-              <Card>
+            <Col xs={12} md={6}>
+              <Card className="h-100">
                 <Card.Header>
                   <h5 className="mb-0">Medicamentos - Situação</h5>
                 </Card.Header>
                 <Card.Body>
                   <Row>
-                    <Col sm={4}>
+                    <Col xs={4}>
                       <div className="text-center">
                         <h4 className="text-primary">{dashboardData.medicamentosDisponiveis || 0}</h4>
                         <p className="text-muted mb-0">Disponíveis</p>
                       </div>
                     </Col>
-                    <Col sm={4}>
+                    <Col xs={4}>
                       <div className="text-center">
                         <h4 className="text-warning">{dashboardData.medicamentosEstoqueBaixo || 0}</h4>
                         <p className="text-muted mb-0">Estoque Baixo</p>
                       </div>
                     </Col>
-                    <Col sm={4}>
+                    <Col xs={4}>
                       <div className="text-center">
                         <h4 className="text-danger">{dashboardData.medicamentosVencidos || 0}</h4>
                         <p className="text-muted mb-0">Vencidos</p>
@@ -396,53 +399,53 @@ const Relatorios = () => {
 
           {/* Atividades Recentes */}
           <Row>
-            <Col md={12}>
+            <Col xs={12}>
               <Card>
                 <Card.Header>
                   <h5 className="mb-0">Resumo de Atividades - Últimos 30 Dias</h5>
                 </Card.Header>
                 <Card.Body>
                   <Row>
-                    <Col md={2} className="text-center">
+                    <Col xs={6} sm={4} md={2} className="text-center mb-3">
                       <div className="mb-2">
                         <FaUsers size={24} className="text-primary" />
                       </div>
-                      <h6>Novas Assistidas</h6>
+                      <h6 className="atividade-label">Novas Assistidas</h6>
                       <h5 className="text-primary">{dashboardData.novasAssistidas || 0}</h5>
                     </Col>
-                    <Col md={2} className="text-center">
+                    <Col xs={6} sm={4} md={2} className="text-center mb-3">
                       <div className="mb-2">
                         <FaBed size={24} className="text-info" />
                       </div>
-                      <h6>Internações</h6>
+                      <h6 className="atividade-label">Internações</h6>
                       <h5 className="text-info">{dashboardData.totalInternacoes || 0}</h5>
                     </Col>
-                    <Col md={2} className="text-center">
+                    <Col xs={6} sm={4} md={2} className="text-center mb-3">
                       <div className="mb-2">
                         <FaStethoscope size={24} className="text-success" />
                       </div>
-                      <h6>Consultas</h6>
+                      <h6 className="atividade-label">Consultas</h6>
                       <h5 className="text-success">{dashboardData.totalConsultas || 0}</h5>
                     </Col>
-                    <Col md={2} className="text-center">
+                    <Col xs={6} sm={4} md={2} className="text-center mb-3">
                       <div className="mb-2">
                         <FaGift size={24} className="text-warning" />
                       </div>
-                      <h6>Doações</h6>
+                      <h6 className="atividade-label">Doações</h6>
                       <h5 className="text-warning">{dashboardData.totalDoacoes || 0}</h5>
                     </Col>
-                    <Col md={2} className="text-center">
+                    <Col xs={6} sm={4} md={2} className="text-center mb-3">
                       <div className="mb-2">
                         <FaPills size={24} className="text-secondary" />
                       </div>
-                      <h6>Prescrições</h6>
+                      <h6 className="atividade-label">Prescrições</h6>
                       <h5 className="text-secondary">{dashboardData.totalPrescricoes || 0}</h5>
                     </Col>
-                    <Col md={2} className="text-center">
+                    <Col xs={6} sm={4} md={2} className="text-center mb-3">
                       <div className="mb-2">
                         <FaCash size={24} className="text-dark" />
                       </div>
-                      <h6>Fechamentos</h6>
+                      <h6 className="atividade-label">Fechamentos</h6>
                       <h5 className="text-dark">{dashboardData.totalFechamentos || 0}</h5>
                     </Col>
                   </Row>

@@ -17,9 +17,37 @@
 }
 
 /* Estilos para as abas */
+.nav-tabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  position: relative;
+  z-index: 10;
+  background-color: var(--bg-light, #f5f7fa);
+}
+
+.nav-tabs::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.nav-tabs .nav-item {
+  flex-shrink: 0;
+}
+
 .nav-tabs .nav-link {
   color: #666;
   font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  position: relative;
+  z-index: 11;
+  /* Reset button styles quando usar as="button" */
+  border: 1px solid transparent;
+  background: transparent;
+  border-bottom: none;
 }
 
 .nav-tabs .nav-link.active {
@@ -62,30 +90,132 @@
 
 /* Responsividade para cards de relatórios */
 @media (max-width: 768px) {
+  /* Tabs - espaço para o botão hambúrguer */
+  .nav-tabs {
+    margin-left: 3.5rem;
+  }
+
   .relatorio-card {
     margin-bottom: 1rem;
   }
-  
+
   .relatorio-card .card-body {
     padding: 1.25rem;
   }
-  
+
   .d-grid.gap-2 .btn {
     font-size: 0.875rem;
   }
 }
 
-@media (max-width: 576px) {
-  .nav-tabs .nav-link {
-    font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
+/* Stats cards - layout responsivo */
+.stats-card .card-body {
+  min-height: auto;
+}
+
+.stats-card h4 {
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stats-card h6 {
+  font-size: clamp(0.7rem, 1.5vw, 0.875rem);
+}
+
+/* Labels de atividades */
+.atividade-label {
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Prevenir overflow de valores monetários */
+.card-body h4,
+.card-body h3 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Media query para telas pequenas (< 576px) */
+@media (max-width: 575.98px) {
+  /* Tabs compactas em mobile - garantir clicabilidade */
+  .nav-tabs {
+    margin-left: 3.5rem; /* Espaço para o botão hambúrguer */
+    padding-bottom: 0.25rem;
   }
-  
+
+  .nav-tabs .nav-link {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.5rem;
+    pointer-events: auto;
+  }
+
+  .nav-tabs .nav-link .me-2 {
+    margin-right: 0.25rem !important;
+  }
+
+  /* Garantir que o topo não sobreponha */
+  .topo {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Stats cards em layout vertical */
+  .stats-card .card-body {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .stats-card .card-body .stats-icon {
+    margin-right: 0 !important;
+    margin-bottom: 0.5rem;
+  }
+
+  .stats-card .card-body .stats-content {
+    text-align: center;
+  }
+
+  .stats-card .card-body .stats-content small {
+    justify-content: center;
+  }
+
   .stats-card h4 {
     font-size: 1.25rem;
   }
-  
+
   .stats-card h6 {
     font-size: 0.75rem;
+  }
+
+  /* Atividades - textos menores */
+  .atividade-label {
+    font-size: 0.7rem;
+  }
+
+  .card-body h5 {
+    font-size: 1rem;
+  }
+
+  /* Ajuste valores financeiros */
+  .card-body h3 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Media query para tablets (576px - 768px) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .stats-card h4 {
+    font-size: 1.1rem;
+  }
+
+  .stats-card h6 {
+    font-size: 0.75rem;
+  }
+
+  .atividade-label {
+    font-size: 0.8rem;
   }
 }

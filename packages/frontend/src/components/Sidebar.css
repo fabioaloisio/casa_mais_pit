@@ -280,10 +280,12 @@
   z-index: 999;
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none; /* Não intercepta cliques quando invisível */
 }
 
 .sidebar-overlay.show {
   opacity: 1;
+  pointer-events: auto; /* Intercepta cliques apenas quando visível */
 }
 
 /* Tablet (768px - 1024px) */
