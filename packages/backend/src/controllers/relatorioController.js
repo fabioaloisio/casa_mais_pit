@@ -256,6 +256,7 @@ const desenharTotalizadores = (doc, totalizadores, tipoRelatorio, yPosition) => 
       items = [
         { label: 'Total de Entradas', value: formatCurrency(parseFloat(totalizadores.total_entradas) || 0), icone: 'dinheiro', cor: CORES.iconeVerde },
         { label: 'Total de Saídas', value: formatCurrency(parseFloat(totalizadores.total_saidas) || 0), icone: 'dinheiro', cor: CORES.iconeVermelho },
+        { label: 'Ajustes', value: formatCurrency(parseFloat(totalizadores.total_ajustes) || 0), icone: 'grafico', cor: CORES.iconeAmarelo },
         { label: 'Saldo', value: formatCurrency(parseFloat(totalizadores.saldo) || 0), icone: 'grafico', cor: CORES.iconeVerde }
       ];
       break;
@@ -1201,17 +1202,31 @@ const exportarDoadoresPDF = async (req, res) => {
 const exportarCaixaPDF = async (req, res) => {
   try {
     const { data_inicio, data_fim } = req.body;
-    // TODO: Implementar relatório de caixa completo
-    const relatorio = []; // await relatorioRepository.relatorioCaixa(...);
-    
+
+    if (!data_inicio || !data_fim) {
+      return badRequest(res, 'Período é obrigatório', ['Informe data_inicio e data_fim']);
+    }
+
+    const relatorio = await relatorioRepository.relatorioCaixa({
+      data_inicio, data_fim
+    });
+
     const colunas = [
       { header: 'Descrição', field: 'descricao' },
       { header: 'Tipo', field: 'tipo' },
+      { header: 'Categoria', field: 'categoria' },
       { header: 'Valor', field: 'valor' },
-      { header: 'Data', field: 'data' }
+      { header: 'Data', field: 'data_movimentacao' }
     ];
-    
-    gerarPDF(relatorio, 'Relatório de Caixa', colunas, res);
+
+    const movimentacoesArray = relatorio.movimentacoes || [];
+
+    gerarPDF(movimentacoesArray, 'Relatório de Caixa', colunas, res, {
+      totalizadores: relatorio.resumo,
+      tipoRelatorio: 'caixa',
+      periodo: { data_inicio, data_fim },
+      subtitulo: 'Instituto Casa de Lázaro de Betânia'
+    });
   } catch (error) {
     console.error('Erro ao exportar caixa PDF:', error);
     return serverError(res, 'Erro ao exportar caixa PDF', [error.message]);
@@ -1440,17 +1455,27 @@ const exportarDoadoresExcel = async (req, res) => {
 
 const exportarCaixaExcel = async (req, res) => {
   try {
-    // Placeholder for Caixa report - implement based on your repository method
-    const relatorio = []; // await relatorioRepository.relatorioCaixa(...);
-    
+    const { data_inicio, data_fim } = req.body;
+
+    if (!data_inicio || !data_fim) {
+      return badRequest(res, 'Período é obrigatório', ['Informe data_inicio e data_fim']);
+    }
+
+    const relatorio = await relatorioRepository.relatorioCaixa({
+      data_inicio, data_fim
+    });
+
     const colunas = [
       { header: 'Descrição', field: 'descricao' },
       { header: 'Tipo', field: 'tipo' },
+      { header: 'Categoria', field: 'categoria' },
       { header: 'Valor', field: 'valor' },
-      { header: 'Data', field: 'data' }
+      { header: 'Forma Pagamento', field: 'forma_pagamento' },
+      { header: 'Data', field: 'data_movimentacao' }
     ];
-    
-    gerarExcel(relatorio, 'Relatório de Caixa', colunas, res);
+
+    const movimentacoesArray = relatorio.movimentacoes || [];
+    gerarExcel(movimentacoesArray, 'Relatório de Caixa', colunas, res);
   } catch (error) {
     console.error('Erro ao exportar caixa Excel:', error);
     return serverError(res, 'Erro ao exportar caixa Excel', [error.message]);

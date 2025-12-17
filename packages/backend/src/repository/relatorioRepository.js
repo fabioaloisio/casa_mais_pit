@@ -752,6 +752,62 @@ class RelatorioRepository extends BaseRepository {
       vendas_por_forma_pagamento: vendasPorFormaPagamento
     };
   }
+
+  // RF_S8 - Relatório de Caixa (Fluxo de Caixa)
+  async relatorioCaixa(filtros) {
+    const { data_inicio, data_fim } = filtros;
+
+    // Query principal - lista movimentações do período
+    const query = `
+      SELECT
+        cm.*,
+        u.nome as usuario_nome,
+        d.nome as doador_nome
+      FROM caixa_movimentacoes cm
+      LEFT JOIN usuarios u ON cm.usuario_id = u.id
+      LEFT JOIN doadores d ON cm.doador_id = d.id
+      WHERE DATE(cm.data_movimentacao) BETWEEN ? AND ?
+      ORDER BY cm.data_movimentacao DESC, cm.id DESC
+    `;
+
+    const movimentacoes = await this.executeQuery(query, [data_inicio, data_fim]);
+
+    // Totalizadores
+    const resumoQuery = `
+      SELECT
+        SUM(CASE WHEN tipo = 'entrada' THEN valor ELSE 0 END) as total_entradas,
+        SUM(CASE WHEN tipo = 'saida' THEN valor ELSE 0 END) as total_saidas,
+        SUM(CASE WHEN tipo = 'ajuste' THEN valor ELSE 0 END) as total_ajustes,
+        COUNT(*) as total_movimentacoes,
+        COUNT(CASE WHEN tipo = 'entrada' THEN 1 END) as qtd_entradas,
+        COUNT(CASE WHEN tipo = 'saida' THEN 1 END) as qtd_saidas,
+        COUNT(CASE WHEN tipo = 'ajuste' THEN 1 END) as qtd_ajustes
+      FROM caixa_movimentacoes
+      WHERE DATE(data_movimentacao) BETWEEN ? AND ?
+    `;
+
+    const [resumo] = await this.executeQuery(resumoQuery, [data_inicio, data_fim]);
+
+    // Calcular saldo do período
+    const saldo = (parseFloat(resumo.total_entradas) || 0)
+                - (parseFloat(resumo.total_saidas) || 0)
+                + (parseFloat(resumo.total_ajustes) || 0);
+
+    return {
+      periodo: { data_inicio, data_fim },
+      resumo: {
+        total_entradas: resumo.total_entradas || 0,
+        total_saidas: resumo.total_saidas || 0,
+        total_ajustes: resumo.total_ajustes || 0,
+        saldo: saldo,
+        total_movimentacoes: resumo.total_movimentacoes || 0,
+        qtd_entradas: resumo.qtd_entradas || 0,
+        qtd_saidas: resumo.qtd_saidas || 0,
+        qtd_ajustes: resumo.qtd_ajustes || 0
+      },
+      movimentacoes
+    };
+  }
 }
 
 module.exports = RelatorioRepository;
