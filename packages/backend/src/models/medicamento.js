@@ -6,6 +6,9 @@ class Medicamento {
     this.forma_farmaceutica = data.forma_farmaceutica;
     this.descricao = data.descricao || '';
     this.unidade_medida_id = data.unidade_medida_id;
+    // Campos vindos do JOIN com unidades_medida
+    this.unidade_nome = data.unidade_nome || null;
+    this.unidade_sigla = data.unidade_sigla || null;
   }
 
   validate(isUpdate = false) {
@@ -44,7 +47,9 @@ class Medicamento {
       nome: this.nome,
       forma_farmaceutica: this.forma_farmaceutica,
       descricao: this.descricao,
-      unidade_medida_id: this.unidade_medida_id
+      unidade_medida_id: this.unidade_medida_id,
+      unidade_nome: this.unidade_nome,
+      unidade_sigla: this.unidade_sigla
     };
   }
 }
