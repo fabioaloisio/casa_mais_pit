@@ -47,7 +47,7 @@ class ConsultasService {
   }
 
   async criarPrescricao(consultaId, data) {
-    return apiService.post(`/consultas/${consultaId}/prescricoes`, data);
+    return apiService.post(`/consultas/${consultaId}/prescricao`, data);
   }
 
   async getHistoriaPatologica(assistidaId) {
