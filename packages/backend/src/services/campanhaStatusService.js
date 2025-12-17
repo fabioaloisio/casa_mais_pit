@@ -28,7 +28,7 @@ class CampanhaStatusService {
 
       // 2. Campanhas ativas que devem ser encerradas
       // (data_fim < hoje AND status = 'ativa')
-      const [encerrarResult] = await connection.execute(`
+      const [encerrarAtivasResult] = await connection.execute(`
         UPDATE campanhas
         SET status = 'encerrada',
             atualizado_em = NOW()
@@ -37,11 +37,27 @@ class CampanhaStatusService {
           AND data_fim < CURDATE()
       `);
 
-      if (encerrarResult.affectedRows > 0) {
-        console.log(`🏁 ${encerrarResult.affectedRows} campanha(s) encerrada(s)`);
+      if (encerrarAtivasResult.affectedRows > 0) {
+        console.log(`🏁 ${encerrarAtivasResult.affectedRows} campanha(s) ativa(s) encerrada(s)`);
       }
 
-      // 3. Log do status atual
+      // 3. Campanhas planejadas que já passaram da data_fim (nunca foram ativadas)
+      const [encerrarPlanejadosResult] = await connection.execute(`
+        UPDATE campanhas
+        SET status = 'encerrada',
+            atualizado_em = NOW()
+        WHERE status = 'planejada'
+          AND data_fim IS NOT NULL
+          AND data_fim < CURDATE()
+      `);
+
+      if (encerrarPlanejadosResult.affectedRows > 0) {
+        console.log(`🏁 ${encerrarPlanejadosResult.affectedRows} campanha(s) planejada(s) encerrada(s) (data_fim passou)`);
+      }
+
+      const encerradasTotal = encerrarAtivasResult.affectedRows + encerrarPlanejadosResult.affectedRows;
+
+      // 4. Log do status atual
       const [statusCount] = await connection.execute(`
         SELECT
           status,
@@ -57,7 +73,7 @@ class CampanhaStatusService {
 
       return {
         ativadas: ativarResult.affectedRows,
-        encerradas: encerrarResult.affectedRows,
+        encerradas: encerradasTotal,
         resumo: statusCount
       };
 

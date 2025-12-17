@@ -423,6 +423,27 @@ class CampanhaController {
       });
     }
   }
+
+  async atualizarStatusCampanhas(req, res) {
+    try {
+      const campanhaStatusService = require('../services/campanhaStatusService');
+
+      const resultado = await campanhaStatusService.atualizarStatusCampanhas();
+
+      res.json({
+        success: true,
+        message: 'Status das campanhas atualizado com sucesso',
+        data: resultado
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar status das campanhas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao atualizar status das campanhas',
+        error: error.message
+      });
+    }
+  }
 }
 
 module.exports = new CampanhaController();

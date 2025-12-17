@@ -8,14 +8,17 @@ const { verifyToken, requirePermission } = require('../middleware/authMiddleware
 // Listar todas as campanhas (público - sem autenticação)
 router.get('/', campanhaController.listarCampanhas);
 
+// Obter ranking de campanhas (público) - DEVE vir antes de /:id
+router.get('/relatorio/ranking', campanhaController.obterRanking);
+
+// Atualizar status de todas as campanhas baseado nas datas (protegido)
+router.post('/atualizar-status', verifyToken, requirePermission('RF_F5'), campanhaController.atualizarStatusCampanhas);
+
 // Obter detalhes de uma campanha específica (público)
 router.get('/:id', campanhaController.obterCampanha);
 
 // Obter estatísticas de uma campanha (público)
 router.get('/:id/estatisticas', campanhaController.obterEstatisticas);
-
-// Obter ranking de campanhas (público)
-router.get('/relatorio/ranking', campanhaController.obterRanking);
 
 // ================ ROTAS PROTEGIDAS - REQUEREM AUTENTICAÇÃO ================
 
