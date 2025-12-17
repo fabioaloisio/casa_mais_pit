@@ -3,8 +3,318 @@ const { success, serverError, badRequest } = require('../../../shared/utils/resp
 const { formatCurrency } = require('../../../shared/src/utils');
 const PDFDocument = require('pdfkit');
 const XLSX = require('xlsx');
+const path = require('path');
+const fs = require('fs');
 
 const relatorioRepository = new RelatorioRepository();
+
+// ============================================
+// CONSTANTES DE CONFIGURAÇÃO DOS PDFs
+// ============================================
+
+const LOGO_PATH = path.join(__dirname, '../../../frontend/public/images/logo/logo-160.png');
+
+const CORES = {
+  primaria: '#003366',
+  secundaria: '#0c4b8c',
+  titulo: '#003366',
+  texto: '#1c1c1c',
+  textoSecundario: '#64748b',
+  fundo: '#f5f7fa',
+  linhaAlternada: '#f9fafb',
+  headerBg: '#003366',
+  headerText: '#ffffff',
+  totalizadorBg: '#f1f5ff',
+  totalizadorBorda: '#0c4b8c',
+  sucesso: '#198754',
+  erro: '#e53e3e',
+  borda: '#dee2e6',
+  // Cores dos ícones do dashboard
+  iconeAzul: '#3b82f6',
+  iconeVerde: '#22c55e',
+  iconeAmarelo: '#eab308',
+  iconeVermelho: '#ef4444',
+  iconeCiano: '#06b6d4',
+  cardBg: '#ffffff',
+  cardSombra: '#e2e8f0'
+};
+
+// ============================================
+// FUNÇÕES AUXILIARES PARA GERAÇÃO DE PDF
+// ============================================
+
+/**
+ * Desenha o cabeçalho do PDF com logo, título e período
+ */
+const desenharCabecalho = (doc, titulo, opcoes = {}) => {
+  const { periodo, subtitulo } = opcoes;
+  let yPosition = 30;
+
+  // Tentar adicionar logo
+  try {
+    if (fs.existsSync(LOGO_PATH)) {
+      doc.image(LOGO_PATH, 50, yPosition, { width: 80 });
+    }
+  } catch (err) {
+    console.log('[PDF] Logo não encontrado, continuando sem logo');
+  }
+
+  // Título principal
+  doc.fontSize(20).fillColor(CORES.titulo).text(titulo, 140, yPosition + 10);
+
+  // Subtítulo (se houver)
+  if (subtitulo) {
+    doc.fontSize(11).fillColor(CORES.textoSecundario).text(subtitulo, 140, yPosition + 35);
+    yPosition += 15;
+  }
+
+  // Data de geração
+  const dataGeracao = new Date().toLocaleDateString('pt-BR');
+  const horaGeracao = new Date().toLocaleTimeString('pt-BR');
+  doc.fontSize(9).fillColor(CORES.textoSecundario).text(
+    `Gerado em: ${dataGeracao} às ${horaGeracao}`,
+    140, yPosition + 40
+  );
+
+  // Período (se houver)
+  if (periodo && periodo.data_inicio && periodo.data_fim) {
+    const inicio = new Date(periodo.data_inicio).toLocaleDateString('pt-BR');
+    const fim = new Date(periodo.data_fim).toLocaleDateString('pt-BR');
+    doc.text(`Período: ${inicio} a ${fim}`, 140, yPosition + 52);
+  }
+
+  // Linha separadora
+  doc.moveTo(50, yPosition + 70).lineTo(doc.page.width - 50, yPosition + 70).stroke(CORES.borda);
+
+  return yPosition + 85;
+};
+
+/**
+ * Desenha um ícone simples usando formas do PDFKit
+ */
+const desenharIcone = (doc, tipo, x, y, size, cor) => {
+  doc.save();
+
+  switch (tipo) {
+    case 'pessoas': // Ícone de grupo de pessoas
+      // Pessoa central
+      doc.circle(x + size/2, y + size*0.3, size*0.15).fill(cor);
+      doc.rect(x + size*0.35, y + size*0.5, size*0.3, size*0.35).fill(cor);
+      // Pessoa esquerda
+      doc.circle(x + size*0.2, y + size*0.35, size*0.12).fill(cor);
+      doc.rect(x + size*0.1, y + size*0.52, size*0.2, size*0.28).fill(cor);
+      // Pessoa direita
+      doc.circle(x + size*0.8, y + size*0.35, size*0.12).fill(cor);
+      doc.rect(x + size*0.7, y + size*0.52, size*0.2, size*0.28).fill(cor);
+      break;
+
+    case 'dinheiro': // Ícone de moeda/dinheiro
+      doc.circle(x + size/2, y + size/2, size*0.4).lineWidth(2).stroke(cor);
+      doc.fontSize(size*0.4).fillColor(cor).text('$', x + size*0.35, y + size*0.3);
+      break;
+
+    case 'calendario': // Ícone de calendário
+      doc.rect(x + size*0.15, y + size*0.2, size*0.7, size*0.65).lineWidth(1.5).stroke(cor);
+      doc.rect(x + size*0.15, y + size*0.2, size*0.7, size*0.2).fill(cor);
+      // Detalhes do calendário
+      doc.rect(x + size*0.25, y + size*0.5, size*0.15, size*0.1).fill(cor);
+      doc.rect(x + size*0.5, y + size*0.5, size*0.15, size*0.1).fill(cor);
+      doc.rect(x + size*0.25, y + size*0.65, size*0.15, size*0.1).fill(cor);
+      // Check mark
+      doc.moveTo(x + size*0.5, y + size*0.7)
+         .lineTo(x + size*0.55, y + size*0.75)
+         .lineTo(x + size*0.7, y + size*0.6)
+         .lineWidth(2).stroke(cor);
+      break;
+
+    case 'pilula': // Ícone de medicamento/pílula
+      // Pílula vertical
+      doc.save();
+      doc.roundedRect(x + size*0.35, y + size*0.1, size*0.2, size*0.5, 5).fill(cor);
+      doc.roundedRect(x + size*0.35, y + size*0.35, size*0.2, size*0.25, 5).fill('#f59e0b');
+      doc.restore();
+      // Pílula horizontal
+      doc.roundedRect(x + size*0.15, y + size*0.55, size*0.5, size*0.2, 5).fill(cor);
+      doc.roundedRect(x + size*0.4, y + size*0.55, size*0.25, size*0.2, 5).fill('#f59e0b');
+      break;
+
+    case 'coracao': // Ícone de doação/coração com mão
+      // Mão
+      doc.moveTo(x + size*0.2, y + size*0.85)
+         .lineTo(x + size*0.2, y + size*0.5)
+         .quadraticCurveTo(x + size*0.5, y + size*0.4, x + size*0.8, y + size*0.5)
+         .lineTo(x + size*0.8, y + size*0.85)
+         .fill(cor);
+      // Coração
+      doc.moveTo(x + size*0.5, y + size*0.45)
+         .bezierCurveTo(x + size*0.5, y + size*0.35, x + size*0.3, y + size*0.2, x + size*0.3, y + size*0.35)
+         .bezierCurveTo(x + size*0.3, y + size*0.45, x + size*0.5, y + size*0.55, x + size*0.5, y + size*0.55)
+         .bezierCurveTo(x + size*0.5, y + size*0.55, x + size*0.7, y + size*0.45, x + size*0.7, y + size*0.35)
+         .bezierCurveTo(x + size*0.7, y + size*0.2, x + size*0.5, y + size*0.35, x + size*0.5, y + size*0.45)
+         .fill('#ef4444');
+      break;
+
+    case 'hospital': // Ícone de internação/cama
+      // Cruz médica
+      doc.rect(x + size*0.4, y + size*0.15, size*0.2, size*0.5).fill(cor);
+      doc.rect(x + size*0.25, y + size*0.3, size*0.5, size*0.2).fill(cor);
+      // Base
+      doc.rect(x + size*0.15, y + size*0.7, size*0.7, size*0.1).fill(cor);
+      break;
+
+    case 'grafico': // Ícone de gráfico/tendência
+      doc.moveTo(x + size*0.15, y + size*0.7)
+         .lineTo(x + size*0.35, y + size*0.45)
+         .lineTo(x + size*0.55, y + size*0.55)
+         .lineTo(x + size*0.85, y + size*0.2)
+         .lineWidth(3).stroke(cor);
+      // Seta
+      doc.moveTo(x + size*0.75, y + size*0.2)
+         .lineTo(x + size*0.85, y + size*0.2)
+         .lineTo(x + size*0.85, y + size*0.3)
+         .lineWidth(2).stroke(cor);
+      break;
+
+    default:
+      // Ícone genérico - círculo
+      doc.circle(x + size/2, y + size/2, size*0.35).fill(cor);
+      break;
+  }
+
+  doc.restore();
+};
+
+/**
+ * Desenha os totalizadores em formato de cards estilo Dashboard
+ */
+const desenharTotalizadores = (doc, totalizadores, tipoRelatorio, yPosition) => {
+  if (!totalizadores || Object.keys(totalizadores).length === 0) {
+    return yPosition;
+  }
+
+  let items = [];
+
+  // Montar itens baseado no tipo de relatório com ícones
+  switch (tipoRelatorio) {
+    case 'assistidas':
+      items = [
+        { label: 'Total de Assistidas', value: totalizadores.total_assistidas || 0, icone: 'pessoas', cor: CORES.iconeAzul },
+        { label: 'Ativas', value: totalizadores.ativas || 0, icone: 'pessoas', cor: CORES.iconeVerde },
+        { label: 'Inativas', value: totalizadores.inativas || 0, icone: 'pessoas', cor: CORES.textoSecundario }
+      ];
+      break;
+    case 'despesas':
+      items = [
+        { label: 'Total de Despesas', value: totalizadores.total_despesas || 0, icone: 'dinheiro', cor: CORES.iconeAzul },
+        { label: 'Valor Total', value: formatCurrency(parseFloat(totalizadores.valor_total) || 0), icone: 'dinheiro', cor: CORES.iconeVermelho },
+        { label: 'Valor Médio', value: formatCurrency(parseFloat(totalizadores.valor_medio) || 0), icone: 'grafico', cor: CORES.iconeAmarelo },
+        { label: 'Maior Despesa', value: formatCurrency(parseFloat(totalizadores.maior_despesa) || 0), icone: 'dinheiro', cor: CORES.iconeVermelho }
+      ];
+      break;
+    case 'consultas':
+      items = [
+        { label: 'Total de Consultas', value: totalizadores.total_consultas || 0, icone: 'calendario', cor: CORES.iconeAzul },
+        { label: 'Realizadas', value: totalizadores.realizadas || 0, icone: 'calendario', cor: CORES.iconeVerde },
+        { label: 'Agendadas', value: totalizadores.agendadas || 0, icone: 'calendario', cor: CORES.iconeAmarelo },
+        { label: 'Canceladas', value: totalizadores.canceladas || 0, icone: 'calendario', cor: CORES.iconeVermelho },
+        { label: 'Pacientes', value: totalizadores.total_pacientes || 0, icone: 'pessoas', cor: CORES.iconeVerde },
+        { label: 'Profissionais', value: totalizadores.total_profissionais || 0, icone: 'pessoas', cor: CORES.iconeAzul }
+      ];
+      break;
+    case 'doacoes':
+      items = [
+        { label: 'Doações de Itens', value: totalizadores.total_doacoes_itens || 0, icone: 'coracao', cor: CORES.iconeVerde },
+        { label: 'Doações Monetárias', value: totalizadores.total_doacoes_monetarias || 0, icone: 'dinheiro', cor: CORES.iconeVerde },
+        { label: 'Valor Total', value: formatCurrency(parseFloat(totalizadores.valor_total_monetario) || 0), icone: 'dinheiro', cor: CORES.iconeVerde },
+        { label: 'Total de Doadores', value: totalizadores.total_doadores || 0, icone: 'pessoas', cor: CORES.iconeAzul }
+      ];
+      break;
+    case 'medicamentos':
+      items = [
+        { label: 'Total de Medicamentos', value: totalizadores.total_medicamentos || 0, icone: 'pilula', cor: CORES.iconeAmarelo },
+        { label: 'Movimentações', value: totalizadores.total_movimentacoes || 0, icone: 'grafico', cor: CORES.iconeAzul }
+      ];
+      break;
+    case 'internacoes':
+      items = [
+        { label: 'Total de Internações', value: totalizadores.total_internacoes || 0, icone: 'hospital', cor: CORES.iconeAzul },
+        { label: 'Ativas', value: totalizadores.ativas || 0, icone: 'hospital', cor: CORES.iconeVerde },
+        { label: 'Finalizadas', value: totalizadores.finalizadas || 0, icone: 'hospital', cor: CORES.textoSecundario },
+        { label: 'Média Permanência', value: `${Math.round(parseFloat(totalizadores.media_permanencia) || 0)} dias`, icone: 'calendario', cor: CORES.iconeAmarelo },
+        { label: 'Maior Permanência', value: `${totalizadores.maior_permanencia || 0} dias`, icone: 'calendario', cor: CORES.iconeVermelho }
+      ];
+      break;
+    case 'doadores':
+      items = [
+        { label: 'Total de Doadores', value: totalizadores.total_doadores || 0, icone: 'pessoas', cor: CORES.iconeAzul },
+        { label: 'Ativos', value: totalizadores.doadores_ativos || 0, icone: 'pessoas', cor: CORES.iconeVerde },
+        { label: 'Pessoa Física', value: totalizadores.doadores_pf || 0, icone: 'pessoas', cor: CORES.iconeCiano },
+        { label: 'Pessoa Jurídica', value: totalizadores.doadores_pj || 0, icone: 'pessoas', cor: CORES.iconeAmarelo }
+      ];
+      break;
+    case 'caixa':
+      items = [
+        { label: 'Total de Entradas', value: formatCurrency(parseFloat(totalizadores.total_entradas) || 0), icone: 'dinheiro', cor: CORES.iconeVerde },
+        { label: 'Total de Saídas', value: formatCurrency(parseFloat(totalizadores.total_saidas) || 0), icone: 'dinheiro', cor: CORES.iconeVermelho },
+        { label: 'Saldo', value: formatCurrency(parseFloat(totalizadores.saldo) || 0), icone: 'grafico', cor: CORES.iconeVerde }
+      ];
+      break;
+    default:
+      return yPosition;
+  }
+
+  if (items.length === 0) return yPosition;
+
+  // Configurações dos cards estilo dashboard
+  const cardsPerRow = 3;
+  const cardMargin = 15;
+  const availableWidth = doc.page.width - 100;
+  const cardWidth = (availableWidth - (cardMargin * (cardsPerRow - 1))) / cardsPerRow;
+  const cardHeight = 70;
+  const startX = 50;
+  const rows = Math.ceil(items.length / cardsPerRow);
+  const iconSize = 35;
+
+  // Desenhar cada card
+  items.forEach((item, index) => {
+    const row = Math.floor(index / cardsPerRow);
+    const col = index % cardsPerRow;
+    const cardX = startX + (col * (cardWidth + cardMargin));
+    const cardY = yPosition + (row * (cardHeight + cardMargin));
+
+    // Sombra do card (retângulo deslocado)
+    doc.rect(cardX + 2, cardY + 2, cardWidth, cardHeight)
+       .fill(CORES.cardSombra);
+
+    // Card principal (fundo branco com bordas arredondadas)
+    doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 8)
+       .fillAndStroke(CORES.cardBg, CORES.borda);
+
+    // Label (texto pequeno cinza no topo)
+    doc.fontSize(10)
+       .fillColor(CORES.textoSecundario)
+       .text(item.label, cardX + 12, cardY + 12, {
+         width: cardWidth - iconSize - 24,
+         height: 15
+       });
+
+    // Valor (número grande em destaque)
+    doc.fontSize(22)
+       .fillColor(CORES.texto)
+       .text(String(item.value), cardX + 12, cardY + 32, {
+         width: cardWidth - iconSize - 24,
+         height: 30
+       });
+
+    // Ícone à direita
+    const iconeX = cardX + cardWidth - iconSize - 12;
+    const iconeY = cardY + (cardHeight - iconSize) / 2;
+    desenharIcone(doc, item.icone, iconeX, iconeY, iconSize, item.cor);
+  });
+
+  // Retornar posição Y após os cards
+  return yPosition + (rows * (cardHeight + cardMargin)) + 10;
+};
 
 // RF_S1 - Relatório de Assistidas
 const relatorioAssistidas = async (req, res) => {
@@ -244,9 +554,11 @@ const relatorioVendas = async (req, res) => {
   }
 };
 
-// Helper function to generate PDF
-const gerarPDF = (dados, titulo, colunas, res) => {
+// Helper function to generate PDF (versão melhorada com totalizadores)
+const gerarPDF = (dados, titulo, colunas, res, opcoes = {}) => {
   try {
+    const { totalizadores, periodo, tipoRelatorio, subtitulo } = opcoes;
+
     // Validate input parameters first - BEFORE setting any headers
     if (!titulo || typeof titulo !== 'string') {
       return serverError(res, 'Título inválido para o PDF', ['Título é obrigatório']);
@@ -276,7 +588,7 @@ const gerarPDF = (dados, titulo, colunas, res) => {
       buffers.push(chunk);
     });
 
-    // When PDF generation is complete, send the response
+    // When PDF generation is complete, add page numbers and send response
     doc.on('end', () => {
       try {
         const pdfBuffer = Buffer.concat(buffers);
@@ -312,33 +624,37 @@ const gerarPDF = (dados, titulo, colunas, res) => {
       }
     });
 
-    // Add title
-    doc.fontSize(18).fillColor('#2d3748').text(titulo, 50, 50);
-    doc.moveDown();
+    // ============================================
+    // DESENHAR CABEÇALHO COM LOGO
+    // ============================================
+    let yPosition = desenharCabecalho(doc, titulo, { periodo, subtitulo });
 
-    // Add current date
-    doc.fontSize(10).fillColor('#718096').text(
-      `Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`,
-      50, 80
-    );
-    doc.moveDown(2);
+    // ============================================
+    // DESENHAR TOTALIZADORES (SE HOUVER)
+    // ============================================
+    if (totalizadores && tipoRelatorio) {
+      yPosition = desenharTotalizadores(doc, totalizadores, tipoRelatorio, yPosition);
+    }
+
+    // ============================================
+    // DESENHAR TABELA DE DADOS
+    // ============================================
 
     // Calculate column widths based on page size
     const pageWidth = doc.page.width - 100; // minus margins
     const columnWidth = Math.floor(pageWidth / colunas.length);
 
-    // Add headers with background
-    let yPosition = 120;
-    doc.fontSize(12).fillColor('#2d3748');
+    // Add headers with background (nova cor)
+    doc.fontSize(11).fillColor(CORES.headerText);
 
-    // Draw header background
-    doc.rect(50, yPosition - 5, pageWidth, 25).fill('#f7fafc');
+    // Draw header background (cor azul escura do projeto)
+    doc.rect(50, yPosition - 5, pageWidth, 25).fill(CORES.headerBg);
 
-    // Add header text
+    // Add header text (branco)
     colunas.forEach((coluna, index) => {
       const header = coluna.header || coluna.field || 'N/A';
-      doc.fillColor('#2d3748').text(
-        header.substring(0, 15), // Limit header length
+      doc.fillColor(CORES.headerText).text(
+        header.substring(0, 18), // Limit header length
         50 + (index * columnWidth),
         yPosition,
         { width: columnWidth - 5, align: 'left' }
@@ -348,7 +664,7 @@ const gerarPDF = (dados, titulo, colunas, res) => {
 
     // Add data rows or "no data" message
     if (dadosArray.length === 0) {
-      doc.fontSize(12).fillColor('#e53e3e').text(
+      doc.fontSize(12).fillColor(CORES.erro).text(
         'Nenhum dado encontrado para o período selecionado.',
         50, yPosition
       );
@@ -358,14 +674,27 @@ const gerarPDF = (dados, titulo, colunas, res) => {
         if (yPosition > 500) { // New page if needed (landscape)
           doc.addPage();
           yPosition = 50;
+
+          // Redesenhar cabeçalho da tabela na nova página
+          doc.rect(50, yPosition - 5, pageWidth, 25).fill(CORES.headerBg);
+          colunas.forEach((coluna, index) => {
+            const header = coluna.header || coluna.field || 'N/A';
+            doc.fontSize(11).fillColor(CORES.headerText).text(
+              header.substring(0, 18),
+              50 + (index * columnWidth),
+              yPosition,
+              { width: columnWidth - 5, align: 'left' }
+            );
+          });
+          yPosition += 30;
         }
 
         // Alternate row colors
         if (rowIndex % 2 === 0) {
-          doc.rect(50, yPosition - 2, pageWidth, 20).fill('#f9f9f9');
+          doc.rect(50, yPosition - 2, pageWidth, 20).fill(CORES.linhaAlternada);
         }
 
-        doc.fontSize(9).fillColor('#2d3748');
+        doc.fontSize(9).fillColor(CORES.texto);
 
         colunas.forEach((coluna, colIndex) => {
           const fieldKey = coluna.field || coluna.accessor || '';
@@ -657,10 +986,15 @@ const exportarAssistidasPDF = async (req, res) => {
       { header: 'Data Cadastro', field: 'createdAt' }
     ];
 
-    // Extract the assistidas array from the report object
     const assistidasArray = relatorio.assistidas || [];
     console.log(`[PDF] Exporting assistidas: ${assistidasArray.length} records`);
-    gerarPDF(assistidasArray, 'Relatório de Assistidas', colunas, res);
+
+    gerarPDF(assistidasArray, 'Relatório de Assistidas', colunas, res, {
+      totalizadores: relatorio.estatisticas,
+      tipoRelatorio: 'assistidas',
+      periodo: { data_inicio, data_fim },
+      subtitulo: 'Instituto Casa de Lázaro de Betânia'
+    });
   } catch (error) {
     console.error('Erro ao exportar assistidas PDF:', error);
     return serverError(res, 'Erro ao exportar assistidas PDF', [error.message]);
@@ -686,9 +1020,14 @@ const exportarDespesasPDF = async (req, res) => {
       { header: 'Status', field: 'status' }
     ];
 
-    // Extract the despesas array from the report object
     const despesasArray = relatorio.despesas || [];
-    gerarPDF(despesasArray, 'Relatório de Despesas', colunas, res);
+
+    gerarPDF(despesasArray, 'Relatório de Despesas', colunas, res, {
+      totalizadores: relatorio.resumo,
+      tipoRelatorio: 'despesas',
+      periodo: { data_inicio, data_fim },
+      subtitulo: 'Instituto Casa de Lázaro de Betânia'
+    });
   } catch (error) {
     console.error('Erro ao exportar despesas PDF:', error);
     return serverError(res, 'Erro ao exportar despesas PDF', [error.message]);
@@ -710,9 +1049,14 @@ const exportarConsultasPDF = async (req, res) => {
       { header: 'Status', field: 'status' }
     ];
 
-    // Extract the consultas array from the report object
     const consultasArray = relatorio.consultas || [];
-    gerarPDF(consultasArray, 'Relatório de Consultas', colunas, res);
+
+    gerarPDF(consultasArray, 'Relatório de Consultas', colunas, res, {
+      totalizadores: relatorio.estatisticas,
+      tipoRelatorio: 'consultas',
+      periodo: { data_inicio, data_fim },
+      subtitulo: 'Instituto Casa de Lázaro de Betânia'
+    });
   } catch (error) {
     console.error('Erro ao exportar consultas PDF:', error);
     return serverError(res, 'Erro ao exportar consultas PDF', [error.message]);
@@ -725,11 +1069,11 @@ const exportarDoacoesPDF = async (req, res) => {
     if (!data_inicio || !data_fim) {
       return badRequest(res, 'Período é obrigatório', ['Informe data_inicio e data_fim']);
     }
-    
+
     const relatorio = await relatorioRepository.relatorioDoacoes({
       data_inicio, data_fim, doador_id, tipo
     });
-    
+
     // Combinar doações de itens e monetárias em um único array
     const todasDoacoes = [
       ...relatorio.doacoes_itens.map(d => ({
@@ -747,7 +1091,7 @@ const exportarDoacoesPDF = async (req, res) => {
         status: 'Confirmado'
       }))
     ];
-    
+
     const colunas = [
       { header: 'Doador', field: 'doador' },
       { header: 'Tipo', field: 'tipo' },
@@ -755,8 +1099,13 @@ const exportarDoacoesPDF = async (req, res) => {
       { header: 'Data', field: 'data' },
       { header: 'Status', field: 'status' }
     ];
-    
-    gerarPDF(todasDoacoes, 'Relatório de Doações', colunas, res);
+
+    gerarPDF(todasDoacoes, 'Relatório de Doações', colunas, res, {
+      totalizadores: relatorio.resumo,
+      tipoRelatorio: 'doacoes',
+      periodo: { data_inicio, data_fim },
+      subtitulo: 'Instituto Casa de Lázaro de Betânia'
+    });
   } catch (error) {
     console.error('Erro ao exportar doações PDF:', error);
     return serverError(res, 'Erro ao exportar doações PDF', [error.message]);
@@ -772,15 +1121,19 @@ const exportarMedicamentosPDF = async (req, res) => {
 
     const colunas = [
       { header: 'Medicamento', field: 'nome' },
+      { header: 'Forma Farmacêutica', field: 'forma_farmaceutica' },
       { header: 'Descrição', field: 'descricao' },
-      { header: 'Unidade', field: 'unidade_nome' },
-      { header: 'Estoque Mínimo', field: 'estoque_minimo' },
-      { header: 'Estoque Atual', field: 'estoque_atual' }
+      { header: 'Unidade', field: 'unidade_nome' }
     ];
 
-    // Use medicamentos array instead of movimentacoes (which is empty for now)
     const medicamentosArray = relatorio.medicamentos || [];
-    gerarPDF(medicamentosArray, 'Relatório de Medicamentos', colunas, res);
+
+    gerarPDF(medicamentosArray, 'Relatório de Medicamentos', colunas, res, {
+      totalizadores: relatorio.estatisticas,
+      tipoRelatorio: 'medicamentos',
+      periodo: { data_inicio, data_fim },
+      subtitulo: 'Instituto Casa de Lázaro de Betânia'
+    });
   } catch (error) {
     console.error('Erro ao exportar medicamentos PDF:', error);
     return serverError(res, 'Erro ao exportar medicamentos PDF', [error.message]);
@@ -799,12 +1152,17 @@ const exportarInternacoesPDF = async (req, res) => {
       { header: 'Data Entrada', field: 'data_entrada' },
       { header: 'Data Saída', field: 'data_saida' },
       { header: 'Status', field: 'status' },
-      { header: 'Observações', field: 'observacoes' }
+      { header: 'Dias', field: 'dias_internada' }
     ];
 
-    // Extract the internacoes array from the report object
     const internacoesArray = relatorio.internacoes || [];
-    gerarPDF(internacoesArray, 'Relatório de Internações', colunas, res);
+
+    gerarPDF(internacoesArray, 'Relatório de Internações', colunas, res, {
+      totalizadores: relatorio.estatisticas,
+      tipoRelatorio: 'internacoes',
+      periodo: { data_inicio, data_fim },
+      subtitulo: 'Instituto Casa de Lázaro de Betânia'
+    });
   } catch (error) {
     console.error('Erro ao exportar internações PDF:', error);
     return serverError(res, 'Erro ao exportar internações PDF', [error.message]);
@@ -817,7 +1175,7 @@ const exportarDoadoresPDF = async (req, res) => {
     const relatorio = await relatorioRepository.relatorioDoadores({
       data_inicio, data_fim, ativo, tipo_doador
     });
-    
+
     const colunas = [
       { header: 'Nome', field: 'nome' },
       { header: 'Tipo', field: 'tipo_doador' },
@@ -825,9 +1183,15 @@ const exportarDoadoresPDF = async (req, res) => {
       { header: 'Contato', field: 'telefone' },
       { header: 'Ativo', field: 'ativo' }
     ];
-    
+
     const doadoresArray = relatorio.doadores || [];
-    gerarPDF(doadoresArray, 'Relatório de Doadores', colunas, res);
+
+    gerarPDF(doadoresArray, 'Relatório de Doadores', colunas, res, {
+      totalizadores: relatorio.estatisticas,
+      tipoRelatorio: 'doadores',
+      periodo: { data_inicio, data_fim },
+      subtitulo: 'Instituto Casa de Lázaro de Betânia'
+    });
   } catch (error) {
     console.error('Erro ao exportar doadores PDF:', error);
     return serverError(res, 'Erro ao exportar doadores PDF', [error.message]);
@@ -836,7 +1200,8 @@ const exportarDoadoresPDF = async (req, res) => {
 
 const exportarCaixaPDF = async (req, res) => {
   try {
-    // Placeholder for Caixa report - implement based on your repository method
+    const { data_inicio, data_fim } = req.body;
+    // TODO: Implementar relatório de caixa completo
     const relatorio = []; // await relatorioRepository.relatorioCaixa(...);
     
     const colunas = [
@@ -1011,10 +1376,9 @@ const exportarMedicamentosExcel = async (req, res) => {
     
     const colunas = [
       { header: 'Medicamento', field: 'nome' },
+      { header: 'Forma Farmacêutica', field: 'forma_farmaceutica' },
       { header: 'Descrição', field: 'descricao' },
-      { header: 'Unidade', field: 'unidade_nome' },
-      { header: 'Estoque Mínimo', field: 'estoque_minimo' },
-      { header: 'Estoque Atual', field: 'estoque_atual' }
+      { header: 'Unidade', field: 'unidade_nome' }
     ];
 
     // Use medicamentos array instead of movimentacoes (which is empty for now)
