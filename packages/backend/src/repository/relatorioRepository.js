@@ -38,15 +38,15 @@ class RelatorioRepository extends BaseRepository {
     
     const assistidas = await this.executeQuery(query, params);
     
-    // Estatísticas gerais
+    // Estatísticas gerais (case insensitive para status)
     const statsQuery = `
-      SELECT 
+      SELECT
         COUNT(DISTINCT id) as total_assistidas,
-        COUNT(DISTINCT CASE WHEN status = 'ativo' THEN id END) as ativas,
-        COUNT(DISTINCT CASE WHEN status = 'inativo' THEN id END) as inativas
+        COUNT(DISTINCT CASE WHEN LOWER(status) = 'ativa' OR LOWER(status) = 'ativo' THEN id END) as ativas,
+        COUNT(DISTINCT CASE WHEN LOWER(status) = 'inativa' OR LOWER(status) = 'inativo' THEN id END) as inativas
       FROM assistidas
     `;
-    
+
     const [stats] = await this.executeQuery(statsQuery);
     
     return {
@@ -85,28 +85,38 @@ class RelatorioRepository extends BaseRepository {
     
     const despesas = await this.executeQuery(query, params);
     
-    // Totalizadores
-    const totaisQuery = `
-      SELECT 
+    // Totalizadores gerais (sem GROUP BY para obter totais corretos)
+    const resumoQuery = `
+      SELECT
         COUNT(*) as total_despesas,
-        SUM(valor) as valor_total,
-        AVG(valor) as valor_medio,
-        MAX(valor) as maior_despesa,
-        MIN(valor) as menor_despesa,
+        COALESCE(SUM(valor), 0) as valor_total,
+        COALESCE(AVG(valor), 0) as valor_medio,
+        COALESCE(MAX(valor), 0) as maior_despesa,
+        COALESCE(MIN(valor), 0) as menor_despesa
+      FROM despesas d
+      WHERE DATE(d.data_despesa) BETWEEN ? AND ?
+    `;
+
+    const [resumo] = await this.executeQuery(resumoQuery, [data_inicio, data_fim]);
+
+    // Totais por categoria
+    const totaisPorCategoriaQuery = `
+      SELECT
         td.nome as categoria,
-        SUM(CASE WHEN d.tipo_despesa_id = td.id THEN valor ELSE 0 END) as valor_por_categoria
+        COUNT(*) as total_despesas,
+        COALESCE(SUM(d.valor), 0) as valor_total
       FROM despesas d
       LEFT JOIN tipos_despesas td ON d.tipo_despesa_id = td.id
       WHERE DATE(d.data_despesa) BETWEEN ? AND ?
       GROUP BY td.nome
     `;
-    
-    const totais = await this.executeQuery(totaisQuery, [data_inicio, data_fim]);
-    
+
+    const totaisPorCategoria = await this.executeQuery(totaisPorCategoriaQuery, [data_inicio, data_fim]);
+
     return {
       periodo: { data_inicio, data_fim },
-      resumo: totais[0],
-      despesas_por_categoria: totais,
+      resumo: resumo,
+      despesas_por_categoria: totaisPorCategoria,
       despesas
     };
   }
@@ -226,8 +236,8 @@ class RelatorioRepository extends BaseRepository {
     const doacoesMonetarias = await this.executeQuery(monetariasQuery, monetariasParams);
     
     // Totalizadores
-    const totalItens = doacoes.reduce((sum, d) => sum + (d.quantidade || 0), 0);
-    const totalMonetario = doacoesMonetarias.reduce((sum, d) => sum + (d.valor || 0), 0);
+    const totalItens = doacoes.reduce((sum, d) => sum + (parseInt(d.quantidade) || 0), 0);
+    const totalMonetario = doacoesMonetarias.reduce((sum, d) => sum + (parseFloat(d.valor) || 0), 0);
     
     return {
       periodo: { data_inicio, data_fim },
@@ -329,20 +339,26 @@ class RelatorioRepository extends BaseRepository {
     
     const internacoes = await this.executeQuery(query, params);
     
-    // Estatísticas
-    const statsQuery = `
-      SELECT 
+    // Estatísticas (usando os mesmos filtros de data)
+    let statsQuery = `
+      SELECT
         COUNT(*) as total_internacoes,
         COUNT(DISTINCT assistida_id) as total_assistidas,
-        AVG(TIMESTAMPDIFF(DAY, data_entrada, COALESCE(data_saida, NOW()))) as media_permanencia,
-        MAX(TIMESTAMPDIFF(DAY, data_entrada, COALESCE(data_saida, NOW()))) as maior_permanencia,
-        SUM(CASE WHEN status = 'ativa' THEN 1 ELSE 0 END) as ativas,
-        SUM(CASE WHEN status = 'finalizada' THEN 1 ELSE 0 END) as finalizadas
+        COALESCE(AVG(TIMESTAMPDIFF(DAY, data_entrada, COALESCE(data_saida, NOW()))), 0) as media_permanencia,
+        COALESCE(MAX(TIMESTAMPDIFF(DAY, data_entrada, COALESCE(data_saida, NOW()))), 0) as maior_permanencia,
+        SUM(CASE WHEN LOWER(status) = 'ativa' THEN 1 ELSE 0 END) as ativas,
+        SUM(CASE WHEN LOWER(status) = 'finalizada' THEN 1 ELSE 0 END) as finalizadas
       FROM internacoes
       WHERE 1=1
     `;
-    
-    const [stats] = await this.executeQuery(statsQuery, params);
+
+    const statsParams = [];
+    if (data_inicio && data_fim) {
+      statsQuery += ` AND DATE(data_entrada) BETWEEN ? AND ?`;
+      statsParams.push(data_inicio, data_fim);
+    }
+
+    const [stats] = await this.executeQuery(statsQuery, statsParams);
     
     return {
       periodo: { data_inicio, data_fim },
@@ -375,7 +391,7 @@ class RelatorioRepository extends BaseRepository {
     }
     
     if (tipo_doador) {
-      query += ` AND d.tipo_pessoa = ?`;
+      query += ` AND d.tipo_doador = ?`;
       params.push(tipo_doador);
     }
     
@@ -385,9 +401,9 @@ class RelatorioRepository extends BaseRepository {
     
     // Top doadores
     const topDoadoresQuery = `
-      SELECT 
+      SELECT
         d.nome,
-        d.tipo_pessoa,
+        d.tipo_doador,
         SUM(cm.valor) as total_doado
       FROM doadores d
       LEFT JOIN caixa_movimentacoes cm ON d.id = cm.doador_id AND cm.tipo = 'entrada'
@@ -404,8 +420,8 @@ class RelatorioRepository extends BaseRepository {
       estatisticas: {
         total_doadores: doadores.length,
         doadores_ativos: doadores.filter(d => d.ativo).length,
-        doadores_pf: doadores.filter(d => d.tipo_pessoa === 'fisica').length,
-        doadores_pj: doadores.filter(d => d.tipo_pessoa === 'juridica').length
+        doadores_pf: doadores.filter(d => d.tipo_doador === 'PF').length,
+        doadores_pj: doadores.filter(d => d.tipo_doador === 'PJ').length
       },
       doadores,
       top_doadores: topDoadores
