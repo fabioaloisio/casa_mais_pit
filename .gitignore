@@ -78,6 +78,11 @@ public/uploads/
 *.doc
 *.docx
 
+# Exceção: assets do logo da instituição
+!packages/frontend/public/images/logo/*.png
+!packages/frontend/public/images/logo/*.jpg
+!packages/frontend/public/images/logo/*.webp
+
 # Database files and backups
 *.sqlite
 *.db
