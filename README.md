@@ -1,6 +1,8 @@
 # Casa Mais
 
-Sistema de gestão para organizações de assistência social - beneficiários, medicamentos, doações, despesas, caixa e campanhas.
+> **Status: ✅ Production Ready**
+
+Sistema de gestão para organizações de assistência social - beneficiários, medicamentos, doações, despesas, caixa, campanhas e produção/vendas.
 
 ## Estrutura
 
@@ -8,18 +10,18 @@ Sistema de gestão para organizações de assistência social - beneficiários, 
 ├── packages/
 │   ├── backend/          # API Node.js/Express + MySQL
 │   │   ├── src/
-│   │   │   ├── controllers/  # 20 controllers (CRUD + lógica de negócio)
-│   │   │   ├── models/       # Modelos de dados
+│   │   │   ├── controllers/  # 25+ controllers (CRUD + lógica de negócio)
+│   │   │   ├── models/       # Modelos de dados (MVC)
 │   │   │   ├── routes/       # Rotas da API
 │   │   │   ├── repository/   # Camada de acesso a dados
 │   │   │   ├── services/     # Serviços (email, campanhas, etc)
 │   │   │   ├── middleware/   # Autenticação e validações
-│   │   │   └── config/       # Configuração do banco
+│   │   │   └── config/       # Configuração do banco (Singleton)
 │   │   └── scripts/      # Scripts de banco de dados
 │   ├── frontend/         # App React/Vite + Bootstrap
 │   │   └── src/
 │   │       ├── components/   # Componentes reutilizáveis
-│   │       ├── pages/        # 32 páginas da aplicação
+│   │       ├── pages/        # 40+ páginas da aplicação
 │   │       ├── services/     # Serviços HTTP/API
 │   │       ├── contexts/     # Context API
 │   │       ├── styles/       # Estilos globais
@@ -98,6 +100,7 @@ EMAIL_PASS=sua_senha_app
 - **Email**: Nodemailer
 - **Export**: PDFKit + XLSX
 - **Security**: bcrypt para senhas
+- **Arquitetura**: MVC + Singleton Pattern
 
 ### Frontend
 
@@ -127,7 +130,9 @@ EMAIL_PASS=sua_senha_app
 ### 👥 Gestão de Assistidas
 
 - **Cadastro**: Perfil completo com documentos
+- **HPR (História Pregressa)**: Fluxo completo com linha do tempo
 - **Consultas Médicas**: Agendamento e histórico
+- **Prescrições**: Sistema integrado às consultas com histórico acumulativo
 - **Internações**: Controle de internações
 - **Substâncias**: Registro de substâncias psicoativas utilizadas
 - **Medicamentos**: Controle de medicamentos utilizados
@@ -136,7 +141,16 @@ EMAIL_PASS=sua_senha_app
 
 - **Estoque**: Entradas e saídas
 - **Unidades de Medida**: Gestão de unidades
-- **Medicamentos**: CRUD completo
+- **Medicamentos**: CRUD completo com autocomplete
+- **Prescrições**: Seletor de medicamentos integrado
+
+### 🏭 Módulo de Produção e Vendas
+
+- **Matérias-Primas**: Cadastro e controle de insumos
+- **Receitas**: Composição de produtos com matérias-primas
+- **Produtos**: Gestão de produtos finais com custo calculado
+- **Vendas**: Registro de vendas com análise de lucro
+- **Triggers**: Cálculo automático de custos via triggers no banco
 
 ### 👤 Administração
 
@@ -144,18 +158,27 @@ EMAIL_PASS=sua_senha_app
 - **Aprovação de Cadastros**: Sistema de workflow de aprovação
 - **Ativação de Contas**: Ativação via email
 - **Reset de Senha**: Sistema de tokens temporários
+- **Exclusão e Reativação**: Sistema completo de exclusão e reativação de usuários
 - **Controle de Acesso**: 3 níveis de permissão
 - **Histórico**: Auditoria de mudanças de status
+
+### 🩺 Gestão de Profissionais de Saúde
+
+- **Médicos**: Cadastro completo de profissionais
+- **Especialidades**: Gestão de especialidades médicas
+- **Vinculação**: Associação médico-consulta
 
 ### 📊 Relatórios
 
 - **Dashboards**: Visão geral do sistema
 - **Relatórios Gerenciais**: Múltiplas categorias
-- **Exportação**: PDF e Excel
+- **Relatório de Caixa**: Completo com totalizadores
+- **Exportação**: PDF (estilo dashboard) e Excel
+- **Mobile**: Interface responsiva otimizada
 
 ## Banco de Dados
 
-Sistema com **17+ tabelas** organizadas:
+Sistema com **22+ tabelas** organizadas:
 
 ### Tabelas Base (sem FK)
 
@@ -165,6 +188,8 @@ Sistema com **17+ tabelas** organizadas:
 - `usuarios` - Usuários do sistema
 - `assistidas` - Pessoas assistidas
 - `substancias` - Substâncias psicoativas
+- `medicos` - Profissionais de saúde
+- `especialidades` - Especialidades médicas
 
 ### Tabelas com Relacionamentos
 
@@ -173,13 +198,22 @@ Sistema com **17+ tabelas** organizadas:
 - `medicamentos` → unidades_medida
 - `drogas_utilizadas` → assistidas, substancias
 - `medicamentos_utilizados` → assistidas, medicamentos
-- `consultas` → assistidas
+- `consultas` → assistidas, medicos
+- `prescricoes` → consultas, medicamentos
 - `internacoes` → assistidas
 
 ### Módulo Financeiro
 
 - `caixa_movimentacoes` - Movimentações de caixa
 - `caixa_fechamentos` - Fechamentos periódicos
+
+### Módulo de Produção e Vendas
+
+- `materias_primas` - Matérias-primas para produção
+- `receitas` - Receitas/composições de produtos
+- `receita_materias` - Relação receita-matéria prima
+- `produtos` - Produtos finais
+- `vendas` - Registro de vendas
 
 ### Módulo de Autenticação/Gestão
 
@@ -204,6 +238,7 @@ POST /api/auth/activate        # Ativar conta
 ```
 GET/POST/PUT/DELETE /api/usuarios
 POST /api/usuarios/approval    # Aprovar/rejeitar usuário
+POST /api/usuarios/reactivate  # Reativar usuário excluído
 ```
 
 ### Assistidas e Saúde
@@ -211,10 +246,11 @@ POST /api/usuarios/approval    # Aprovar/rejeitar usuário
 ```
 GET/POST/PUT/DELETE /api/assistidas
 GET/POST/PUT/DELETE /api/consultas
+GET/POST/PUT/DELETE /api/prescricoes
 GET/POST/PUT/DELETE /api/internacoes
 GET/POST/PUT/DELETE /api/substancias
-GET/POST           /api/medicos
-GET/POST           /api/especialidades
+GET/POST/PUT/DELETE /api/medicos
+GET/POST/PUT/DELETE /api/especialidades
 ```
 
 ### Medicamentos
@@ -235,6 +271,15 @@ GET/POST           /api/caixa
 GET/POST           /api/campanhas
 ```
 
+### Produção e Vendas
+
+```
+GET/POST/PUT/DELETE /api/materias-primas
+GET/POST/PUT/DELETE /api/receitas
+GET/POST/PUT/DELETE /api/produtos
+GET/POST/PUT/DELETE /api/vendas
+```
+
 ### Relatórios
 
 ```
@@ -245,6 +290,8 @@ GET /api/relatorios/doacoes
 GET /api/relatorios/medicamentos
 GET /api/relatorios/internacoes
 GET /api/relatorios/doadores
+GET /api/relatorios/caixa
+GET /api/relatorios/vendas
 
 # Exportação
 POST /api/relatorios/{tipo}/pdf
@@ -259,6 +306,7 @@ Sistema com 3 níveis de permissão conforme especificação ERS:
 
 - Acesso total ao sistema
 - Gerencia usuários e aprovações
+- Exclusão e reativação de usuários
 - Acesso a todos os relatórios
 - Configurações do sistema
 
@@ -266,15 +314,17 @@ Sistema com 3 níveis de permissão conforme especificação ERS:
 
 - Gerencia doações, doadores e despesas
 - Controle de caixa e campanhas
+- Módulo de produção e vendas
 - Relatórios financeiros
 - Tipos de despesas
 
 ### 🟢 Colaborador
 
 - Gerencia assistidas e cadastros
-- Consultas e internações
+- Consultas, prescrições e internações
 - Medicamentos e estoque
 - Substâncias psicoativas
+- HPR e linha do tempo
 
 Permissões implementadas em todas as rotas da API com validação por requisito funcional (RF_B1, RF_F3, etc.)
 
@@ -283,23 +333,29 @@ Permissões implementadas em todas as rotas da API com validação por requisito
 ### ✅ Implementado
 
 - ✅ Gestão completa de assistidas
+- ✅ HPR e linha do tempo da assistida
 - ✅ Controle de consultas médicas
+- ✅ Sistema de prescrições médicas
+- ✅ Gestão de médicos e especialidades
 - ✅ Gestão de internações
 - ✅ Controle de medicamentos e estoque
 - ✅ Sistema de doações PF/PJ
 - ✅ Controle de despesas por categoria
 - ✅ Sistema de caixa com movimentações
+- ✅ Relatório de caixa completo
 - ✅ Campanhas de arrecadação
+- ✅ Módulo de produção e vendas completo
 - ✅ Gestão de usuários com aprovação
+- ✅ Exclusão e reativação de usuários
 - ✅ Ativação de contas por email
 - ✅ Reset de senha com tokens
 - ✅ Controle de substâncias psicoativas
-- ✅ Cadastro de médicos e especialidades
 - ✅ Relatórios gerenciais completos
 - ✅ Exportação PDF e Excel
 - ✅ Dashboard com estatísticas
 - ✅ Sistema de permissões por role
 - ✅ Auditoria de mudanças
+- ✅ Interface responsiva mobile
 
 ## Requisitos
 
@@ -329,6 +385,7 @@ npm run build
 - [Frontend README](packages/frontend/README.md) - Detalhes do frontend
 - [Shared README](packages/shared/README.md) - Código compartilhado
 - [Scripts README](packages/backend/scripts/README.md) - Scripts de banco
+- [Documentação MVC + Singleton](docs/documentacao_mvc_singleton.md) - Arquitetura
 
 ## Suporte
 
@@ -340,4 +397,4 @@ Para dúvidas ou problemas:
 
 ---
 
-**Última atualização**: Outubro 2025
+**Última atualização**: Dezembro 2025
